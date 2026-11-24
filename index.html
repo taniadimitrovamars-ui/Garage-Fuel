@@ -29,9 +29,9 @@ h1 small{display:none}
   h1{font-size:16px}
   h1 small{display:inline;color:var(--m);font-weight:400;font-size:11px;margin-left:6px}
 }
-.nav-tabs{display:flex;gap:5px;flex:0 0 auto}
-.nav-tabs button{min-height:34px;padding:0 9px;font-size:12px;border-radius:10px;white-space:nowrap}
-@media(min-width:520px){
+.nav-tabs{display:flex;gap:4px;flex:0 0 auto}
+.nav-tabs button{min-height:34px;padding:0 8px;font-size:12px;border-radius:10px;white-space:nowrap}
+@media(min-width:560px){
   .nav-tabs button{min-height:38px;padding:0 12px;font-size:13px}
 }
 .wrap{max-width:980px;margin:0 auto;padding:12px 14px}
@@ -54,6 +54,13 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .item{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:11px;margin-bottom:8px}
 .fuel-tile{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:12px;cursor:pointer;transition:.15s}
 .fuel-tile:hover,.fuel-tile.has{border-color:#009ada77}
+
+.sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(min-width:640px){.sheet-grid{grid-template-columns:repeat(4,1fr)}}
+.sheet-btn{min-height:54px;padding:10px 12px;border-radius:16px;background:var(--p);border:1px solid #26354d;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;text-align:left}
+.sheet-btn:hover{border-color:#009ada88;background:#131e33}
+.sheet-btn b{font-size:14px;color:var(--t)}
+.sheet-btn span{font-size:11px;color:var(--m)}
 
 .dash-card{background:var(--p);border:1px solid #26354d;border-radius:20px;overflow:hidden;margin-bottom:12px}
 .dash-body{padding:15px 16px 12px}
@@ -99,10 +106,11 @@ dialog::backdrop{background:#000c}
 <header>
   <div class="brand">
     <img src="./icons/icon-192.png" alt="Гараж & Карти">
-    <h1>Гараж & Карти<small>консумативи · проверки · отстъпки</small></h1>
+    <h1>Гараж & Карти<small>табло · консумативи · проверки · карти</small></h1>
   </div>
   <div class="nav-tabs">
-    <button type="button" id="tabSvc" class="on">Консумативи</button>
+    <button type="button" id="tabDash" class="on">Табло</button>
+    <button type="button" id="tabSvc">Консумативи</button>
     <button type="button" id="tabChecks">Проверки</button>
     <button type="button" id="tabFuel">Карти</button>
   </div>
@@ -305,7 +313,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v11';
+const KEY='garage_fuel_pwa_v12';
 const $=s=>document.querySelector(s);
 const E=v=>String(v??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const DEFAULT_CHAINS=['OMV','Shell','Lukoil','Petrol','Eco','Круиз'];
@@ -338,7 +346,7 @@ function makeVehicle(name,plate,odo,photo){
 }
 
 let S={
-  tab:'svc',
+  tab:'dash',
   activeVehId:'',
   vehicles:[makeVehicle('BMW 330i XDrive - BMW 3 series','',0,'')],
   fuels:DEFAULT_CHAINS.map((name,i)=>({id:'f_'+i+'_'+Date.now(),name,number:'',note:'',image:''})),
@@ -397,7 +405,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -802,6 +810,31 @@ function vVehicleCard(veh){
   </div>`;
 }
 
+function vHomeDash(veh){
+  const svcCount=(veh.services||[]).length;
+  const readyCards=S.fuels.filter(f=>(f.number&&f.number.trim())||f.image).length;
+  return`
+  ${vVehicleCard(veh)}
+  <div class="sheet-grid">
+    <button type="button" class="sheet-btn" data-go-tab="svc">
+      <b>🛠 Консумативи</b>
+      <span>${svcCount} записа · масло, филтри, пробег</span>
+    </button>
+    <button type="button" class="sheet-btn" data-go-tab="checks">
+      <b>✅ Проверки</b>
+      <span>VIN, ГТП, ГО, винетка, КАТ</span>
+    </button>
+    <button type="button" class="sheet-btn" data-go-tab="fuel">
+      <b>💳 Карти</b>
+      <span>${readyCards} активни · баркод / скрийншот</span>
+    </button>
+    <button type="button" class="sheet-btn" id="addVehBtn">
+      <b>🚗 + Нов профил</b>
+      <span>Снимай талон или добави МПС</span>
+    </button>
+  </div>`;
+}
+
 function lastByType(veh,type){
   return (veh.services||[]).filter(x=>x.type===type).sort((a,b)=>(b.km||0)-(a.km||0))[0]||null;
 }
@@ -852,12 +885,13 @@ function vServices(){
   }).join(''):`<p class="m">Все още няма записани смени за този профил.</p>`;
 
   return`
-  ${vVehicleCard(veh)}
-
   <div class="card">
     <div class="row sp" style="margin-bottom:8px">
-      <h3 style="margin:0">Нова смяна на консуматив</h3>
-      <button type="button" class="pri sm" id="addVehBtn">+ Нов профил</button>
+      <div>
+        <h3 style="margin:0">Нова смяна на консуматив</h3>
+        <div class="m">Профил: <b>${E(veh.name)}</b>${veh.plate?` · <span class="mono">${E(veh.plate)}</span>`:''}</div>
+      </div>
+      <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
     </div>
     ${S.ocrBusy?`<div class="item" style="border-color:#009ada88"><b class="good">${E(S.ocrBusy)}</b></div>`:''}
     <div class="grid g2">
@@ -951,15 +985,16 @@ function vChecks(){
   const veh=getVeh();
 
   return`
-  ${vVehicleCard(veh)}
-
   <div class="card">
     <div class="row sp" style="margin-bottom:8px">
       <div>
         <h3 style="margin:0">Данни за проверки и напомняния</h3>
-        <div class="m">Външните сайтове не позволяват автоматично изтегляне на дати в браузър — копирай данните, отвори сайта и при нужда разчети датата от скрийншот.</div>
+        <div class="m">Профил: <b>${E(veh.name)}</b> · Външните сайтове не позволяват автоматично изтегляне на дати в браузър — копирай данните, отвори сайта и при нужда разчети датата от скрийншот.</div>
       </div>
-      ${(veh.plate||veh.vin||veh.egn||veh.regCert)?`<button type="button" class="sm" id="copyCheckInfo">Копирай данните</button>`:''}
+      <div class="row">
+        ${(veh.plate||veh.vin||veh.egn||veh.regCert)?`<button type="button" class="sm" id="copyCheckInfo">Копирай данните</button>`:''}
+        <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
+      </div>
     </div>
     ${S.ocrBusy?`<div class="item" style="border-color:#009ada88"><b class="good">${E(S.ocrBusy)}</b></div>`:''}
     <div class="grid g3">
@@ -1089,17 +1124,22 @@ function vFuel(){
         <h3 style="margin:0">Карти за отстъпка</h3>
         <div class="m">Картите се отварят уголемени с ярък фон за по-лесно сканиране на касата.</div>
       </div>
-      <button type="button" class="pri sm" id="addFuel">+ Нова карта</button>
+      <div class="row">
+        <button type="button" class="pri sm" id="addFuel">+ Нова карта</button>
+        <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
+      </div>
     </div>
     <div class="grid g2">${tiles}</div>
   </div>`;
 }
 
 function render(){
+  const veh=getVeh();
+  $('#tabDash').className=S.tab==='dash'?'on':'';
   $('#tabSvc').className=S.tab==='svc'?'on':'';
   $('#tabChecks').className=S.tab==='checks'?'on':'';
   $('#tabFuel').className=S.tab==='fuel'?'on':'';
-  $('#app').innerHTML=S.tab==='svc'?vServices():S.tab==='checks'?vChecks():vFuel();
+  $('#app').innerHTML=S.tab==='dash'?vHomeDash(veh):S.tab==='svc'?vServices():S.tab==='checks'?vChecks():vFuel();
 }
 
 function syncFormFromDom(){
@@ -1233,9 +1273,11 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('button,.fuel-tile,.dash-footer');
   if(!t)return;
   const veh=getVeh();
-  if(t.id==='tabSvc'){syncFormFromDom();save();S.tab='svc';render()}
+  if(t.id==='tabDash'){syncFormFromDom();save();S.tab='dash';render()}
+  else if(t.id==='tabSvc'){syncFormFromDom();save();S.tab='svc';render()}
   else if(t.id==='tabChecks'||t.id==='openChecksTab'){syncFormFromDom();save();S.tab='checks';render()}
   else if(t.id==='tabFuel'){syncFormFromDom();save();S.tab='fuel';render()}
+  else if(t.dataset.goTab){syncFormFromDom();save();S.tab=t.dataset.goTab;render();window.scrollTo({top:0,behavior:'smooth'})}
   else if(t.id==='syncDashBtn')openQuickUpdate(veh);
   else if(t.id==='qCancel')closeDlg($('#quickDlg'));
   else if(t.id==='qSave'){
