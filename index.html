@@ -1019,4 +1019,1597 @@ const OfflineQR=(()=>{
             if(i<dataBlocks[b].length)interleaved.push(dataBlocks[b][i]);
           }
         }
-        
+        for(let i=0;i<ecPerBlock;i++){
+          for(let b=0;b<numBlocks;b++){
+            interleaved.push(ecBlocks[b][i]);
+          }
+        }
+        return {version:v,codewords:interleaved};
+      }
+    }
+    return null;
+  }
+
+  function makeMatrix(version){
+    const size=version*4+17;
+    const grid=Array.from({length:size},()=>new Array(size).fill(null));
+    const reserved=Array.from({length:size},()=>new Array(size).fill(false));
+
+    const put=(r,c,val,isRes=true)=>{
+      if(r>=0&&r<size&&c>=0&&c<size){
+        grid[r][c]=val?1:0;
+        if(isRes)reserved[r][c]=true;
+      }
+    };
+
+    const drawFinder=(r0,c0)=>{
+      for(let r=-1;r<=7;r++){
+        for(let c=-1;c<=7;c++){
+          const rr=r0+r,cc=c0+c;
+          if(rr<0||rr>=size||cc<0||cc>=size)continue;
+          const border=(r===-1||r===7||c===-1||c===7);
+          const outer=(r===0||r===6||c===0||c===6);
+          const inner=(r>=2&&r<=4&&c>=2&&c<=4);
+          put(rr,cc,!border&&(outer||inner),true);
+        }
+      }
+    };
+    drawFinder(0,0);
+    drawFinder(0,size-7);
+    drawFinder(size-7,0);
+
+    const centers=SPECS[version][4];
+    if(centers.length){
+      for(const r of centers){
+        for(const c of centers){
+          const overlapsFinder=(r<9&&c<9)||(r<9&&c>=size-8)||(r>=size-8&&c<9);
+          if(overlapsFinder)continue;
+          for(let dr=-2;dr<=2;dr++){
+            for(let dc=-2;dc<=2;dc++){
+              const dist=Math.max(Math.abs(dr),Math.abs(dc));
+              put(r+dr,c+dc,dist!==1,true);
+            }
+          }
+        }
+      }
+    }
+
+    for(let i=8;i<size-8;i++){
+      const bit=(i%2===0)?1:0;
+      if(!reserved[6][i])put(6,i,bit,true);
+      if(!reserved[i][6])put(i,6,bit,true);
+    }
+
+    put(4*version+9,8,1,true);
+
+    for(let i=0;i<9;i++){
+      if(i<size)reserved[8][i]=true;
+      if(i<size)reserved[i][8]=true;
+    }
+    for(let i=0;i<8;i++){
+      reserved[8][size-1-i]=true;
+      reserved[size-1-i][8]=true;
+    }
+
+    return {size,grid,reserved};
+  }
+
+  function placeDataAndMask(version,codewords,mask){
+    const {size,grid,reserved}=makeMatrix(version);
+    const bits=[];
+    for(const cw of codewords){
+      for(let i=7;i>=0;i--)bits.push((cw>>>i)&1);
+    }
+
+    let bitIdx=0;
+    let dir=-1;
+    for(let col=size-1;col>=1;col-=2){
+      if(col===6)col=5;
+      for(let count=0;count<size;count++){
+        const r=(dir===-1)?(size-1-count):count;
+        for(let cOff=0;cOff<2;cOff++){
+          const c=col-cOff;
+          if(reserved[r][c])continue;
+          let val=bitIdx<bits.length?bits[bitIdx++]:0;
+          const maskCond=((r+c)%2)===0;
+          if(mask===0&&maskCond)val^=1;
+          grid[r][c]=val;
+        }
+      }
+      dir=-dir;
+    }
+
+    const fmtBits=0x23d2;
+    const getFmtBit=idx=>(fmtBits>>>(14-idx))&1;
+    const posA=[[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
+    for(let i=0;i<15;i++){
+      const [r,c]=posA[i];
+      grid[r][c]=getFmtBit(i);
+    }
+    for(let i=0;i<8;i++){
+      grid[8][size-8+i]=getFmtBit(7-i);
+    }
+    for(let i=0;i<7;i++){
+      grid[size-7+i][8]=getFmtBit(14-i);
+    }
+
+    return {size,grid};
+  }
+
+  function renderToCanvas(canvas,text){
+    const built=buildCodewords(text);
+    if(!built)return false;
+    const {size,grid}=placeDataAndMask(built.version,built.codewords,0);
+    const ctx=canvas.getContext('2d');
+    const targetPx=240;
+    const quietModules=4;
+    const totalModules=size+quietModules*2;
+    const scale=Math.max(3,Math.floor(targetPx/totalModules));
+    canvas.width=totalModules*scale;
+    canvas.height=totalModules*scale;
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#090d16';
+    for(let r=0;r<size;r++){
+      for(let c=0;c<size;c++){
+        if(grid[r][c]){
+          ctx.fillRect((c+quietModules)*scale,(r+quietModules)*scale,scale,scale);
+        }
+      }
+    }
+    return true;
+  }
+
+  return {renderToCanvas};
+})();
+
+function drawQrCode(canvas,text,statusEl){
+  if(!canvas)return;
+  const val=String(text||'').trim();
+  const ctx=canvas.getContext('2d');
+  if(!val){
+    canvas.style.display='none';
+    if(statusEl){
+      statusEl.textContent='Няма текст за кодиране в QR код.';
+      statusEl.style.display='block';
+    }
+    return;
+  }
+
+  const showOffline=()=>{
+    const ok=OfflineQR.renderToCanvas(canvas,val);
+    if(ok){
+      canvas.style.display='block';
+      if(statusEl){statusEl.textContent='';statusEl.style.display='none';}
+    }else{
+      ctx.clearRect(0,0,canvas.width||240,canvas.height||80);
+      canvas.style.display='none';
+      if(statusEl){
+        statusEl.textContent='Текстът е прекалено дълъг за вградения офлайн QR генератор.';
+        statusEl.style.display='block';
+      }
+    }
+  };
+
+  if(window.QRCode && typeof window.QRCode.toCanvas==='function'){
+    canvas.style.display='block';
+    if(statusEl){statusEl.textContent='';statusEl.style.display='none';}
+    window.QRCode.toCanvas(canvas,val,{width:240,margin:2,color:{dark:'#090d16',light:'#ffffff'}},err=>{
+      if(err)showOffline();
+    });
+  }else{
+    showOffline();
+  }
+}
+
+function addMonthsIso(dateStr,months){
+  const base=dateStr?new Date(dateStr+'T09:00:00'):new Date();
+  if(Number.isNaN(base.getTime()))return new Date();
+  const d=new Date(base.getTime());
+  d.setMonth(d.getMonth()+(Number(months)||12));
+  return d;
+}
+function parseIsoDate(dateStr){
+  if(!dateStr)return null;
+  const d=new Date(dateStr+'T09:00:00');
+  return Number.isNaN(d.getTime())?null:d;
+}
+function fmtDotDate(dateStr){
+  if(!dateStr)return 'не е зададена';
+  const p=dateStr.split('-');
+  return p.length===3?`${p[2]}.${p[1]}.${p[0]}`:dateStr;
+}
+function extractAllIsoDatesFromText(txt){
+  const out=[];
+  const seen=new Set();
+  const pushValid=iso=>{
+    if(iso&&parseIsoDate(iso)&&!seen.has(iso)){
+      seen.add(iso);
+      out.push(iso);
+    }
+  };
+  for(const m of String(txt||'').matchAll(/\b(\d{2})[./-](\d{2})[./-](\d{4})\b/g)){
+    pushValid(`${m[3]}-${m[2]}-${m[1]}`);
+  }
+  for(const m of String(txt||'').matchAll(/\b(\d{4})[./-](\d{2})[./-](\d{2})\b/g)){
+    pushValid(`${m[1]}-${m[2]}-${m[3]}`);
+  }
+  return out;
+}
+function parseRegistrationCardText(rawText){
+  const raw=String(rawText||'');
+  const clean=raw.toUpperCase();
+  const compact=clean.replace(/[^A-ZА-Я0-9]/g,'');
+
+  const vinMatch=clean.match(/\b[A-HJ-NPR-Z0-9]{17}\b/);
+  const vin=vinMatch?vinMatch[0]:(compact.match(/[A-HJ-NPR-Z0-9]{17}/)||[])[0]||'';
+
+  const bgPlateMatch=clean.match(/\b(?:А|В|С|Е|ЕН|ЕВ|КН|М|Н|ОВ|РА|РК|РВ|РН|СА|СВ|СМ|СО|СС|СТ|Т|Х|Я|A|B|C|E|K|M|H|P|T|X|Y)[A-ZА-Я]{1,2}\s?\d{4}\s?[A-ZА-Я]{1,2}\b/);
+  const plate=bgPlateMatch?bgPlateMatch[0].replace(/\s+/g,''):'';
+
+  const candidates=[...clean.matchAll(/\b\d{7,12}\b/g)].map(m=>m[0]);
+  const regCert=candidates.find(n=>!clean.includes(n+'KM')&&n.length>=8)||candidates[0]||'';
+
+  const brandList=['BMW','MERCEDES','AUDI','VW','VOLKSWAGEN','TOYOTA','YAMAHA','HONDA','FORD','OPEL','PEUGEOT','RENAULT','SKODA','HYUNDAI','KIA','MAZDA','NISSAN','VOLVO','DACIA','FIAT','CITROEN','SEAT','LEXUS','SUBARU','SUZUKI','LONCIN','TELSTAR','ZEDA'];
+  const foundBrand=brandList.find(b=>new RegExp(`\\b${b}\\b`).test(clean))||'';
+
+  // Модел от (D.1) напр. "BMW 330I XDRIVE" / "БМВ 330И ХДРАЙВ" или модел с код/обем
+  let foundModel='';
+  const d1Match=clean.match(/\b(?:D\.?\s*1|Д\.?\s*1)\b[\s:)\-]*([A-ZА-Я0-9][A-ZА-Я0-9\s\-]{2,28})/i);
+  if(d1Match){
+    foundModel=d1Match[1]
+      .replace(/\b(?:D\.?\s*2|Д\.?\s*2|D\.?\s*3|Д\.?\s*3|\(R\)|\(E\)|\(B\)).*$/i,'')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+  if(!foundModel){
+    const modelPattern=clean.match(/\b\d{2,3}[A-ZА-Я]{1,3}(?:\s+(?:XDRIVE|QUATTRO|4MATIC|TSI|TDI|CDI|HDI|GTI|AMG|M|SPORT|TOURING|AVANT|SEDAN|СЕДАН))?\b/);
+    if(modelPattern)foundModel=modelPattern[0].replace(/\s+/g,' ').trim();
+  }
+  // Каросерия от забележката в долния ляв ъгъл напр. "АА СЕДАН"
+  const bodyMatch=clean.match(/\b(?:СЕДАН|КОМБИ|ХЕЧБЕК|КУПЕ|КАБРИО|СУВ|SUV|SEDAN|WAGON|AVANT|TOURING|COUPE)\b/);
+  const bodyType=bodyMatch?bodyMatch[0].trim():'';
+
+  let suggestedName='';
+  if(foundBrand&&foundModel){
+    suggestedName=foundModel.startsWith(foundBrand)?foundModel:`${foundBrand} ${foundModel}`;
+  }else if(foundModel){
+    suggestedName=foundModel;
+  }else if(foundBrand){
+    suggestedName=foundBrand;
+  }
+  if(bodyType&&suggestedName&&!suggestedName.includes(bodyType)){
+    suggestedName=`${suggestedName} (${bodyType})`;
+  }
+
+  let powerKw='';
+  let powerHp='';
+
+  // 1) Код P.2 от свидетелството за регистрация (мощност в kW)
+  const p2Match=clean.match(/\bP\.?\s*2\b[^\d]{0,12}(\d{1,4}(?:[.,]\d{1,2})?)/);
+  if(p2Match){
+    const kwVal=Number(p2Match[1].replace(',','.'));
+    if(kwVal>0&&kwVal<=2000){
+      powerKw=String(kwVal);
+      powerHp=String(Math.round(kwVal*1.35962));
+    }
+  }
+
+  // 2) Изрично изписани kW / HP / к.с.
+  const kwMatch=clean.match(/\b(\d{1,4}(?:[.,]\d{1,2})?)\s*(?:KW|КВТ)\b/);
+  const hpMatch=clean.match(/\b(\d{1,4}(?:[.,]\d{1,2})?)\s*(?:HP|К\.?\s*С\.?|КС)\b/);
+  if(kwMatch){
+    const kwVal=Number(kwMatch[1].replace(',','.'));
+    if(kwVal>0&&kwVal<=2000){
+      powerKw=String(kwVal);
+      powerHp=String(Math.round(kwVal*1.35962));
+    }
+  }
+  if(hpMatch){
+    const hpVal=Number(hpMatch[1].replace(',','.'));
+    if(hpVal>0&&hpVal<=2800){
+      powerHp=String(Math.round(hpVal));
+      if(!powerKw)powerKw=String(Math.round(hpVal/1.35962*10)/10);
+    }
+  }
+
+  let weightKg='';
+
+  // 1) Код (G) от свидетелството за регистрация (собствена маса)
+  const gMatch=clean.match(/\(\s*G\s*\)[^\d]{0,12}(\d{2,5})/)||clean.match(/\bG\b\s*[:\-]?\s*(\d{3,5})\b/);
+  if(gMatch){
+    const gVal=Number(gMatch[1]);
+    if(gVal>=40&&gVal<=45000){
+      weightKg=String(gVal);
+    }
+  }
+
+  // 2) Изрично изписани kg / кг
+  if(!weightKg){
+    const kgMatches=[...clean.matchAll(/\b(\d{2,5}(?:[.,]\d{1,2})?)\s*(?:KG|КГ)\b/g)];
+    if(kgMatches.length){
+      const nums=kgMatches.map(m=>Math.round(Number(m[1].replace(',','.'))))
+        .filter(n=>n>=40&&n<=45000);
+      if(nums.length){
+        weightKg=String(Math.min(...nums));
+      }
+    }
+  }
+
+  const dates=extractAllIsoDatesFromText(raw);
+  return{vin,plate,regCert,brand:foundBrand,model:foundModel,bodyType,suggestedName,powerKw,powerHp,weightKg,firstRegDate:dates[0]||'',dates};
+}
+function fmtCalDate(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}${m}${day}`;
+}
+function fmtReadableDate(d){
+  return d.toISOString().slice(0,10);
+}
+function buildIcsReminder({title,desc,targetDate,fileName}){
+  const start=fmtCalDate(targetDate);
+  const nextDay=new Date(targetDate.getTime()+86400000);
+  const end=fmtCalDate(nextDay);
+  const uid=`garage-${Date.now()}-${Math.random().toString(36).slice(2,7)}@garage-pwa`;
+  const esc=s=>String(s||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
+  return{
+    ics:[
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Garage Fuel PWA//BG',
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTART;VALUE=DATE:${start}`,
+      `DTEND;VALUE=DATE:${end}`,
+      `SUMMARY:${esc(title)}`,
+      `DESCRIPTION:${esc(desc)}`,
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      `DESCRIPTION:${esc(title)}`,
+      'TRIGGER:-P1D',
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n'),
+    fileName:fileName||'napomnyane.ics'
+  };
+}
+function triggerCalendarReminder(opts){
+  const {ics,fileName}=buildIcsReminder(opts);
+  const summaryLine=`${opts.title} (${fmtReadableDate(opts.targetDate)})`;
+  try{
+    const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    if(navigator.clipboard)navigator.clipboard.writeText(summaryLine).catch(()=>{});
+    toast(`Напомняне с аларма за ${fmtReadableDate(opts.targetDate)} е подготвено. Ако iPhone PWA блокира файла, текстът е копиран.`);
+  }catch(e){
+    if(navigator.clipboard)navigator.clipboard.writeText(summaryLine).catch(()=>{});
+    toast(`Добави ръчно в Календара на ${fmtReadableDate(opts.targetDate)} — текстът е копиран.`);
+  }
+}
+
+async function readRegistrationCard(file){
+  if(!file)return;
+  if(!window.Tesseract){
+    toast('OCR библиотеката не е заредена — въведи данните ръчно.');
+    return;
+  }
+  toast('Разчитам талона, модел, VIN, мощност и килограми...');
+  let procUrl='';
+  try{
+    procUrl=await preprocessForOcr(file,'reg');
+    const {data}=await Tesseract.recognize(procUrl,'eng+bul');
+    const txt=(data.text||'').replace(/\s+/g,' ').trim();
+    const parsed=parseRegistrationCardText(txt);
+    const found=[];
+    if(parsed.vin){
+      $('#vVin').value=parsed.vin;
+      found.push('VIN: '+parsed.vin);
+    }
+    if(parsed.plate){
+      $('#vPlate').value=parsed.plate;
+      found.push('№ '+parsed.plate);
+    }
+    if(parsed.regCert){
+      $('#vRegCert').value=parsed.regCert;
+      found.push('СРМПС: '+parsed.regCert);
+    }
+    if(parsed.powerKw){
+      $('#vPowerKw').value=parsed.powerKw;
+      found.push('Мощност: '+parsed.powerKw+' kW');
+    }
+    if(parsed.powerHp){
+      $('#vPowerHp').value=parsed.powerHp;
+      if(!parsed.powerKw)found.push('Мощност: '+parsed.powerHp+' к.с.');
+    }
+    if(parsed.weightKg){
+      $('#vWeightKg').value=parsed.weightKg;
+      found.push('Тегло: '+parsed.weightKg+' kg');
+    }
+    const curName=$('#vName').value.trim();
+    if(parsed.suggestedName&&(!curName||curName==='Основно МПС'||curName==='Ново превозно средство'||/^МПС\s+\d+$/i.test(curName))){
+      $('#vName').value=parsed.suggestedName;
+      found.push('Модел: '+parsed.suggestedName);
+    }
+    if(parsed.firstRegDate&&!$('#vFirstReg').value){
+      $('#vFirstReg').value=parsed.firstRegDate;
+      found.push('1-ва рег.: '+fmtDotDate(parsed.firstRegDate));
+    }
+    if(found.length){
+      toast('Разпознато от талона: '+found.join(' · '));
+    }else{
+      toast('Не се разчетоха сигурни данни — снимай под лек ъгъл без отблясък или въведи ръчно.');
+    }
+  }catch(e){
+    toast('Проблем при разчитането на талона.');
+  }finally{
+    procUrl='';
+  }
+}
+
+async function readDateFromImage(file,fieldKey){
+  if(!file)return;
+  if(!window.Tesseract){
+    toast('OCR библиотеката не е заредена — задай датата ръчно.');
+    return;
+  }
+  const veh=getVeh();
+  S.ocrBusy='Разчитам датата на валидност от снимката...';
+  render();
+  try{
+    const procUrl=await preprocessForOcr(file,'date');
+    const {data}=await Tesseract.recognize(procUrl,'eng+bul');
+    const txt=(data.text||'').replace(/\s+/g,' ').trim();
+    const dates=extractAllIsoDatesFromText(txt);
+    const iso=(veh.firstRegDate&&dates.length>1)?dates.find(d=>d!==veh.firstRegDate)||dates[0]:dates[0]||'';
+    if(iso){
+      veh[fieldKey]=iso;
+      save();
+      toast('Разпозната дата: '+fmtDotDate(iso)+'. Снимката не се пази.');
+    }else{
+      toast('Не открих ясна дата — избери я ръчно от полето.');
+    }
+  }catch(e){
+    toast('Проблем при разчитането на снимката.');
+  }finally{
+    S.ocrBusy='';
+    render();
+  }
+}
+
+async function readImage(file,mode){
+  if(!file)return;
+  if(!window.Tesseract){
+    toast('OCR библиотеката не е заредена — попълни ръчно.');
+    return;
+  }
+  const cur=getVeh();
+  S.ocrBusy=mode==='part'?'Обработвам и разчитам етикета...':mode==='card'?'Разчитам номера от скрийншота...':'Обработвам и разчитам километрите...';
+  if(mode!=='card')render();
+  else toast(S.ocrBusy);
+  try{
+    const procUrl=await preprocessForOcr(file,mode);
+    const lang=mode==='km'?'eng':'eng+bul';
+    const {data}=await Tesseract.recognize(procUrl,lang);
+    const rawTxt=(data.text||'').trim();
+    if(!rawTxt){toast('Не се разчете ясен текст — опитай пак или попълни ръчно.');return;}
+
+    if(mode==='part'){
+      const picked=cleanOilLabelText(rawTxt);
+      if(!picked){
+        toast('Не се разчете ясен текст от етикета — доближи надписа с модела и вискозитета.');
+        return;
+      }
+      S.form.detail=S.form.detail?(S.form.detail+' · '+picked):picked;
+      toast('Разчетено от етикета: '+picked);
+    }else if(mode==='card'){
+      const candidate=(rawTxt.match(/[A-Z0-9][A-Z0-9\s-]{4,28}/gi)||[])[0]?.trim()||rawTxt.slice(0,28);
+      $('#cNum').value=candidate;
+      toast('Разчетено от скрийншота. Провери и запази картата.');
+    }else{
+      const best=extractOdometerValue(rawTxt,Number(cur.odo)||0);
+      if(best!==null){
+        S.form.km=String(best);
+        toast('Разпознат пробег: '+best.toLocaleString()+' km. Снимката не се пази.');
+      }else{
+        toast('Не открих ясни цифри за пробег — снимай отблизо без отблясъци или въведи ръчно.');
+      }
+    }
+  }catch(e){
+    toast('Проблем при разчитането на снимката.');
+  }finally{
+    S.ocrBusy='';
+    if(mode!=='card')render();
+  }
+}
+
+function dateBadgeClass(dateStr){
+  const dt=parseIsoDate(dateStr);
+  if(!dt)return'muted';
+  const today=new Date();
+  today.setHours(0,0,0,0);
+  const diff=Math.round((dt.getTime()-today.getTime())/86400000);
+  if(diff<0)return'exp';
+  if(diff<=30)return'warn';
+  return'';
+}
+
+function vVehicleSwitcherBar(veh){
+  const chips=S.vehicles.map(v=>{
+    const active=v.id===veh.id;
+    return`<button type="button" class="sm ${active?'on':''}" data-switch-veh="${E(v.id)}">
+      ${isSafeDataUrl(v.photo)?`<img src="${v.photo}" class="veh-thumb" alt="">`:'🚗'}
+      <span>${E(v.name)}${v.plate?` · <span class="mono">${E(v.plate)}</span>`:''}</span>
+    </button>`;
+  }).join('');
+
+  return`<div class="veh-bar">
+    ${chips}
+    <button type="button" class="sm ok" id="addVehInlineBtn">+ Добави кола / АТВ</button>
+  </div>`;
+}
+
+function vVehicleCard(veh){
+  const plateDisplay=(veh.plate||'').trim().toUpperCase();
+  const pct=Math.max(0,Math.min(100,Number(veh.wearPct)||0));
+  const powerLabel=[
+    veh.powerKw?`${E(veh.powerKw)} kW`:'',
+    veh.powerHp?`${E(veh.powerHp)} к.с.`:''
+  ].filter(Boolean).join(' / ');
+
+  return`
+  ${vVehicleSwitcherBar(veh)}
+  <div class="dash-card">
+    <div class="dash-body">
+      <div class="row sp">
+        <h2 class="dash-title">${E(veh.name)}</h2>
+        <button type="button" class="ghost" id="editVehBtn" title="Редактирай профила">✎ редактирай</button>
+      </div>
+
+      <div class="row sp" style="margin-top:10px">
+        ${plateDisplay?`<div class="eu-plate" aria-label="Регистрационен номер">
+          <div class="eu-bg"><span>★</span>BG</div>
+          <div class="eu-num">${E(plateDisplay)}</div>
+        </div>`:`<span class="m">Без зададен рег. номер</span>`}
+        <div class="row" style="gap:10px">
+          ${powerLabel?`<span class="m mono">Мощност: <b style="color:var(--t)">${powerLabel}</b></span>`:''}
+          ${veh.weightKg?`<span class="m mono">Тегло: <b style="color:var(--t)">${Number(veh.weightKg).toLocaleString()} kg</b></span>`:''}
+          ${veh.firstRegDate?`<span class="m mono">1-ва рег.: <b style="color:var(--t)">${E(fmtDotDate(veh.firstRegDate))}</b></span>`:''}
+          ${veh.vin?`<span class="m mono">VIN: <b style="color:var(--t)">${E(veh.vin)}</b></span>`:''}
+          ${veh.odo?`<span class="m mono">Пробег: <b style="color:var(--t)">${Number(veh.odo).toLocaleString()} km</b></span>`:''}
+        </div>
+      </div>
+
+      <div class="prog-wrap">
+        <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+        <div class="prog-pct">${pct}%</div>
+      </div>
+
+      ${isSafeDataUrl(veh.photo)?`<img src="${veh.photo}" class="veh-photo" style="margin-top:12px" alt="${E(veh.name)}">`:''}
+
+      <div class="dash-list">
+        <div class="dash-row">
+          <div class="dash-left">
+            <span class="chk-badge ${dateBadgeClass(veh.gtpDate)}">✓</span>
+            <span class="dash-ico">🚘</span>
+            <span class="dash-text">ГТП – ${E(fmtDotDate(veh.gtpDate))}</span>
+          </div>
+          <button type="button" class="sm ok" data-quick-cal="gtp">📅 Напомни</button>
+        </div>
+
+        <div class="dash-row">
+          <div class="dash-left">
+            <span class="chk-badge ${dateBadgeClass(veh.mtplDate)}">✓</span>
+            <span class="dash-ico">🛡️</span>
+            <span class="dash-text">Застраховка – ${E(fmtDotDate(veh.mtplDate))}</span>
+          </div>
+          <button type="button" class="sm ok" data-quick-cal="mtpl">📅 Напомни</button>
+        </div>
+
+        <div class="dash-row">
+          <div class="dash-left">
+            <span class="chk-badge ${dateBadgeClass(veh.vignetteDate)}">✓</span>
+            <span class="dash-ico">🛣️</span>
+            <span class="dash-text">Винетка – ${E(fmtDotDate(veh.vignetteDate))}</span>
+          </div>
+          <button type="button" class="sm ok" data-quick-cal="vignette">📅 Напомни</button>
+        </div>
+
+        <div class="dash-row">
+          <div class="dash-left">
+            <span class="chk-badge ${veh.apiFines==='Няма'?'':'warn'}">✓</span>
+            <span class="dash-ico">👮</span>
+            <span class="dash-text">Глоби към АПИ – ${E(veh.apiFines||'Няма')}</span>
+          </div>
+          <button type="button" class="sm" id="openChecksTab">Проверки</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-footer" id="syncDashBtn" role="button" tabindex="0">
+      <div class="row">
+        <span style="font-size:16px">↻</span>
+        <b style="font-size:14px">Актуализирай данните ТУК</b>
+      </div>
+      <span class="m">пробег / дати</span>
+    </div>
+  </div>`;
+}
+
+function vHomeDash(veh){
+  const svcCount=(veh.services||[]).length;
+  const readyCards=S.fuels.filter(f=>(f.number&&f.number.trim())||isSafeDataUrl(f.image)).length;
+  return`
+  ${vVehicleCard(veh)}
+  <div class="sheet-grid">
+    <button type="button" class="sheet-btn" data-go-tab="svc">
+      <b>🛠 Консумативи</b>
+      <span>${svcCount} записа · масло, филтри, пробег</span>
+    </button>
+    <button type="button" class="sheet-btn" data-go-tab="checks">
+      <b>✅ Проверки</b>
+      <span>VIN, ГТП, ГО, винетка, КАТ</span>
+    </button>
+    <button type="button" class="sheet-btn" data-go-tab="fuel">
+      <b>💳 Карти</b>
+      <span>${readyCards} активни · баркод / скрийншот</span>
+    </button>
+    <button type="button" class="sheet-btn" id="addVehBtn">
+      <b>🚗 + Нов профил</b>
+      <span>Добави кола, АТВ или друго МПС</span>
+    </button>
+    <button type="button" class="sheet-btn" id="shareAppBtn">
+      <b>📲 QR за споделяне</b>
+      <span>Отвори на друг телефон с QR</span>
+    </button>
+  </div>`;
+}
+
+function lastByType(veh,type){
+  return (veh.services||[]).filter(x=>x.type===type).sort((a,b)=>(b.km||0)-(a.km||0))[0]||null;
+}
+
+function vServices(){
+  const veh=getVeh();
+  const curKm=Number(veh.odo)||0;
+  const preset=PRESET_PARTS.find(p=>p.type===S.form.type)||PRESET_PARTS[0];
+  const dueDate=addMonthsIso(S.form.date,S.form.months||12);
+
+  const partButtons=PRESET_PARTS.map(p=>{
+    const last=lastByType(veh,p.type);
+    const inter=Number(last?.interval||p.interval||10000);
+    const months=Number(last?.months||p.months||12);
+    const nextKm=last?(Number(last.km)||0)+inter:null;
+    const rem=nextKm!=null&&curKm>0?nextKm-curKm:null;
+    const isSel=S.form.type===p.type;
+    let sub='Няма смяна';
+    if(last){
+      if(rem==null)sub=`${Number(last.km||0).toLocaleString()} km`;
+      else if(rem<0)sub=`Просрочено ${Math.abs(rem).toLocaleString()} km`;
+      else sub=`Остават ${rem.toLocaleString()} km`;
+    }
+    return`<button type="button" class="svc-pick-btn ${isSel?'active':''}" data-pick-type="${E(p.type)}" data-pick-int="${inter}" data-pick-months="${months}">
+      <b>${p.ico} ${E(p.type)}</b>
+      <span>${E(sub)}</span>
+    </button>`;
+  }).join('');
+
+  const hist=(veh.services||[]).length?(veh.services||[]).map(s=>{
+    const mInt=Number(s.months)||12;
+    const remDate=addMonthsIso(s.date,mInt);
+    const hasDoc=isSafeDataUrl(s.docImage);
+    return`
+    <div class="item">
+      <div class="row sp">
+        <div><b>${E(s.type)}</b> · <span class="mono">${Number(s.km||0).toLocaleString()} km</span></div>
+        <span class="m mono">${E(s.date||'')}</span>
+      </div>
+      <div style="margin-top:4px">${E(s.detail||'—')}</div>
+      ${s.note?`<div class="m" style="margin-top:2px">${E(s.note)}</div>`:''}
+      ${hasDoc?`<img src="${s.docImage}" class="doc-thumb" alt="Фактура / документ за ${E(s.type)}">`:''}
+      <div class="row" style="margin-top:8px">
+        <button type="button" class="sm" data-cal-svc="${E(s.id)}">📅 Напомни след ${mInt} мес. (${fmtReadableDate(remDate)})</button>
+        <label class="btn sm">
+          🧾 ${hasDoc?'Смени фактура':'Прикачи фактура'}
+          <input type="file" accept="image/*" data-svc-doc="${E(s.id)}" hidden>
+        </label>
+        ${hasDoc?`<button type="button" class="sm" data-rem-svc-doc="${E(s.id)}">Махни снимка</button>`:''}
+        <button type="button" class="sm" data-del-svc="${E(s.id)}">Изтрий запис</button>
+      </div>
+    </div>`;
+  }).join(''):`<p class="m">Все още няма записани смени за този профил.</p>`;
+
+  return`
+  ${vVehicleSwitcherBar(veh)}
+  <div class="card">
+    <div class="row sp" style="margin-bottom:8px">
+      <div>
+        <h3 style="margin:0">Нова смяна на консуматив</h3>
+        <div class="m">Активен профил: <b>${E(veh.name)}</b>${veh.plate?` · <span class="mono">${E(veh.plate)}</span>`:''}</div>
+      </div>
+      <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
+    </div>
+
+    <label class="k">Избери консуматив с бутон</label>
+    <div class="svc-pick-grid" style="margin-bottom:10px">${partButtons}</div>
+
+    ${S.ocrBusy?`<div class="item" style="border-color:#009ada88"><b class="good">${E(S.ocrBusy)}</b></div>`:''}
+    <div class="grid g2">
+      <div>
+        <label class="k">Избран консуматив</label>
+        <select id="fType">
+          ${PRESET_PARTS.map(p=>`<option value="${E(p.type)}"${S.form.type===p.type?' selected':''}>${E(p.type)}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="k">Километри при смяната</label>
+        <div class="row">
+          <input id="fKm" type="number" inputmode="numeric" style="flex:1" value="${E(S.form.km)}" placeholder="km">
+          <label class="btn sm" title="Снимай километраж отблизо">
+            📷 Километри
+            <input type="file" accept="image/*" capture="environment" data-ocr="km" hidden>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:10px">
+      <label class="k">Масло / филтър / част (разпознато или ръчно)</label>
+      <div class="row">
+        <input id="fDetail" style="flex:1" value="${E(S.form.detail)}" placeholder="${E(preset.hint)}">
+        <label class="btn sm" title="Снимай етикета с модела и вискозитета">
+          📷 Етикет
+          <input type="file" accept="image/*" capture="environment" data-ocr="part" hidden>
+        </label>
+      </div>
+    </div>
+
+    <div style="margin-top:10px">
+      <label class="k">Фактура или снимка на документ (пази се локално в IndexedDB)</label>
+      <div class="row">
+        <label class="btn sm">
+          🧾 Избери от галерията
+          <input type="file" id="fDocGallery" accept="image/*" hidden>
+        </label>
+        <label class="btn sm">
+          📷 Снимай документ
+          <input type="file" id="fDocCamera" accept="image/*" capture="environment" hidden>
+        </label>
+        ${isSafeDataUrl(S.form.docImage)?`<button type="button" class="sm" id="fClearDoc">Махни документа</button>`:''}
+      </div>
+      ${isSafeDataUrl(S.form.docImage)?`<img src="${S.form.docImage}" class="doc-thumb" alt="Прикачен документ">`:''}
+    </div>
+
+    <div class="grid g3" style="margin-top:10px">
+      <div>
+        <label class="k">Интервал (km)</label>
+        <input id="fInt" type="number" inputmode="numeric" value="${E(S.form.interval)}">
+      </div>
+      <div>
+        <label class="k">Напомняне след (мес.)</label>
+        <input id="fMonths" type="number" inputmode="numeric" min="1" max="120" value="${E(S.form.months)}">
+      </div>
+      <div>
+        <label class="k">Дата на смяна</label>
+        <input id="fDate" type="date" value="${E(S.form.date)}">
+      </div>
+    </div>
+
+    <div style="margin-top:10px">
+      <label class="k">Бележка (по желание)</label>
+      <input id="fNote" value="${E(S.form.note)}" placeholder="Напр. № на фактура, количество литри, сервиз">
+    </div>
+
+    <div class="row sp" style="margin-top:12px">
+      <div class="row">
+        <button type="button" class="pri" id="saveSvc">Запази смяната</button>
+        <button type="button" class="ok" id="addCalForm">📅 Напомни на ${fmtReadableDate(dueDate)}</button>
+      </div>
+      <button type="button" class="sm" id="clearForm">Изчисти полетата</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row sp" style="margin-bottom:8px">
+      <h3 style="margin:0">История на смените и документи (${(veh.services||[]).length})</h3>
+      <div class="row">
+        <button type="button" class="sm" id="btnExport">Експорт JSON</button>
+        <label class="btn sm">Импорт<input type="file" id="fileImport" accept="application/json,.json" hidden></label>
+      </div>
+    </div>
+    ${hist}
+  </div>`;
+}
+
+function checkStatusHtml(dateStr){
+  const dt=parseIsoDate(dateStr);
+  if(!dt)return'<span class="m">Не е въведена дата</span>';
+  const today=new Date();
+  today.setHours(0,0,0,0);
+  const diffDays=Math.round((dt.getTime()-today.getTime())/86400000);
+  if(diffDays<0)return`<span class="bad">Изтекло преди ${Math.abs(diffDays)} д. (${E(dateStr)})</span>`;
+  if(diffDays<=30)return`<span class="mid">Изтича след ${diffDays} д. (${E(dateStr)})</span>`;
+  return`<span class="good">Валидно до ${E(dateStr)} (остават ${diffDays} д.)</span>`;
+}
+
+function vChecks(){
+  const veh=getVeh();
+
+  return`
+  ${vVehicleSwitcherBar(veh)}
+  <div class="card">
+    <div class="row sp" style="margin-bottom:8px">
+      <div>
+        <h3 style="margin:0">Данни за проверки и напомняния</h3>
+        <div class="m">Активен профил: <b>${E(veh.name)}</b> · Датата на първа регистрация е отделена от ГТП, ГО и винетката, за да не се смесват при разчитане.</div>
+      </div>
+      <div class="row">
+        ${(veh.plate||veh.vin||veh.firstRegDate||veh.egn||veh.regCert)?`<button type="button" class="sm" id="copyCheckInfo">Копирай данните</button>`:''}
+        <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
+      </div>
+    </div>
+    ${S.ocrBusy?`<div class="item" style="border-color:#009ada88"><b class="good">${E(S.ocrBusy)}</b></div>`:''}
+    <div class="grid g3">
+      <div>
+        <label class="k">Рег. номер</label>
+        <input id="plateInputCheck" class="mono" value="${E(veh.plate)}" placeholder="Рег. номер">
+      </div>
+      <div>
+        <label class="k">VIN номер</label>
+        <input id="vinInputCheck" class="mono" value="${E(veh.vin)}" placeholder="17-символен VIN">
+      </div>
+      <div>
+        <label class="k">Дата на първа регистрация</label>
+        <input id="firstRegInputCheck" type="date" value="${E(veh.firstRegDate)}">
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top:10px">
+      <div>
+        <label class="k">ЕГН / Булстат (не влиза в експорт)</label>
+        <input id="egnInput" class="mono" value="${E(veh.egn)}" placeholder="За проверка в КАТ">
+      </div>
+      <div>
+        <label class="k">№ СРМПС / талон</label>
+        <input id="regCertInput" class="mono" value="${E(veh.regCert)}" placeholder="№ на талон">
+      </div>
+      <div>
+        <label class="k">Пробег (km)</label>
+        <input id="odoInputCheck" type="number" inputmode="numeric" value="${veh.odo||''}" placeholder="km">
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top:10px">
+      <div>
+        <label class="k">ГТП валиден до</label>
+        <input id="gtpDateInput" type="date" value="${E(veh.gtpDate)}">
+      </div>
+      <div>
+        <label class="k">Гражданска до</label>
+        <input id="mtplDateInput" type="date" value="${E(veh.mtplDate)}">
+      </div>
+      <div>
+        <label class="k">Винетка до</label>
+        <input id="vignetteDateInput" type="date" value="${E(veh.vignetteDate)}">
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:10px">
+      <div>
+        <label class="k">Глоби към АПИ / КАТ</label>
+        <select id="apiFinesInput">
+          <option value="Няма"${veh.apiFines==='Няма'?' selected':''}>Няма</option>
+          <option value="Има за проверка"${veh.apiFines==='Има за проверка'?' selected':''}>Има за проверка</option>
+          <option value="Непроверено"${veh.apiFines==='Непроверено'?' selected':''}>Непроверено</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 10px">Проверки и напомняния в календара (${E(veh.name)})</h3>
+    <div class="grid g2">
+      <div class="item" style="margin:0">
+        <div class="row sp"><b>Годишен технически преглед (ГТП)</b></div>
+        <div style="margin-top:4px">${checkStatusHtml(veh.gtpDate)}</div>
+        <div class="row" style="margin-top:10px">
+          <label class="btn sm">
+            🖼 Дата от снимка
+            <input type="file" accept="image/*" data-ocr-date="gtpDate" hidden>
+          </label>
+          <button type="button" class="btn sm ok" data-quick-cal="gtp">📅 Напомни за ГТП</button>
+        </div>
+      </div>
+
+      <div class="item" style="margin:0">
+        <div class="row sp"><b>Гражданска отговорност (ГО)</b></div>
+        <div style="margin-top:4px">${checkStatusHtml(veh.mtplDate)}</div>
+        <div style="margin-top:10px">
+          <a class="btn sm pri" target="_blank" rel="noopener" href="https://www.guaranteefund.org/">Гаранционен фонд</a>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <label class="btn sm">
+            🖼 Дата от снимка
+            <input type="file" accept="image/*" data-ocr-date="mtplDate" hidden>
+          </label>
+          <button type="button" class="btn sm ok" data-quick-cal="mtpl">📅 Напомни за ГО</button>
+        </div>
+      </div>
+
+      <div class="item" style="margin:0">
+        <div class="row sp"><b>Електронна винетка</b></div>
+        <div style="margin-top:4px">${checkStatusHtml(veh.vignetteDate)}</div>
+        <div style="margin-top:10px">
+          <a class="btn sm pri" target="_blank" rel="noopener" href="https://bgtoll.bg/bg/elektronni-vinetki">Проверка BGTOLL</a>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <label class="btn sm">
+            🖼 Дата от снимка
+            <input type="file" accept="image/*" data-ocr-date="vignetteDate" hidden>
+          </label>
+          <button type="button" class="btn sm ok" data-quick-cal="vignette">📅 Напомни</button>
+        </div>
+      </div>
+
+      <div class="item" style="margin:0">
+        <div class="row sp"><b>Глоби към АПИ и КАТ</b></div>
+        <div class="m" style="margin-top:4px">Статус: <b>${E(veh.apiFines||'Няма')}</b> · Портал на МВР за електронни фишове и НП.</div>
+        <div class="row" style="margin-top:10px">
+          <a class="btn sm pri" target="_blank" rel="noopener" href="https://e-uslugi.mvr.bg/services/obligations">Отвори МВР КАТ</a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCardTile(f){
+  const hasNum=!!(f.number&&f.number.trim());
+  const hasImg=isSafeDataUrl(f.image);
+  const ready=hasNum||hasImg;
+  return`<div class="fuel-tile ${ready?'has':''}" data-open-fuel="${E(f.id)}">
+    <div class="row sp">
+      <b>${E(f.name)}</b>
+      <span class="m">${ready?(hasImg?'Карта + '+(hasNum?'№':'визуална'):'Готова'):'Без карта'}</span>
+    </div>
+    <div class="mono" style="margin-top:6px;font-size:15px;color:${ready?'#7dd3fc':'var(--m)'}">
+      ${hasNum?E(f.number):(hasImg?'Натисни за голям изглед на картата':'Натисни за въвеждане на карта')}
+    </div>
+    ${hasImg?`<img src="${f.image}" class="card-shot" style="max-height:140px;min-height:80px;margin:8px 0 0" alt="${E(f.name)}">`:''}
+    ${f.note?`<div class="m" style="margin-top:4px">${E(f.note)}</div>`:''}
+  </div>`;
+}
+
+function vFuel(){
+  const selectedCat=S.activeCardCat?normalizeCardCat(S.activeCardCat):null;
+
+  if(!selectedCat){
+    const catButtons=CARD_CATS.map(cat=>{
+      const items=S.fuels.filter(f=>normalizeCardCat(f.category)===cat);
+      const activeCount=items.filter(f=>(f.number&&f.number.trim())||isSafeDataUrl(f.image)).length;
+      const meta=CAT_META[cat]||{ico:'💳',sub:''};
+      return`<button type="button" class="cat-btn" data-enter-cat="${E(cat)}">
+        <b>${meta.ico} ${E(cat)} (${items.length})</b>
+        <span>${activeCount} активни · ${E(meta.sub)}</span>
+      </button>`;
+    }).join('');
+
+    return`
+    <div class="card">
+      <div class="row sp" style="margin-bottom:8px">
+        <div>
+          <h3 style="margin:0">Карти за отстъпка</h3>
+          <div class="m">Избери подкатегория, за да отвориш картите вътре в нея.</div>
+        </div>
+        <div class="row">
+          <button type="button" class="pri sm" id="addFuel">+ Нова карта</button>
+          <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
+        </div>
+      </div>
+      <div class="cat-menu">${catButtons}</div>
+    </div>`;
+  }
+
+  const filtered=S.fuels.filter(f=>normalizeCardCat(f.category)===selectedCat);
+  const tiles=filtered.length
+    ?`<div class="grid g2">${filtered.map(renderCardTile).join('')}</div>`
+    :`<div class="item"><div class="m">Няма добавени карти в „${E(selectedCat)}“. Натисни „+ Нова карта“, за да добавиш.</div></div>`;
+
+  return`
+  <div class="card">
+    <div class="row sp" style="margin-bottom:8px">
+      <div>
+        <h3 style="margin:0">${E(selectedCat)}</h3>
+        <div class="m">Натисни върху карта, за да я отвориш уголемена на касата.</div>
+      </div>
+      <div class="row">
+        <button type="button" class="sm" id="backCardCats">← Подкатегории</button>
+        <button type="button" class="pri sm" id="addFuel">+ Нова карта</button>
+      </div>
+    </div>
+    <div class="cat-head"><span>Карти в категорията</span><span>${filtered.length}</span></div>
+    ${tiles}
+  </div>`;
+}
+
+function render(){
+  const veh=getVeh();
+  $('#tabDash').className=S.tab==='dash'?'on':'';
+  $('#tabSvc').className=S.tab==='svc'?'on':'';
+  $('#tabChecks').className=S.tab==='checks'?'on':'';
+  $('#tabFuel').className=S.tab==='fuel'?'on':'';
+  $('#app').innerHTML=S.tab==='dash'?vHomeDash(veh):S.tab==='svc'?vServices():S.tab==='checks'?vChecks():vFuel();
+}
+
+function syncFormFromDom(){
+  const veh=getVeh();
+  const pl=$('#plateInputCheck');if(pl)veh.plate=pl.value.trim().toUpperCase();
+  const vn=$('#vinInputCheck');if(vn)veh.vin=vn.value.trim().toUpperCase();
+  const fr=$('#firstRegInputCheck');if(fr)veh.firstRegDate=fr.value;
+  const o=$('#odoInputCheck');if(o&&o.value!=='')veh.odo=Math.max(0,Number(o.value)||0);
+  const eg=$('#egnInput');if(eg)veh.egn=eg.value.trim();
+  const rc=$('#regCertInput');if(rc)veh.regCert=rc.value.trim();
+  const md=$('#mtplDateInput');if(md)veh.mtplDate=md.value;
+  const vd=$('#vignetteDateInput');if(vd)veh.vignetteDate=vd.value;
+  const gd=$('#gtpDateInput');if(gd)veh.gtpDate=gd.value;
+  const af=$('#apiFinesInput');if(af)veh.apiFines=af.value;
+  const ft=$('#fType');if(ft)S.form.type=ft.value;
+  const fk=$('#fKm');if(fk)S.form.km=fk.value;
+  const fd=$('#fDetail');if(fd)S.form.detail=fd.value;
+  const fi=$('#fInt');if(fi)S.form.interval=Number(fi.value)||10000;
+  const fm=$('#fMonths');if(fm)S.form.months=Math.max(1,Number(fm.value)||12);
+  const fdt=$('#fDate');if(fdt)S.form.date=fdt.value;
+  const fn=$('#fNote');if(fn)S.form.note=fn.value;
+}
+
+function openQuickUpdate(veh){
+  syncFormFromDom();
+  $('#qOdo').value=veh.odo?String(veh.odo):'';
+  $('#qApi').value=veh.apiFines||'Няма';
+  $('#qGtp').value=veh.gtpDate||'';
+  $('#qMtpl').value=veh.mtplDate||'';
+  $('#qVig').value=veh.vignetteDate||'';
+  openDlg($('#quickDlg'));
+}
+
+function openVehEditor(id){
+  syncFormFromDom();
+  const item=id?S.vehicles.find(v=>v.id===id):null;
+  S.editVehId=item?item.id:null;
+  $('#vDlgTitle').textContent=item?'Редакция на профил':'Добавяне на ново превозно средство';
+  $('#vDlgHint').textContent=item
+    ?'Редактирай данните на този профил.'
+    :'Добави кола, АТВ, мотор или друго МПС — всеки профил си пази отделни данни, консумативи и фактури.';
+  $('#vName').value=item?item.name:'';
+  $('#vPlate').value=item?item.plate:'';
+  $('#vVin').value=item?item.vin:'';
+  $('#vFirstReg').value=item?item.firstRegDate:'';
+  $('#vPowerKw').value=item?item.powerKw:'';
+  $('#vPowerHp').value=item?item.powerHp:'';
+  $('#vWeightKg').value=item?item.weightKg:'';
+  $('#vOdo').value=item&&item.odo?String(item.odo):'';
+  $('#vEgn').value=item?item.egn:'';
+  $('#vRegCert').value=item?item.regCert:'';
+  $('#vGtpDate').value=item?item.gtpDate:'';
+  $('#vMtplDate').value=item?item.mtplDate:'';
+  $('#vVignetteDate').value=item?item.vignetteDate:'';
+  $('#vApiFines').value=item&&item.apiFines?item.apiFines:'Няма';
+  $('#vWearPct').value=item&&item.wearPct!=null?String(item.wearPct):'0';
+  const hasExtra=!!(item&&(item.gtpDate||item.mtplDate||item.vignetteDate||item.wearPct||(item.apiFines&&item.apiFines!=='Няма')));
+  setVehExtraOpen(hasExtra);
+  $('#vDel').style.display=item?'':'none';
+  setVehPhotoPreview(item?item.photo:'');
+  openDlg($('#vehDlg'));
+}
+
+function openCardEditor(id){
+  S.editFuelId=id||null;
+  const item=S.fuels.find(x=>x.id===id);
+  $('#cTitle').textContent=item?'Редакция на карта':'Нова карта за отстъпка';
+  $('#cCat').value=normalizeCardCat(item?item.category:(S.activeCardCat||'Бензиностанции'));
+  $('#cName').value=item?item.name:'';
+  $('#cNum').value=item?item.number:'';
+  $('#cNote').value=item?item.note:'';
+  $('#cDel').style.display=item?'':'none';
+  setCardEditorPreview(item?item.image:'');
+  openDlg($('#cardDlg'));
+}
+
+function renderCodeForNumber(numStr){
+  const wrap=$('#sCodeWrap');
+  const cv=$('#sCodeCanvas');
+  const st=$('#sQrStatus');
+  const modeBtn=$('#sCodeMode');
+  const clean=String(numStr||'').trim();
+  if(!clean){
+    wrap.style.display='none';
+    modeBtn.style.display='none';
+    return;
+  }
+  wrap.style.display='block';
+  modeBtn.style.display='';
+  if(S.codeMode==='qr'){
+    drawQrCode(cv,clean,st);
+    modeBtn.textContent='||| Code 128';
+  }else{
+    const ok=drawCode128(cv,clean);
+    if(!ok){
+      S.codeMode='qr';
+      drawQrCode(cv,clean,st);
+      modeBtn.textContent='||| Code 128';
+    }else{
+      cv.style.display='block';
+      if(st){st.textContent='';st.style.display='none';}
+      modeBtn.textContent='▣ QR код';
+    }
+  }
+}
+
+function applyViewerStyle(){
+  const box=$('#sBox');
+  const bBtn=$('#sBright');
+  const zBtn=$('#sZoom');
+  box.classList.toggle('bright',!!S.brightCard);
+  box.classList.toggle('zoomed',!!S.zoomCard);
+  bBtn.classList.toggle('on',!!S.brightCard);
+  zBtn.classList.toggle('on',!!S.zoomCard);
+  zBtn.textContent=S.zoomCard?'🔍 Нормална':'🔍 По-голяма';
+}
+
+function openCardViewer(id){
+  const item=S.fuels.find(x=>x.id===id);
+  if(!item)return;
+  const hasNum=!!(item.number&&item.number.trim());
+  const hasImg=isSafeDataUrl(item.image);
+  if(!hasNum&&!hasImg){
+    openCardEditor(id);
+    return;
+  }
+  S.showFuelId=id;
+  S.codeMode='barcode';
+  S.brightCard=true;
+  S.zoomCard=false;
+  applyViewerStyle();
+  $('#sTitle').textContent=item.name;
+  $('#sNote').textContent=item.note||'';
+  const img=$('#sImg');
+  if(hasImg){
+    img.src=item.image;
+    img.style.display='block';
+  }else{
+    img.removeAttribute('src');
+    img.style.display='none';
+  }
+  const numText=hasNum?item.number.trim():'';
+  renderCodeForNumber(numText);
+  $('#sNum').textContent=numText;
+  $('#sNum').style.display=hasNum?'block':'none';
+  $('#sCopy').style.display=hasNum?'':'none';
+  openDlg($('#showDlg'));
+}
+
+function remindCheckKind(veh,kind){
+  syncFormFromDom();
+  save();
+  const map={
+    gtp:{date:veh.gtpDate,label:'Годишен технически преглед (ГТП)',slug:'gtp'},
+    mtpl:{date:veh.mtplDate,label:'Застраховка Гражданска отговорност',slug:'grazhdanska'},
+    vignette:{date:veh.vignetteDate,label:'Електронна винетка',slug:'vinetka'}
+  };
+  const cfg=map[kind];
+  if(!cfg)return;
+  const targetDate=parseIsoDate(cfg.date);
+  if(!targetDate){
+    toast(`Няма въведена дата за „${cfg.label}“. Задай я или я разчети от снимка.`);
+    return;
+  }
+  triggerCalendarReminder({
+    title:`${cfg.label} — ${veh.name}${veh.plate?' ('+veh.plate+')':''}`,
+    desc:`Валидност на ${cfg.label} за ${veh.name}${veh.plate?' ('+veh.plate+')':''} до ${fmtReadableDate(targetDate)}.`,
+    targetDate,
+    fileName:`${cfg.slug}-napomnyane.ics`
+  });
+}
+
+function buildSafeExportPayload(){
+  const safeVehicles=S.vehicles.map(v=>{
+    const {egn:_ignoredEgn,...rest}=v;
+    return {
+      ...rest,
+      photo:isSafeDataUrl(v.photo)?v.photo:'',
+      services:(v.services||[]).map(s=>({...s,docImage:isSafeDataUrl(s.docImage)?s.docImage:''}))
+    };
+  });
+  const safeFuels=S.fuels.map(f=>({
+    ...f,
+    image:isSafeDataUrl(f.image)?f.image:''
+  }));
+  return {activeVehId:S.activeVehId,vehicles:safeVehicles,fuels:safeFuels};
+}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button,.fuel-tile,.dash-footer');
+  if(!t)return;
+  const veh=getVeh();
+  if(t.id==='tabDash'){syncFormFromDom();save();S.tab='dash';render()}
+  else if(t.id==='tabSvc'){syncFormFromDom();save();S.tab='svc';render()}
+  else if(t.id==='tabChecks'||t.id==='openChecksTab'){syncFormFromDom();save();S.tab='checks';render()}
+  else if(t.id==='tabFuel'){syncFormFromDom();save();S.tab='fuel';S.activeCardCat=null;render()}
+  else if(t.dataset.enterCat){S.activeCardCat=normalizeCardCat(t.dataset.enterCat);render()}
+  else if(t.id==='backCardCats'){S.activeCardCat=null;render()}
+  else if(t.dataset.goTab){syncFormFromDom();save();S.tab=t.dataset.goTab;if(S.tab==='fuel')S.activeCardCat=null;render();window.scrollTo({top:0,behavior:'smooth'})}
+  else if(t.id==='syncDashBtn')openQuickUpdate(veh);
+  else if(t.id==='qCancel')closeDlg($('#quickDlg'));
+  else if(t.id==='qSave'){
+    const odoVal=$('#qOdo').value;
+    if(odoVal!=='')veh.odo=Math.max(0,Number(odoVal)||0);
+    veh.apiFines=$('#qApi').value||'Няма';
+    veh.gtpDate=$('#qGtp').value;
+    veh.mtplDate=$('#qMtpl').value;
+    veh.vignetteDate=$('#qVig').value;
+    if(veh.odo)S.form.km=String(veh.odo);
+    save();closeDlg($('#quickDlg'));render();toast('Данните са обновени.');
+  }
+  else if(t.dataset.quickCal){
+    remindCheckKind(veh,t.dataset.quickCal);
+  }
+  else if(t.dataset.switchVeh){
+    syncFormFromDom();
+    save();
+    S.activeVehId=t.dataset.switchVeh;
+    const nextVeh=getVeh();
+    S.form.km=nextVeh.odo?String(nextVeh.odo):'';
+    render();
+    toast('Активен профил: '+nextVeh.name);
+  }
+  else if(t.id==='addVehBtn'||t.id==='addVehInlineBtn')openVehEditor(null);
+  else if(t.id==='toggleVehExtraBtn'){
+    const p=$('#vehExtraPanel');
+    setVehExtraOpen(!(p&&p.style.display==='block'));
+  }
+  else if(t.id==='shareAppBtn'){
+    const shareUrl=window.location.href;
+    drawQrCode($('#shQrCanvas'),shareUrl,$('#shQrStatus'));
+    $('#shUrlText').textContent=shareUrl;
+    openDlg($('#shareDlg'));
+  }
+  else if(t.id==='shCopy'){
+    const url=$('#shUrlText').textContent||window.location.href;
+    if(url&&navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('Адресът е копиран.')).catch(()=>toast(url));
+  }
+  else if(t.id==='shClose'||t.id==='shDone')closeDlg($('#shareDlg'));
+  else if(t.id==='editVehBtn')openVehEditor(veh.id);
+  else if(t.id==='vClearPhoto')setVehPhotoPreview('');
+  else if(t.id==='vCancel'||t.id==='vCancelTop')closeDlg($('#vehDlg'));
+  else if(t.id==='vSave'){
+    const isNew=!S.editVehId;
+    const name=$('#vName').value.trim()||(isNew?`МПС ${S.vehicles.length+1}`:'Ново превозно средство');
+    const plate=$('#vPlate').value.trim().toUpperCase();
+    const vin=$('#vVin').value.trim().toUpperCase();
+    const firstRegDate=$('#vFirstReg').value;
+    const powerKw=$('#vPowerKw').value.trim();
+    const powerHp=$('#vPowerHp').value.trim();
+    const weightKg=$('#vWeightKg').value.trim();
+    const odo=Math.max(0,Number($('#vOdo').value)||0);
+    const egn=$('#vEgn').value.trim();
+    const regCert=$('#vRegCert').value.trim();
+    const gtpDate=$('#vGtpDate').value;
+    const mtplDate=$('#vMtplDate').value;
+    const vignetteDate=$('#vVignetteDate').value;
+    const apiFines=$('#vApiFines').value||'Няма';
+    const wearPct=Math.max(0,Math.min(100,Number($('#vWearPct').value)||0));
+    const photo=isSafeDataUrl(S.editVehPhoto)?S.editVehPhoto:'';
+    if(S.editVehId){
+      const existing=S.vehicles.find(v=>v.id===S.editVehId);
+      if(existing){
+        Object.assign(existing,{name,plate,vin,firstRegDate,powerKw,powerHp,weightKg,odo,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines,wearPct,photo});
+        S.activeVehId=existing.id;
+      }
+    }else{
+      const created=makeVehicle(name,plate,odo,photo);
+      Object.assign(created,{vin,firstRegDate,powerKw,powerHp,weightKg,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines,wearPct});
+      S.vehicles.push(created);
+      S.activeVehId=created.id;
+    }
+    const cur=getVeh();
+    S.form.km=cur.odo?String(cur.odo):'';
+    save();closeDlg($('#vehDlg'));render();toast(isNew?'Добавен е нов профил: '+cur.name:'Профилът е запазен.');
+  }
+  else if(t.id==='vDel'){
+    if(!S.editVehId)return;
+    const target=S.vehicles.find(v=>v.id===S.editVehId);
+    const label=target?(target.name+(target.plate?' ('+target.plate+')':'')):'този профил';
+    if(!confirm(`Да изтрия ли „${label}“ заедно с историята на консумативите му?`))return;
+    S.vehicles=S.vehicles.filter(v=>v.id!==S.editVehId);
+    if(!S.vehicles.length){
+      const fresh=makeVehicle('Основно МПС','',0,'');
+      S.vehicles=[fresh];
+    }
+    S.activeVehId=S.vehicles[0].id;
+    const cur=getVeh();
+    S.form.km=cur.odo?String(cur.odo):'';
+    save();closeDlg($('#vehDlg'));render();toast('Профилът е изтрит.');
+  }
+  else if(t.id==='copyCheckInfo'){
+    syncFormFromDom();
+    save();
+    const parts=[];
+    if(veh.plate)parts.push('Рег. №: '+veh.plate);
+    if(veh.vin)parts.push('VIN: '+veh.vin);
+    if(veh.powerKw||veh.powerHp)parts.push('Мощност: '+[veh.powerKw?veh.powerKw+' kW':'',veh.powerHp?veh.powerHp+' к.с.':''].filter(Boolean).join(' / '));
+    if(veh.weightKg)parts.push('Тегло: '+veh.weightKg+' kg');
+    if(veh.firstRegDate)parts.push('1-ва рег.: '+fmtDotDate(veh.firstRegDate));
+    if(veh.egn)parts.push('ЕГН/Булстат: '+veh.egn);
+    if(veh.regCert)parts.push('СРМПС: '+veh.regCert);
+    const info=parts.join(' | ');
+    if(info&&navigator.clipboard){
+      navigator.clipboard.writeText(info).then(()=>toast('Данните за проверка са копирани.')).catch(()=>toast(info));
+    }else{
+      toast(info||'Няма въведени данни.');
+    }
+  }
+  else if(t.dataset.pickType){
+    syncFormFromDom();
+    S.form.type=t.dataset.pickType;
+    S.form.interval=Number(t.dataset.pickInt)||10000;
+    S.form.months=Number(t.dataset.pickMonths)||12;
+    if(!S.form.km&&veh.odo)S.form.km=String(veh.odo);
+    render();
+    toast('Избран: '+S.form.type);
+  }
+  else if(t.id==='fClearDoc'){
+    syncFormFromDom();
+    S.form.docImage='';
+    render();
+  }
+  else if(t.dataset.remSvcDoc){
+    const s=(veh.services||[]).find(x=>x.id===t.dataset.remSvcDoc);
+    if(s){s.docImage='';save();render();toast('Снимката на документа е премахната.');}
+  }
+  else if(t.id==='saveSvc'){
+    syncFormFromDom();
+    const km=Number(S.form.km)||Number(veh.odo)||0;
+    const detail=S.form.detail.trim();
+    const months=Number(S.form.months)||12;
+    const docImage=isSafeDataUrl(S.form.docImage)?S.form.docImage:'';
+    if(!detail&&!km&&!docImage)return toast('Въведи или снимай консуматив, километри или документ.');
+    if(km>veh.odo)veh.odo=km;
+    veh.services.unshift({
+      id:'s_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+      type:S.form.type,
+      detail:detail||S.form.type,
+      km,
+      interval:Number(S.form.interval)||10000,
+      months,
+      date:S.form.date||new Date().toISOString().slice(0,10),
+      note:S.form.note.trim(),
+      docImage
+    });
+    S.form.detail='';
+    S.form.note='';
+    S.form.docImage='';
+    S.form.km=veh.odo?String(veh.odo):'';
+    save();
+    render();
+    toast('Смяната е записана.');
+  }
+  else if(t.id==='addCalForm'){
+    syncFormFromDom();
+    const months=Number(S.form.months)||12;
+    const targetDate=addMonthsIso(S.form.date,months);
+    const km=Number(S.form.km)||Number(veh.odo)||0;
+    const nextKm=km+(Number(S.form.interval)||10000);
+    triggerCalendarReminder({
+      title:`${S.form.type} — ${veh.name}`,
+      desc:`Смяна на ${S.form.type}${S.form.detail?' ('+S.form.detail+')':''} на ${km.toLocaleString()} km. Следващ интервал: ~${nextKm.toLocaleString()} km или след ${months} мес.`,
+      targetDate,
+      fileName:'smyana-konsumativ-napomnyane.ics'
+    });
+  }
+  else if(t.dataset.calSvc){
+    const s=(veh.services||[]).find(x=>x.id===t.dataset.calSvc);
+    if(!s)return;
+    const months=Number(s.months)||12;
+    const targetDate=addMonthsIso(s.date,months);
+    const nextKm=(Number(s.km)||0)+(Number(s.interval)||10000);
+    triggerCalendarReminder({
+      title:`${s.type} — ${veh.name}`,
+      desc:`Последна смяна на ${Number(s.km||0).toLocaleString()} km (${s.detail||s.type}). Следваща смяна ориентировъчно на ${nextKm.toLocaleString()} km.`,
+      targetDate,
+      fileName:'smyana-konsumativ-napomnyane.ics'
+    });
+  }
+  else if(t.id==='clearForm'){
+    S.form.detail='';S.form.note='';S.form.docImage='';S.form.km=veh.odo?String(veh.odo):'';
+    render();
+  }
+  else if(t.dataset.delSvc){
+    veh.services=(veh.services||[]).filter(x=>x.id!==t.dataset.delSvc);
+    save();render();toast('Записът е изтрит.');
+  }
+  else if(t.id==='addFuel')openCardEditor(null);
+  else if(t.dataset.openFuel)openCardViewer(t.dataset.openFuel);
+  else if(t.id==='cClearImg')setCardEditorPreview('');
+  else if(t.id==='cCancel')closeDlg($('#cardDlg'));
+  else if(t.id==='cSave'){
+    const category=normalizeCardCat($('#cCat').value);
+    const name=$('#cName').value.trim();
+    const number=$('#cNum').value.trim();
+    const note=$('#cNote').value.trim();
+    const image=isSafeDataUrl(S.editFuelImage)?S.editFuelImage:'';
+    if(!name)return toast('Въведи име на обекта / веригата.');
+    S.activeCardCat=category;
+    if(S.editFuelId){
+      const f=S.fuels.find(x=>x.id===S.editFuelId);
+      if(f){f.category=category;f.name=name;f.number=number;f.note=note;f.image=image}
+    }else{
+      S.fuels.push({id:'f_'+Date.now(),category,name,number,note,image});
+    }
+    save();closeDlg($('#cardDlg'));render();toast('Картата е запазена.');
+  }
+  else if(t.id==='cDel'){
+    if(!S.editFuelId)return;
+    S.fuels=S.fuels.filter(x=>x.id!==S.editFuelId);
+    save();closeDlg($('#cardDlg'));render();toast('Картата е премахната.');
+  }
+  else if(t.id==='sCodeMode'){
+    S.codeMode=S.codeMode==='barcode'?'qr':'barcode';
+    renderCodeForNumber($('#sNum').textContent||'');
+  }
+  else if(t.id==='sZoom'){
+    S.zoomCard=!S.zoomCard;
+    applyViewerStyle();
+  }
+  else if(t.id==='sBright'){
+    S.brightCard=!S.brightCard;
+    applyViewerStyle();
+  }
+  else if(t.id==='sClose')closeDlg($('#showDlg'));
+  else if(t.id==='sEdit'){closeDlg($('#showDlg'));openCardEditor(S.showFuelId)}
+  else if(t.id==='sCopy'){
+    const txt=$('#sNum').textContent||'';
+    if(txt&&navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>toast('Номерът е копиран.')).catch(()=>toast(txt));
+  }
+  else if(t.id==='btnExport'){
+    syncFormFromDom();
+    const blob=new Blob([JSON.stringify(buildSafeExportPayload(),null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='garage-fuel-backup.json';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  }
+});
+
+document.addEventListener('change',async e=>{
+  const t=e.target;
+  const veh=getVeh();
+  if(t.id==='vRegScanFile'){
+    const f=t.files&&t.files[0];
+    t.value='';
+    readRegistrationCard(f);
+  }else if(t.id==='vPowerKw'){
+    const kw=Number(t.value);
+    if(kw>0&&!$('#vPowerHp').value.trim())$('#vPowerHp').value=String(Math.round(kw*1.35962));
+  }else if(t.id==='vPowerHp'){
+    const hp=Number(t.value);
+    if(hp>0&&!$('#vPowerKw').value.trim())$('#vPowerKw').value=String(Math.round(hp/1.35962*10)/10);
+  }else if(t.dataset.ocrDate){
+    syncFormFromDom();
+    const f=t.files&&t.files[0];
+    t.value='';
+    readDateFromImage(f,t.dataset.ocrDate);
+  }else if(t.dataset.ocr){
+    syncFormFromDom();
+    const f=t.files&&t.files[0];
+    t.value='';
+    readImage(f,t.dataset.ocr);
+  }else if(t.id==='fDocGallery'||t.id==='fDocCamera'){
+    syncFormFromDom();
+    const f=t.files&&t.files[0];
+    t.value='';
+    if(!f)return;
+    try{
+      S.form.docImage=await compressImage(f,1400,0.85);
+      render();
+      toast('Фактурата / документът е прикачен.');
+    }catch(err){
+      toast('Неуспешно зареждане на документа.');
+    }
+  }else if(t.dataset.svcDoc){
+    const s=(veh.services||[]).find(x=>x.id===t.dataset.svcDoc);
+    const f=t.files&&t.files[0];
+    t.value='';
+    if(!s||!f)return;
+    try{
+      s.docImage=await compressImage(f,1400,0.85);
+      save();
+      render();
+      toast('Документът е прикачен към смяната.');
+    }catch(err){
+      toast('Неуспешно зареждане на документа.');
+    }
+  }else if(t.id==='cOcrFile'){
+    const f=t.files&&t.files[0];
+    t.value='';
+    readImage(f,'card');
+  }else if(t.id==='cImgFile'){
+    const f=t.files&&t.files[0];
+    t.value='';
+    if(!f)return;
+    try{
+      const compressed=await compressImage(f,1400,0.86);
+      setCardEditorPreview(compressed);
+      toast('Снимката на картата е добавена.');
+    }catch(err){
+      toast('Неуспешно зареждане на снимката.');
+    }
+  }else if(t.id==='vPhotoGallery'||t.id==='vPhotoCamera'){
+    const f=t.files&&t.files[0];
+    t.value='';
+    if(!f)return;
+    try{
+      const compressed=await compressImage(f,1000,0.82);
+      setVehPhotoPreview(compressed);
+      toast('Снимката на превозното средство е добавена.');
+    }catch(err){
+      toast('Неуспешно зареждане на снимката.');
+    }
+  }else if(t.id==='fileImport'){
+    const f=t.files&&t.files[0];
+    t.value='';
+    if(!f)return;
+    const r=new FileReader();
+    r.onload=ev=>{
+      try{
+        const d=JSON.parse(String(ev.target.result||''));
+        if(!Array.isArray(d.vehicles)&&!Array.isArray(d.fuels)){
+          toast('Файлът не съдържа валидни данни за импорт.');
+          return;
+        }
+        if(!confirm('Импортът ще замени текущите профили, смени и карти. Да продължа ли?'))return;
+        if(Array.isArray(d.vehicles)&&d.vehicles.length){
+          S.vehicles=d.vehicles.map(normalizeVeh);
+          S.activeVehId=d.activeVehId&&S.vehicles.some(v=>v.id===d.activeVehId)?d.activeVehId:S.vehicles[0].id;
+        }
+        if(Array.isArray(d.fuels)&&d.fuels.length){
+          S.fuels=d.fuels.map(x=>({
+            id:x.id||('f_'+Math.random()),
+            category:normalizeCardCat(x.category||(DEFAULT_CHAINS.includes(x.name)?'Бензиностанции':'Други')),
+            name:x.name||'',
+            number:x.number||'',
+            note:x.note||'',
+            image:isSafeDataUrl(x.image)?x.image:''
+          }));
+        }
+        const cur=getVeh();
+        S.form.km=cur.odo?String(cur.odo):'';
+        save();render();toast('Данните са възстановени.');
+      }catch(err){toast('Невалиден JSON файл.')}
+    };
+    r.readAsText(f);
+  }else if(t.id==='plateInputCheck'||t.id==='vinInputCheck'||t.id==='firstRegInputCheck'||t.id==='odoInputCheck'||t.id==='egnInput'||t.id==='regCertInput'||t.id==='mtplDateInput'||t.id==='vignetteDateInput'||t.id==='gtpDateInput'||t.id==='apiFinesInput'||t.id==='fType'||t.id==='fKm'||t.id==='fInt'||t.id==='fMonths'||t.id==='fDate'){
+    syncFormFromDom();
+    if(t.id==='plateInputCheck'||t.id==='vinInputCheck'||t.id==='firstRegInputCheck'||t.id==='odoInputCheck'||t.id==='egnInput'||t.id==='regCertInput'||t.id==='mtplDateInput'||t.id==='vignetteDateInput'||t.id==='gtpDateInput'||t.id==='apiFinesInput')save();
+    if(t.id==='mtplDateInput'||t.id==='vignetteDateInput'||t.id==='gtpDateInput'||t.id==='apiFinesInput'||t.id==='fType'||t.id==='fDate'||t.id==='fMonths')render();
+  }
+});
+
+load();
+render();
+hydrateMediaFromIdb().then(()=>render());
+if('serviceWorker'in navigator&&location.protocol.startsWith('http')){
+  addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+})();
+</script>
+</body>
+</html>
