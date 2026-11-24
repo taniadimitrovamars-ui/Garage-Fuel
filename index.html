@@ -41,10 +41,10 @@ h1 small{display:none}
   h1 small{display:inline;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--m);font-weight:400;font-size:11px;letter-spacing:0;margin-left:8px}
 }
 .nav-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%}
-.nav-tabs button{min-height:34px;padding:0 6px;font-size:12px;border-radius:10px;white-space:nowrap;width:100%}
+.nav-tabs button{min-height:36px;padding:0 5px;font-size:11.5px;border-radius:10px;white-space:nowrap;width:100%;gap:4px}
 @media(min-width:620px){
   .nav-tabs{gap:8px}
-  .nav-tabs button{min-height:38px;padding:0 12px;font-size:13px}
+  .nav-tabs button{min-height:40px;padding:0 12px;font-size:13px;gap:6px}
 }
 .wrap{max-width:980px;margin:0 auto;padding:12px 14px}
 button,select,input{font:inherit;color:var(--t);min-width:0}
@@ -65,7 +65,8 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .good{color:var(--g)}.mid{color:var(--y)}.bad{color:var(--r)}
 .item{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:11px;margin-bottom:8px}
 
-.veh-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.veh-bar{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.veh-bar select{flex:1;min-height:38px;padding:6px 10px;border-radius:12px;background:var(--p);border-color:#26354d}
 .extra-box{border:1px solid #26354d;background:var(--p2);border-radius:14px;padding:12px;margin-top:10px}
 
 .svc-pick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -103,11 +104,7 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .eu-plate .eu-bg{background:#1d4ed8;color:#fff;width:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:800;line-height:1.05;letter-spacing:.02em}
 .eu-plate .eu-bg span{font-size:9px;color:#fde047;line-height:1}
 .eu-plate .eu-num{padding:0 12px;display:flex;align-items:center;font-family:ui-monospace,Menlo,monospace;font-size:18px;font-weight:800;letter-spacing:1.5px;color:#090d16}
-.prog-wrap{display:flex;align-items:center;gap:10px;margin-top:12px}
-.prog-track{flex:1;height:7px;background:#1e293b;border-radius:999px;overflow:hidden}
-.prog-fill{height:100%;background:var(--y);border-radius:999px;transition:width .25s ease}
-.prog-pct{font-size:13px;font-weight:700;color:var(--t);min-width:38px;text-align:right}
-.dash-list{margin-top:10px;border-top:1px solid #1b2638}
+.dash-list{margin-top:12px;border-top:1px solid #1b2638}
 .dash-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 2px;border-bottom:1px solid #1b2638}
 .dash-row:last-child{border-bottom:none}
 .dash-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
@@ -121,7 +118,6 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .dash-footer:hover{background:#111c31}
 
 .veh-photo{width:100%;max-height:210px;object-fit:cover;border-radius:14px;border:1px solid #334155;background:#050810;display:block}
-.veh-thumb{width:34px;height:26px;object-fit:cover;border-radius:6px;border:1px solid #334155;background:#050810;display:block}
 .card-screen{background:#0f172a;border:1px solid #334155;border-radius:18px;padding:16px;margin:10px 0;display:flex;flex-direction:column}
 .card-screen.bright{background:#ffffff;color:#090d16;border-color:#cbd5e1}
 .card-screen.bright .m{color:#475569}
@@ -143,10 +139,10 @@ dialog::backdrop{background:#000c}
     <h1>Гараж & Карти<small>табло · консумативи · проверки · карти</small></h1>
   </div>
   <div class="nav-tabs">
-    <button type="button" id="tabDash" class="on">Табло</button>
-    <button type="button" id="tabSvc">Консумативи</button>
-    <button type="button" id="tabChecks">Проверки</button>
-    <button type="button" id="tabFuel">Карти</button>
+    <button type="button" id="tabDash" class="on">📊 Табло</button>
+    <button type="button" id="tabSvc">🛠 Консумативи</button>
+    <button type="button" id="tabChecks">✅ Проверки</button>
+    <button type="button" id="tabFuel">💳 Карти</button>
   </div>
 </header>
 
@@ -271,19 +267,13 @@ dialog::backdrop{background:#000c}
           <input id="vVignetteDate" type="date">
         </div>
       </div>
-      <div class="grid g2" style="margin-top:8px">
-        <div>
-          <label class="k">Глоби към АПИ / КАТ</label>
-          <select id="vApiFines">
-            <option value="Няма">Няма</option>
-            <option value="Има за проверка">Има за проверка</option>
-            <option value="Непроверено">Непроверено</option>
-          </select>
-        </div>
-        <div>
-          <label class="k">Ресурс / износване (%)</label>
-          <input id="vWearPct" type="number" min="0" max="100" inputmode="numeric" placeholder="0 – 100">
-        </div>
+      <div style="margin-top:8px">
+        <label class="k">Глоби към АПИ / КАТ</label>
+        <select id="vApiFines">
+          <option value="Няма">Няма</option>
+          <option value="Има за проверка">Има за проверка</option>
+          <option value="Непроверено">Непроверено</option>
+        </select>
       </div>
     </div>
   </div>
@@ -412,7 +402,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v22';
+const KEY='garage_fuel_pwa_v24';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -504,7 +494,6 @@ function makeVehicle(name,plate,odo,photo){
     mtplDate:'',
     vignetteDate:'',
     apiFines:'Няма',
-    wearPct:0,
     photo:isSafeDataUrl(photo)?photo:'',
     services:[]
   };
@@ -582,7 +571,6 @@ function normalizeVeh(v){
     mtplDate:v.mtplDate||'',
     vignetteDate:v.vignetteDate||'',
     apiFines:v.apiFines||'Няма',
-    wearPct:Number.isFinite(Number(v.wearPct))?Math.max(0,Math.min(100,Number(v.wearPct))):0,
     photo:isSafeDataUrl(v.photo)?v.photo:'',
     services:Array.isArray(v.services)?v.services.map(normalizeServiceItem):[]
   };
@@ -590,7 +578,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -1253,7 +1241,6 @@ function parseRegistrationCardText(rawText){
   const brandList=['BMW','MERCEDES','AUDI','VW','VOLKSWAGEN','TOYOTA','YAMAHA','HONDA','FORD','OPEL','PEUGEOT','RENAULT','SKODA','HYUNDAI','KIA','MAZDA','NISSAN','VOLVO','DACIA','FIAT','CITROEN','SEAT','LEXUS','SUBARU','SUZUKI','LONCIN','TELSTAR','ZEDA'];
   const foundBrand=brandList.find(b=>new RegExp(`\\b${b}\\b`).test(clean))||'';
 
-  // Модел от (D.1) напр. "BMW 330I XDRIVE" / "БМВ 330И ХДРАЙВ" или модел с код/обем
   let foundModel='';
   const d1Match=clean.match(/\b(?:D\.?\s*1|Д\.?\s*1)\b[\s:)\-]*([A-ZА-Я0-9][A-ZА-Я0-9\s\-]{2,28})/i);
   if(d1Match){
@@ -1266,7 +1253,6 @@ function parseRegistrationCardText(rawText){
     const modelPattern=clean.match(/\b\d{2,3}[A-ZА-Я]{1,3}(?:\s+(?:XDRIVE|QUATTRO|4MATIC|TSI|TDI|CDI|HDI|GTI|AMG|M|SPORT|TOURING|AVANT|SEDAN|СЕДАН))?\b/);
     if(modelPattern)foundModel=modelPattern[0].replace(/\s+/g,' ').trim();
   }
-  // Каросерия от забележката в долния ляв ъгъл напр. "АА СЕДАН"
   const bodyMatch=clean.match(/\b(?:СЕДАН|КОМБИ|ХЕЧБЕК|КУПЕ|КАБРИО|СУВ|SUV|SEDAN|WAGON|AVANT|TOURING|COUPE)\b/);
   const bodyType=bodyMatch?bodyMatch[0].trim():'';
 
@@ -1285,7 +1271,6 @@ function parseRegistrationCardText(rawText){
   let powerKw='';
   let powerHp='';
 
-  // 1) Код P.2 от свидетелството за регистрация (мощност в kW)
   const p2Match=clean.match(/\bP\.?\s*2\b[^\d]{0,12}(\d{1,4}(?:[.,]\d{1,2})?)/);
   if(p2Match){
     const kwVal=Number(p2Match[1].replace(',','.'));
@@ -1295,7 +1280,6 @@ function parseRegistrationCardText(rawText){
     }
   }
 
-  // 2) Изрично изписани kW / HP / к.с.
   const kwMatch=clean.match(/\b(\d{1,4}(?:[.,]\d{1,2})?)\s*(?:KW|КВТ)\b/);
   const hpMatch=clean.match(/\b(\d{1,4}(?:[.,]\d{1,2})?)\s*(?:HP|К\.?\s*С\.?|КС)\b/);
   if(kwMatch){
@@ -1315,7 +1299,6 @@ function parseRegistrationCardText(rawText){
 
   let weightKg='';
 
-  // 1) Код (G) от свидетелството за регистрация (собствена маса)
   const gMatch=clean.match(/\(\s*G\s*\)[^\d]{0,12}(\d{2,5})/)||clean.match(/\bG\b\s*[:\-]?\s*(\d{3,5})\b/);
   if(gMatch){
     const gVal=Number(gMatch[1]);
@@ -1324,7 +1307,6 @@ function parseRegistrationCardText(rawText){
     }
   }
 
-  // 2) Изрично изписани kg / кг
   if(!weightKg){
     const kgMatches=[...clean.matchAll(/\b(\d{2,5}(?:[.,]\d{1,2})?)\s*(?:KG|КГ)\b/g)];
     if(kgMatches.length){
@@ -1544,23 +1526,20 @@ function dateBadgeClass(dateStr){
 }
 
 function vVehicleSwitcherBar(veh){
-  const chips=S.vehicles.map(v=>{
-    const active=v.id===veh.id;
-    return`<button type="button" class="sm ${active?'on':''}" data-switch-veh="${E(v.id)}">
-      ${isSafeDataUrl(v.photo)?`<img src="${v.photo}" class="veh-thumb" alt="">`:'🚗'}
-      <span>${E(v.name)}${v.plate?` · <span class="mono">${E(v.plate)}</span>`:''}</span>
-    </button>`;
+  const options=S.vehicles.map(v=>{
+    const sel=v.id===veh.id?' selected':'';
+    const label=`${v.name}${v.plate?' · '+v.plate:''}`;
+    return`<option value="${E(v.id)}"${sel}>${E(label)}</option>`;
   }).join('');
 
   return`<div class="veh-bar">
-    ${chips}
-    <button type="button" class="sm ok" id="addVehInlineBtn">+ Добави кола / АТВ</button>
+    <select id="vehSelect" aria-label="Избери превозно средство">${options}</select>
+    <button type="button" class="sm ok" id="addVehInlineBtn">+ Добави</button>
   </div>`;
 }
 
 function vVehicleCard(veh){
   const plateDisplay=(veh.plate||'').trim().toUpperCase();
-  const pct=Math.max(0,Math.min(100,Number(veh.wearPct)||0));
   const powerLabel=[
     veh.powerKw?`${E(veh.powerKw)} kW`:'',
     veh.powerHp?`${E(veh.powerHp)} к.с.`:''
@@ -1587,11 +1566,6 @@ function vVehicleCard(veh){
           ${veh.vin?`<span class="m mono">VIN: <b style="color:var(--t)">${E(veh.vin)}</b></span>`:''}
           ${veh.odo?`<span class="m mono">Пробег: <b style="color:var(--t)">${Number(veh.odo).toLocaleString()} km</b></span>`:''}
         </div>
-      </div>
-
-      <div class="prog-wrap">
-        <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
-        <div class="prog-pct">${pct}%</div>
       </div>
 
       ${isSafeDataUrl(veh.photo)?`<img src="${veh.photo}" class="veh-photo" style="margin-top:12px" alt="${E(veh.name)}">`:''}
@@ -2102,8 +2076,7 @@ function openVehEditor(id){
   $('#vMtplDate').value=item?item.mtplDate:'';
   $('#vVignetteDate').value=item?item.vignetteDate:'';
   $('#vApiFines').value=item&&item.apiFines?item.apiFines:'Няма';
-  $('#vWearPct').value=item&&item.wearPct!=null?String(item.wearPct):'0';
-  const hasExtra=!!(item&&(item.gtpDate||item.mtplDate||item.vignetteDate||item.wearPct||(item.apiFines&&item.apiFines!=='Няма')));
+  const hasExtra=!!(item&&(item.gtpDate||item.mtplDate||item.vignetteDate||(item.apiFines&&item.apiFines!=='Няма')));
   setVehExtraOpen(hasExtra);
   $('#vDel').style.display=item?'':'none';
   setVehPhotoPreview(item?item.photo:'');
@@ -2261,15 +2234,6 @@ document.addEventListener('click',e=>{
   else if(t.dataset.quickCal){
     remindCheckKind(veh,t.dataset.quickCal);
   }
-  else if(t.dataset.switchVeh){
-    syncFormFromDom();
-    save();
-    S.activeVehId=t.dataset.switchVeh;
-    const nextVeh=getVeh();
-    S.form.km=nextVeh.odo?String(nextVeh.odo):'';
-    render();
-    toast('Активен профил: '+nextVeh.name);
-  }
   else if(t.id==='addVehBtn'||t.id==='addVehInlineBtn')openVehEditor(null);
   else if(t.id==='toggleVehExtraBtn'){
     const p=$('#vehExtraPanel');
@@ -2305,17 +2269,16 @@ document.addEventListener('click',e=>{
     const mtplDate=$('#vMtplDate').value;
     const vignetteDate=$('#vVignetteDate').value;
     const apiFines=$('#vApiFines').value||'Няма';
-    const wearPct=Math.max(0,Math.min(100,Number($('#vWearPct').value)||0));
     const photo=isSafeDataUrl(S.editVehPhoto)?S.editVehPhoto:'';
     if(S.editVehId){
       const existing=S.vehicles.find(v=>v.id===S.editVehId);
       if(existing){
-        Object.assign(existing,{name,plate,vin,firstRegDate,powerKw,powerHp,weightKg,odo,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines,wearPct,photo});
+        Object.assign(existing,{name,plate,vin,firstRegDate,powerKw,powerHp,weightKg,odo,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines,photo});
         S.activeVehId=existing.id;
       }
     }else{
       const created=makeVehicle(name,plate,odo,photo);
-      Object.assign(created,{vin,firstRegDate,powerKw,powerHp,weightKg,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines,wearPct});
+      Object.assign(created,{vin,firstRegDate,powerKw,powerHp,weightKg,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines});
       S.vehicles.push(created);
       S.activeVehId=created.id;
     }
@@ -2492,7 +2455,15 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',async e=>{
   const t=e.target;
   const veh=getVeh();
-  if(t.id==='vRegScanFile'){
+  if(t.id==='vehSelect'){
+    syncFormFromDom();
+    save();
+    S.activeVehId=t.value;
+    const nextVeh=getVeh();
+    S.form.km=nextVeh.odo?String(nextVeh.odo):'';
+    render();
+    toast('Активен профил: '+nextVeh.name);
+  }else if(t.id==='vRegScanFile'){
     const f=t.files&&t.files[0];
     t.value='';
     readRegistrationCard(f);
