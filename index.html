@@ -156,7 +156,7 @@ dialog::backdrop{background:#000c}
       <input type="file" id="vRegScanFile" accept="image/*" capture="environment" hidden>
     </label>
   </div>
-  <div class="m" style="margin-bottom:10px">Снимай талона (СРМПС), за да се разчетат VIN, рег. номер и данни — снимката не се пази.</div>
+  <div class="m" style="margin-bottom:10px">Снимай малък или голям талон (СРМПС) без отблясъци, за да се разчетат VIN, рег. номер и данни — снимката не се пази.</div>
   <div class="grid g2">
     <div>
       <label class="k">Марка / модел</label>
@@ -526,10 +526,10 @@ function parseRegistrationCardText(rawText){
   const bgPlateMatch=clean.match(/\b(?:А|В|С|Е|ЕН|ЕВ|КН|М|Н|ОВ|РА|РК|РВ|РН|СА|СВ|СМ|СО|СС|СТ|Т|Х|Я|A|B|C|E|K|M|H|P|T|X|Y)[A-ZА-Я]{1,2}\s?\d{4}\s?[A-ZА-Я]{1,2}\b/);
   const plate=bgPlateMatch?bgPlateMatch[0].replace(/\s+/g,''):'';
 
-  const certMatch=clean.match(/\b\d{9,11}\b/);
-  const regCert=certMatch?certMatch[0]:'';
+  const candidates=[...clean.matchAll(/\b\d{7,12}\b/g)].map(m=>m[0]);
+  const regCert=candidates.find(n=>!clean.includes(n+'KM')&&n.length>=8)||candidates[0]||'';
 
-  const brandList=['BMW','MERCEDES','AUDI','VW','VOLKSWAGEN','TOYOTA','YAMAHA','HONDA','FORD','OPEL','PEUGEOT','RENAULT','SKODA','HYUNDAI','KIA','MAZDA','NISSAN','VOLVO','DACIA','FIAT','CITROEN','SEAT','LEXUS'];
+  const brandList=['BMW','MERCEDES','AUDI','VW','VOLKSWAGEN','TOYOTA','YAMAHA','HONDA','FORD','OPEL','PEUGEOT','RENAULT','SKODA','HYUNDAI','KIA','MAZDA','NISSAN','VOLVO','DACIA','FIAT','CITROEN','SEAT','LEXUS','SUBARU','SUZUKI'];
   const foundBrand=brandList.find(b=>new RegExp(`\\b${b}\\b`).test(clean))||'';
 
   const isoDate=extractIsoDateFromText(rawText);
@@ -616,9 +616,9 @@ async function readRegistrationCard(file){
       found.push('Дата: '+fmtDotDate(parsed.isoDate));
     }
     if(found.length){
-      toast('Извлечено от талона ('+found.join(' · ')+'). Провери и запази.');
+      toast('Разпознато от талона: '+found.join(' · '));
     }else{
-      toast('Не се разчетоха ясни полета от талона — опитай с по-ярка снимка.');
+      toast('Не се разчетоха сигурни данни — снимай под лек ъгъл без отблясък или въведи ръчно.');
     }
   }catch(e){
     toast('Проблем при разчитането на талона.');
