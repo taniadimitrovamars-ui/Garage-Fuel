@@ -211,7 +211,18 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .card-screen.zoomed #sNum{font-size:32px}
 .code-canvas{display:block;margin:10px auto 8px;max-width:100%;height:auto;border-radius:8px;background:#fff;padding:6px}
 .qr-status{font-size:12px;color:#475569;margin-top:6px;display:none}
-dialog{background:var(--p);color:var(--t);border:1px solid #334155;border-radius:18px;width:min(640px,96vw);max-width:96vw;padding:15px;max-height:92vh;overflow-y:auto}
+dialog{
+  background:var(--p);
+  color:var(--t);
+  border:1px solid #334155;
+  border-radius:18px;
+  width:min(640px,96vw);
+  max-width:96vw;
+  padding:15px;
+  max-height:calc(100dvh - max(var(--sat), 12px) - 24px);
+  margin:max(var(--sat), 12px) auto 12px;
+  overflow-y:auto
+}
 dialog::backdrop{background:#000c}
 #toast{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0));z-index:40;background:#0f172af5;border:1px solid #334155;border-radius:14px;padding:11px 14px;font-size:13px;display:none}
 </style>
@@ -558,7 +569,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v29';
+const KEY='garage_fuel_pwa_v30';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -681,10 +692,12 @@ const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clea
 
 function openDlg(dlg){
   if(!dlg)return;
+  dlg.scrollTop=0;
   if(typeof dlg.showModal==='function'){
-    try{dlg.showModal();return;}catch(e){}
+    try{dlg.showModal();dlg.scrollTop=0;return;}catch(e){}
   }
   dlg.setAttribute('open','');
+  dlg.scrollTop=0;
 }
 function closeDlg(dlg){
   if(!dlg)return;
@@ -696,6 +709,18 @@ function closeDlg(dlg){
 
 function getVeh(){
   return S.vehicles.find(v=>v.id===S.activeVehId)||S.vehicles[0];
+}
+
+function sortServicesLatestFirst(list){
+  return [...(list||[])].sort((a,b)=>{
+    const da=String(a.date||'');
+    const db=String(b.date||'');
+    if(da!==db)return db.localeCompare(da);
+    const ka=Number(a.km)||0;
+    const kb=Number(b.km)||0;
+    if(ka!==kb)return kb-ka;
+    return String(b.id||'').localeCompare(String(a.id||''));
+  });
 }
 
 function normalizeServiceItem(s){
@@ -731,13 +756,13 @@ function normalizeVeh(v){
     vignetteDate:v.vignetteDate||'',
     apiFines:v.apiFines||'Няма',
     photo:isSafeDataUrl(v.photo)?v.photo:'',
-    services:Array.isArray(v.services)?v.services.map(normalizeServiceItem):[]
+    services:sortServicesLatestFirst(Array.isArray(v.services)?v.services.map(normalizeServiceItem):[])
   };
 }
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -747,7 +772,7 @@ function load(){
       const base=makeVehicle(d.vehicle||'Основно МПС',d.plate||'',Number(d.odo)||0,d.vehiclePhoto||'');
       base.egn=d.egn||'';
       base.regCert=d.regCert||'';
-      base.services=Array.isArray(d.services)?d.services.map(normalizeServiceItem):[];
+      base.services=sortServicesLatestFirst(Array.isArray(d.services)?d.services.map(normalizeServiceItem):[]);
       S.vehicles=[base];
       S.activeVehId=base.id;
     }
@@ -799,7 +824,7 @@ function save(){
   const compactVehicles=S.vehicles.map(v=>({
     ...v,
     photo:'',
-    services:(v.services||[]).map(s=>({...s,docImage:''}))
+    services:sortServicesLatestFirst(v.services||[]).map(s=>({...s,docImage:''}))
   }));
   const compactFuels=S.fuels.map(f=>({...f,image:''}));
   try{
@@ -1972,11 +1997,11 @@ function vHomeDash(veh){
 function renderServiceHistoryModal(){
   const veh=getVeh();
   const filterType=S.historyFilterType;
-  const allSvc=veh.services||[];
+  const allSvc=sortServicesLatestFirst(veh.services||[]);
   const list=filterType?allSvc.filter(s=>s.type===filterType):allSvc;
 
   $('#svcHistTitle').textContent=filterType?`История: ${filterType}`:`Всички смени (${allSvc.length})`;
-  $('#svcHistSub').textContent=`Профил: ${veh.name}${veh.plate?' · '+veh.plate:''}`;
+  $('#svcHistSub').textContent=`Профил: ${veh.name}${veh.plate?' · '+veh.plate:''} · Най-новата най-отгоре`;
 
   let sumNum=0;
   let hasNumPrice=false;
@@ -2151,8 +2176,8 @@ function vServices(){
   const totalAll=(veh.services||[]).length;
 
   const partCards=PRESET_PARTS.map(p=>{
-    const itemsOfType=(veh.services||[]).filter(x=>x.type===p.type);
-    const last=itemsOfType.sort((a,b)=>(b.km||0)-(a.km||0))[0]||null;
+    const itemsOfType=sortServicesLatestFirst((veh.services||[]).filter(x=>x.type===p.type));
+    const last=itemsOfType[0]||null;
     const inter=Number(last?.interval||p.interval||10000);
     const months=Number(last?.months||p.months||12);
     const nextKm=last?(Number(last.km)||0)+inter:null;
@@ -2592,7 +2617,7 @@ function buildSafeExportPayload(){
     return {
       ...rest,
       photo:isSafeDataUrl(v.photo)?v.photo:'',
-      services:(v.services||[]).map(s=>({...s,docImage:isSafeDataUrl(s.docImage)?s.docImage:''}))
+      services:sortServicesLatestFirst(v.services||[]).map(s=>({...s,docImage:isSafeDataUrl(s.docImage)?s.docImage:''}))
     };
   });
   const safeFuels=S.fuels.map(f=>({
@@ -2772,6 +2797,7 @@ document.addEventListener('click',e=>{
       note:S.form.note.trim(),
       docImage
     });
+    veh.services=sortServicesLatestFirst(veh.services);
     S.form.detail='';
     S.form.price='';
     S.form.note='';
