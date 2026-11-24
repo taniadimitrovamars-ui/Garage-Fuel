@@ -58,6 +58,8 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .item{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:11px;margin-bottom:8px}
 .fuel-tile{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:12px;cursor:pointer;transition:.15s}
 .fuel-tile:hover,.fuel-tile.has{border-color:#009ada77}
+.cat-head{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--m);margin:12px 0 6px;display:flex;align-items:center;justify-content:space-between}
+.cat-head:first-of-type{margin-top:4px}
 
 .sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 @media(min-width:640px){.sheet-grid{grid-template-columns:repeat(4,1fr)}}
@@ -257,8 +259,21 @@ dialog::backdrop{background:#000c}
 
 <dialog id="cardDlg">
   <h3 id="cTitle" style="margin:0 0 10px">Карта за отстъпка</h3>
-  <label class="k">Верига / име</label>
-  <input id="cName" placeholder="Напр. OMV, Shell, Lukoil, Eco...">
+  <div class="grid g2">
+    <div>
+      <label class="k">Категория</label>
+      <select id="cCat">
+        <option value="Бензиностанции">Бензиностанции</option>
+        <option value="Магазини">Магазини</option>
+        <option value="Сервизи и части">Сервизи и части</option>
+        <option value="Други">Други</option>
+      </select>
+    </div>
+    <div>
+      <label class="k">Верига / име</label>
+      <input id="cName" placeholder="Напр. OMV, Shell, Практикер...">
+    </div>
+  </div>
   <label class="k" style="margin-top:8px">Номер на карта / регистрация</label>
   <div class="row">
     <input id="cNum" class="mono" style="flex:1" placeholder="Въведи номер или сканирай от скрийншот">
@@ -323,9 +338,10 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v13';
+const KEY='garage_fuel_pwa_v14';
 const $=s=>document.querySelector(s);
 const E=v=>String(v??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const CARD_CATS=['Бензиностанции','Магазини','Сервизи и части','Други'];
 const DEFAULT_CHAINS=['OMV','Shell','Lukoil','Petrol','Eco','Круиз'];
 const PRESET_PARTS=[
   {type:'Масло двигател',interval:10000,months:12,hint:'Напр. 5W-30 LL-04 или марка/артикул'},
@@ -335,6 +351,10 @@ const PRESET_PARTS=[
   {type:'Трансмисионно масло',interval:60000,months:48,hint:'Скоростна кутия / диференциал / раздатка'},
   {type:'Спирачна течност / накладки',interval:30000,months:24,hint:'DOT 4 / предни / задни'}
 ];
+
+function normalizeCardCat(cat){
+  return CARD_CATS.includes(cat)?cat:'Други';
+}
 
 function makeVehicle(name,plate,odo,photo){
   return{
@@ -358,9 +378,10 @@ function makeVehicle(name,plate,odo,photo){
 
 let S={
   tab:'dash',
+  cardCatFilter:'Бензиностанции',
   activeVehId:'',
   vehicles:[makeVehicle('BMW 330i XDrive - BMW 3 series','',0,'')],
-  fuels:DEFAULT_CHAINS.map((name,i)=>({id:'f_'+i+'_'+Date.now(),name,number:'',note:'',image:''})),
+  fuels:DEFAULT_CHAINS.map((name,i)=>({id:'f_'+i+'_'+Date.now(),category:'Бензиностанции',name,number:'',note:'',image:''})),
   form:{type:'Масло двигател',detail:'',km:'',interval:10000,months:12,date:new Date().toISOString().slice(0,10),note:''},
   ocrBusy:'',
   editVehId:null,
@@ -417,7 +438,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -432,7 +453,14 @@ function load(){
       S.activeVehId=base.id;
     }
     if(Array.isArray(d.fuels)&&d.fuels.length){
-      S.fuels=d.fuels.map(f=>({id:f.id||('f_'+Math.random()),name:f.name||'',number:f.number||'',note:f.note||'',image:f.image||''}));
+      S.fuels=d.fuels.map(f=>({
+        id:f.id||('f_'+Math.random()),
+        category:normalizeCardCat(f.category||(DEFAULT_CHAINS.includes(f.name)?'Бензиностанции':'Други')),
+        name:f.name||'',
+        number:f.number||'',
+        note:f.note||'',
+        image:f.image||''
+      }));
     }
     const cur=getVeh();
     S.form.km=cur.odo?String(cur.odo):'';
@@ -540,10 +568,6 @@ function extractAllIsoDatesFromText(txt){
     pushValid(`${m[1]}-${m[2]}-${m[3]}`);
   }
   return out;
-}
-function extractIsoDateFromText(txt){
-  const all=extractAllIsoDatesFromText(txt);
-  return all[0]||'';
 }
 function parseRegistrationCardText(rawText){
   const clean=String(rawText||'').toUpperCase();
@@ -1132,23 +1156,35 @@ function vChecks(){
   </div>`;
 }
 
+function renderCardTile(f){
+  const hasNum=!!(f.number&&f.number.trim());
+  const hasImg=!!f.image;
+  const ready=hasNum||hasImg;
+  return`<div class="fuel-tile ${ready?'has':''}" data-open-fuel="${E(f.id)}">
+    <div class="row sp">
+      <b>${E(f.name)}</b>
+      <span class="m">${ready?(hasImg?'Карта + '+(hasNum?'№':'визуална'):'Готова'):'Без карта'}</span>
+    </div>
+    <div class="mono" style="margin-top:6px;font-size:15px;color:${ready?'#7dd3fc':'var(--m)'}">
+      ${hasNum?E(f.number):(hasImg?'Натисни за голям изглед на картата':'Натисни за въвеждане на карта')}
+    </div>
+    ${hasImg?`<img src="${f.image}" class="card-shot" style="max-height:140px;min-height:80px;margin:8px 0 0" alt="${E(f.name)}">`:''}
+    ${f.note?`<div class="m" style="margin-top:4px">${E(f.note)}</div>`:''}
+  </div>`;
+}
+
 function vFuel(){
-  const tiles=S.fuels.map(f=>{
-    const hasNum=!!(f.number&&f.number.trim());
-    const hasImg=!!f.image;
-    const ready=hasNum||hasImg;
-    return`<div class="fuel-tile ${ready?'has':''}" data-open-fuel="${E(f.id)}">
-      <div class="row sp">
-        <b>${E(f.name)}</b>
-        <span class="m">${ready?(hasImg?'Карта + '+(hasNum?'№':'визуална'):'Готова'):'Без карта'}</span>
-      </div>
-      <div class="mono" style="margin-top:6px;font-size:15px;color:${ready?'#7dd3fc':'var(--m)'}">
-        ${hasNum?E(f.number):(hasImg?'Натисни за голям изглед на картата':'Натисни за въвеждане на карта')}
-      </div>
-      ${hasImg?`<img src="${f.image}" class="card-shot" style="max-height:140px;min-height:80px;margin:8px 0 0" alt="${E(f.name)}">`:''}
-      ${f.note?`<div class="m" style="margin-top:4px">${E(f.note)}</div>`:''}
-    </div>`;
+  const activeCat=normalizeCardCat(S.cardCatFilter);
+  const catButtons=CARD_CATS.map(cat=>{
+    const count=S.fuels.filter(f=>normalizeCardCat(f.category)===cat).length;
+    const on=activeCat===cat;
+    return`<button type="button" class="sm ${on?'on':''}" data-cat-filter="${E(cat)}">${E(cat)} (${count})</button>`;
   }).join('');
+
+  const filtered=S.fuels.filter(f=>normalizeCardCat(f.category)===activeCat);
+  const tiles=filtered.length
+    ?`<div class="grid g2">${filtered.map(renderCardTile).join('')}</div>`
+    :`<div class="item"><div class="m">Няма добавени карти в „${E(activeCat)}“. Натисни „+ Нова карта“, за да добавиш.</div></div>`;
 
   return`
   <div class="card">
@@ -1162,7 +1198,9 @@ function vFuel(){
         <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
       </div>
     </div>
-    <div class="grid g2">${tiles}</div>
+    <div class="row" style="margin-bottom:10px">${catButtons}</div>
+    <div class="cat-head"><span>${E(activeCat)}</span><span>${filtered.length}</span></div>
+    ${tiles}
   </div>`;
 }
 
@@ -1232,6 +1270,7 @@ function openCardEditor(id){
   S.editFuelId=id||null;
   const item=S.fuels.find(x=>x.id===id);
   $('#cTitle').textContent=item?'Редакция на карта':'Нова карта за отстъпка';
+  $('#cCat').value=normalizeCardCat(item?item.category:S.cardCatFilter);
   $('#cName').value=item?item.name:'';
   $('#cNum').value=item?item.number:'';
   $('#cNote').value=item?item.note:'';
@@ -1312,6 +1351,7 @@ document.addEventListener('click',e=>{
   else if(t.id==='tabSvc'){syncFormFromDom();save();S.tab='svc';render()}
   else if(t.id==='tabChecks'||t.id==='openChecksTab'){syncFormFromDom();save();S.tab='checks';render()}
   else if(t.id==='tabFuel'){syncFormFromDom();save();S.tab='fuel';render()}
+  else if(t.dataset.catFilter){S.cardCatFilter=normalizeCardCat(t.dataset.catFilter);render()}
   else if(t.dataset.goTab){syncFormFromDom();save();S.tab=t.dataset.goTab;render();window.scrollTo({top:0,behavior:'smooth'})}
   else if(t.id==='syncDashBtn')openQuickUpdate(veh);
   else if(t.id==='qCancel')closeDlg($('#quickDlg'));
@@ -1474,16 +1514,18 @@ document.addEventListener('click',e=>{
   else if(t.id==='cClearImg')setCardEditorPreview('');
   else if(t.id==='cCancel')closeDlg($('#cardDlg'));
   else if(t.id==='cSave'){
+    const category=normalizeCardCat($('#cCat').value);
     const name=$('#cName').value.trim();
     const number=$('#cNum').value.trim();
     const note=$('#cNote').value.trim();
     const image=S.editFuelImage||'';
     if(!name)return toast('Въведи име на обекта / веригата.');
+    S.cardCatFilter=category;
     if(S.editFuelId){
       const f=S.fuels.find(x=>x.id===S.editFuelId);
-      if(f){f.name=name;f.number=number;f.note=note;f.image=image}
+      if(f){f.category=category;f.name=name;f.number=number;f.note=note;f.image=image}
     }else{
-      S.fuels.push({id:'f_'+Date.now(),name,number,note,image});
+      S.fuels.push({id:'f_'+Date.now(),category,name,number,note,image});
     }
     save();closeDlg($('#cardDlg'));render();toast('Картата е запазена.');
   }
@@ -1572,7 +1614,14 @@ document.addEventListener('change',async e=>{
           S.activeVehId=d.activeVehId&&S.vehicles.some(v=>v.id===d.activeVehId)?d.activeVehId:S.vehicles[0].id;
         }
         if(Array.isArray(d.fuels)&&d.fuels.length){
-          S.fuels=d.fuels.map(x=>({id:x.id||('f_'+Math.random()),name:x.name||'',number:x.number||'',note:x.note||'',image:x.image||''}));
+          S.fuels=d.fuels.map(x=>({
+            id:x.id||('f_'+Math.random()),
+            category:normalizeCardCat(x.category||(DEFAULT_CHAINS.includes(x.name)?'Бензиностанции':'Други')),
+            name:x.name||'',
+            number:x.number||'',
+            note:x.note||'',
+            image:x.image||''
+          }));
         }
         const cur=getVeh();
         S.form.km=cur.odo?String(cur.odo):'';
