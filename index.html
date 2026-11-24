@@ -11,7 +11,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
-<title>Гараж & Карти — консумативи и горива</title>
+<title>Гараж & Карти — консумативи, проверки и карти за отстъпка</title>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 :root{--bg:#070b14;--p:#101726;--p2:#0b1220;--b:#1e293b;--t:#f1f5f9;--m:#94a3b8;--a:#009ada;--g:#10b981;--y:#f59e0b;--r:#f43f5e;--sat:env(safe-area-inset-top,0px)}
@@ -37,18 +37,21 @@ label.k{display:block;font-size:11px;color:var(--m);text-transform:uppercase;let
 .grid{display:grid;gap:10px}.g2{grid-template-columns:1fr}.g3{grid-template-columns:repeat(3,1fr)}
 @media(min-width:760px){.g2{grid-template-columns:1fr 1fr}}
 .m{color:var(--m);font-size:12px}.mono{font-family:ui-monospace,Menlo,monospace}
-.v{font:700 20px ui-monospace,Menlo,monospace}
 .good{color:var(--g)}.mid{color:var(--y)}.bad{color:var(--r)}
 .item{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:11px;margin-bottom:8px}
 .fuel-tile{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:12px;cursor:pointer;transition:.15s}
 .fuel-tile:hover,.fuel-tile.has{border-color:#009ada77}
-.card-screen{background:#0f172a;border:1px solid #334155;border-radius:16px;padding:14px;margin:10px 0}
+.veh-photo{width:100%;max-height:220px;object-fit:cover;border-radius:14px;border:1px solid #334155;background:#050810;display:block}
+.veh-thumb{width:54px;height:40px;object-fit:cover;border-radius:8px;border:1px solid #334155;background:#050810;display:block}
+.card-screen{background:#0f172a;border:1px solid #334155;border-radius:18px;padding:16px;margin:10px 0}
 .card-screen.bright{background:#ffffff;color:#090d16;border-color:#cbd5e1}
 .card-screen.bright .m{color:#475569}
-.card-shot{width:100%;max-height:280px;object-fit:contain;border-radius:12px;background:#050810;border:1px solid #1e293b;display:block;margin:8px 0}
-.card-screen.bright .card-shot{background:#f8fafc;border-color:#e2e8f0}
-.barcode-lines{height:52px;margin:8px auto 6px;max-width:290px;background:repeating-linear-gradient(90deg,#090d16 0 2px,#fff 2px 4px,#090d16 4px 8px,#fff 8px 10px,#090d16 10px 12px,#fff 12px 16px)}
-dialog{background:var(--p);color:var(--t);border:1px solid #334155;border-radius:18px;width:min(540px,94vw);padding:15px}
+/* По-големи изображения и кодове на картите за лесно сканиране на касата */
+.card-shot{width:100%;max-height:420px;min-height:190px;object-fit:contain;border-radius:14px;background:#050810;border:1px solid #1e293b;display:block;margin:10px 0}
+.card-screen.bright .card-shot{background:#f8fafc;border-color:#cbd5e1}
+.card-screen.zoomed .card-shot{max-height:72vh}
+.barcode-lines{height:76px;margin:10px auto 8px;max-width:380px;border-radius:6px;background:repeating-linear-gradient(90deg,#090d16 0 2.5px,#fff 2.5px 5px,#090d16 5px 9.5px,#fff 9.5px 12px,#090d16 12px 15px,#fff 15px 19px)}
+dialog{background:var(--p);color:var(--t);border:1px solid #334155;border-radius:18px;width:min(620px,96vw);max-width:96vw;padding:15px}
 dialog::backdrop{background:#000c}
 #toast{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0));z-index:40;background:#0f172af5;border:1px solid #334155;border-radius:14px;padding:11px 14px;font-size:13px;display:none}
 </style>
@@ -57,16 +60,62 @@ dialog::backdrop{background:#000c}
 <header>
   <div class="brand">
     <img src="./icons/icon-192.png" alt="Гараж & Карти">
-    <h1>Гараж & Карти<small>консумативи · OCR · горива</small></h1>
+    <h1>Гараж & Карти<small>консумативи · проверки · отстъпки</small></h1>
   </div>
   <div class="row">
     <button type="button" id="tabSvc" class="on">Консумативи</button>
-    <button type="button" id="tabFuel">Карти горива</button>
+    <button type="button" id="tabFuel">Карти за отстъпка</button>
   </div>
 </header>
 
 <div class="wrap" id="app"><div class="card"><div class="m">Зареждане на приложението...</div></div></div>
 <div id="toast"></div>
+
+<dialog id="vehDlg">
+  <h3 id="vDlgTitle" style="margin:0 0 10px">Профил на превозно средство</h3>
+  <div class="grid g2">
+    <div>
+      <label class="k">Име / модел</label>
+      <input id="vName" placeholder="Напр. BMW 330i / Raptor 350">
+    </div>
+    <div>
+      <label class="k">Регистрационен номер</label>
+      <input id="vPlate" class="mono" placeholder="Напр. PB1234AB">
+    </div>
+  </div>
+  <div class="grid g3" style="margin-top:8px">
+    <div>
+      <label class="k">Текущ пробег (km)</label>
+      <input id="vOdo" type="number" inputmode="numeric" placeholder="km">
+    </div>
+    <div>
+      <label class="k">ЕГН / Булстат (за КАТ)</label>
+      <input id="vEgn" class="mono" placeholder="По избор">
+    </div>
+    <div>
+      <label class="k">№ СРМПС / талон (за КАТ)</label>
+      <input id="vRegCert" class="mono" placeholder="По избор">
+    </div>
+  </div>
+  <label class="k" style="margin-top:8px">Снимка на превозното средство</label>
+  <div class="row">
+    <label class="btn sm">
+      📷 Снимай / избери снимка
+      <input type="file" id="vPhotoFile" accept="image/*" capture="environment" hidden>
+    </label>
+    <button type="button" class="sm" id="vClearPhoto">Махни снимката</button>
+  </div>
+  <div id="vPhotoWrap" style="display:none;margin-top:8px">
+    <img id="vPhotoPreview" class="veh-photo" alt="Снимка на МПС">
+  </div>
+  <div class="row sp" style="margin-top:14px">
+    <button type="button" id="vDel" class="sm" style="border-color:#f43f5e66;color:#fda4af">Изтрий профила</button>
+    <div class="row">
+      <button type="button" id="vCancel">Затвори</button>
+      <button type="button" id="vSave" class="pri">Запази профила</button>
+    </div>
+  </div>
+</dialog>
 
 <dialog id="cardDlg">
   <h3 id="cTitle" style="margin:0 0 10px">Карта за отстъпка</h3>
@@ -80,7 +129,7 @@ dialog::backdrop{background:#000c}
       <input type="file" id="cOcrFile" accept="image/*" hidden>
     </label>
   </div>
-  <label class="k" style="margin-top:8px">Скрийншот / снимка на картата (запазва се компресирана в приложението)</label>
+  <label class="k" style="margin-top:8px">Скрийншот / снимка на картата (запазва се във висока резолюция за лесно сканиране)</label>
   <div class="row">
     <label class="btn sm">
       🖼 Избери скрийншот / снимка
@@ -107,6 +156,7 @@ dialog::backdrop{background:#000c}
   <div class="row sp">
     <h3 id="sTitle" style="margin:0">Карта</h3>
     <div class="row">
+      <button type="button" class="sm" id="sZoom">🔍 По-голяма</button>
       <button type="button" class="sm" id="sBright">☀️ Ярък фон</button>
       <button type="button" class="sm" id="sEdit">Редакция</button>
     </div>
@@ -118,7 +168,7 @@ dialog::backdrop{background:#000c}
     <div id="sBarcodeWrap">
       <div class="barcode-lines" id="sBars"></div>
     </div>
-    <div class="mono" id="sNum" style="font-size:22px;font-weight:800;letter-spacing:2px;word-break:break-all;text-align:center"></div>
+    <div class="mono" id="sNum" style="font-size:26px;font-weight:800;letter-spacing:2px;word-break:break-all;text-align:center"></div>
   </div>
   <div class="row sp">
     <button type="button" class="sm" id="sCopy">Копирай номера</button>
@@ -135,7 +185,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v5';
+const KEY='garage_fuel_pwa_v6';
 const $=s=>document.querySelector(s);
 const E=v=>String(v??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const DEFAULT_CHAINS=['OMV','Shell','Lukoil','Petrol','Eco','Круиз'];
@@ -148,19 +198,35 @@ const PRESET_PARTS=[
   {type:'Спирачна течност / накладки',interval:30000,months:24,hint:'DOT 4 / предни / задни'}
 ];
 
+function makeVehicle(name,plate,odo,photo){
+  return{
+    id:'v_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    name:name||'Основно МПС',
+    plate:plate||'',
+    odo:Number(odo)||0,
+    egn:'',
+    regCert:'',
+    photo:photo||'',
+    services:[]
+  };
+}
+
 let S={
   tab:'svc',
-  vehicle:'Основно МПС',
-  odo:0,
-  services:[],
+  activeVehId:'',
+  vehicles:[makeVehicle('Основно МПС','',0,'')],
   fuels:DEFAULT_CHAINS.map((name,i)=>({id:'f_'+i+'_'+Date.now(),name,number:'',note:'',image:''})),
   form:{type:'Масло двигател',detail:'',km:'',interval:10000,months:12,date:new Date().toISOString().slice(0,10),note:''},
   ocrBusy:'',
+  editVehId:null,
+  editVehPhoto:'',
   editFuelId:null,
   editFuelImage:'',
   showFuelId:null,
-  brightCard:false
+  brightCard:false,
+  zoomCard:false
 };
+S.activeVehId=S.vehicles[0].id;
 
 let tt;
 const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',4200)};
@@ -180,35 +246,57 @@ function closeDlg(dlg){
   dlg.removeAttribute('open');
 }
 
+function getVeh(){
+  return S.vehicles.find(v=>v.id===S.activeVehId)||S.vehicles[0];
+}
+
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
-    S.vehicle=d.vehicle||'Основно МПС';
-    S.odo=Number(d.odo)||0;
-    S.services=Array.isArray(d.services)?d.services:[];
+    if(Array.isArray(d.vehicles)&&d.vehicles.length){
+      S.vehicles=d.vehicles.map(v=>({
+        id:v.id||('v_'+Math.random().toString(36).slice(2,6)),
+        name:v.name||'Основно МПС',
+        plate:v.plate||'',
+        odo:Number(v.odo)||0,
+        egn:v.egn||'',
+        regCert:v.regCert||'',
+        photo:v.photo||'',
+        services:Array.isArray(v.services)?v.services:[]
+      }));
+      S.activeVehId=d.activeVehId&&S.vehicles.some(v=>v.id===d.activeVehId)?d.activeVehId:S.vehicles[0].id;
+    }else{
+      const base=makeVehicle(d.vehicle||'Основно МПС',d.plate||'',Number(d.odo)||0,d.vehiclePhoto||'');
+      base.egn=d.egn||'';
+      base.regCert=d.regCert||'';
+      base.services=Array.isArray(d.services)?d.services:[];
+      S.vehicles=[base];
+      S.activeVehId=base.id;
+    }
     if(Array.isArray(d.fuels)&&d.fuels.length){
       S.fuels=d.fuels.map(f=>({id:f.id||('f_'+Math.random()),name:f.name||'',number:f.number||'',note:f.note||'',image:f.image||''}));
     }
-    S.form.km=S.odo?String(S.odo):'';
+    const cur=getVeh();
+    S.form.km=cur.odo?String(cur.odo):'';
   }catch(e){}
 }
+
 function save(){
   try{
     localStorage.setItem(KEY,JSON.stringify({
-      vehicle:S.vehicle,
-      odo:S.odo,
-      services:S.services,
+      activeVehId:S.activeVehId,
+      vehicles:S.vehicles,
       fuels:S.fuels
     }));
   }catch(e){
-    toast('Паметта за снимки на карти е пълна — махни някоя снимка или запази само номера.');
+    toast('Паметта за снимки е пълна — махни някоя снимка или запази по-малка.');
   }
 }
 
-/* ---------- Свиване на скрийншот/снимка на карта в паметта ---------- */
-function compressCardImage(file,maxSide=900,quality=0.78){
+/* ---------- Свиване на снимки в паметта ---------- */
+function compressImage(file,maxSide,quality){
   return new Promise((resolve,reject)=>{
     const url=URL.createObjectURL(file);
     const img=new Image();
@@ -244,6 +332,19 @@ function setCardEditorPreview(dataUrl){
   const img=$('#cPreviewImg');
   if(S.editFuelImage){
     img.src=S.editFuelImage;
+    wrap.style.display='block';
+  }else{
+    img.removeAttribute('src');
+    wrap.style.display='none';
+  }
+}
+
+function setVehPhotoPreview(dataUrl){
+  S.editVehPhoto=dataUrl||'';
+  const wrap=$('#vPhotoWrap');
+  const img=$('#vPhotoPreview');
+  if(S.editVehPhoto){
+    img.src=S.editVehPhoto;
     wrap.style.display='block';
   }else{
     img.removeAttribute('src');
@@ -302,13 +403,14 @@ function triggerCalendarReminder(opts){
   toast(`Напомняне за ${fmtReadableDate(opts.targetDate)} е подготвено за календара.`);
 }
 
-/* ---------- OCR в паметта (снимката не се запазва в галерията) ---------- */
+/* ---------- OCR в паметта ---------- */
 async function readImage(file,mode){
   if(!file)return;
   if(!window.Tesseract){
     toast('OCR библиотеката не е заредена — попълни ръчно.');
     return;
   }
+  const cur=getVeh();
   S.ocrBusy=mode==='part'?'Разчитам етикета от снимката...':mode==='card'?'Разчитам номера от скрийншота...':'Разчитам километрите от снимката...';
   if(mode!=='card')render();
   else toast(S.ocrBusy);
@@ -330,8 +432,8 @@ async function readImage(file,mode){
       const nums=(data.text||'').match(/\d[\d\s.,]{2,8}\d/g)||[];
       const cleanNums=nums.map(x=>Number(x.replace(/[^\d]/g,''))).filter(n=>n>=100&&n<=2000000);
       if(cleanNums.length){
-        const best=S.odo>0
-          ? cleanNums.reduce((a,b)=>Math.abs(b-S.odo)<Math.abs(a-S.odo)?b:a)
+        const best=cur.odo>0
+          ? cleanNums.reduce((a,b)=>Math.abs(b-cur.odo)<Math.abs(a-cur.odo)?b:a)
           : Math.max(...cleanNums);
         S.form.km=String(best);
         toast('Разпознат пробег: '+best+' km. Снимката не се пази.');
@@ -348,18 +450,28 @@ async function readImage(file,mode){
   }
 }
 
-/* ---------- Консумативи ---------- */
-function lastByType(type){
-  return S.services.filter(x=>x.type===type).sort((a,b)=>(b.km||0)-(a.km||0))[0]||null;
+/* ---------- Консумативи, профили и проверки (ГО, винетка, КАТ) ---------- */
+function lastByType(veh,type){
+  return (veh.services||[]).filter(x=>x.type===type).sort((a,b)=>(b.km||0)-(a.km||0))[0]||null;
 }
 
 function vServices(){
-  const curKm=Number(S.odo)||0;
+  const veh=getVeh();
+  const curKm=Number(veh.odo)||0;
   const preset=PRESET_PARTS.find(p=>p.type===S.form.type)||PRESET_PARTS[0];
   const dueDate=addMonthsIso(S.form.date,S.form.months||12);
+  const plateClean=encodeURIComponent((veh.plate||'').trim().toUpperCase());
+
+  const profileChips=S.vehicles.map(v=>{
+    const active=v.id===veh.id;
+    return`<button type="button" class="sm ${active?'on':''}" data-switch-veh="${E(v.id)}">
+      ${v.photo?`<img src="${v.photo}" class="veh-thumb" alt="">`:'🚗'}
+      <span>${E(v.name)}${v.plate?` · <span class="mono">${E(v.plate)}</span>`:''}</span>
+    </button>`;
+  }).join('');
 
   const cards=PRESET_PARTS.map(p=>{
-    const last=lastByType(p.type);
+    const last=lastByType(veh,p.type);
     const inter=Number(last?.interval||p.interval||10000);
     const months=Number(last?.months||p.months||12);
     const nextKm=last?(Number(last.km)||0)+inter:null;
@@ -379,7 +491,7 @@ function vServices(){
     </div>`;
   }).join('');
 
-  const hist=S.services.length?S.services.map(s=>{
+  const hist=(veh.services||[]).length?(veh.services||[]).map(s=>{
     const mInt=Number(s.months)||12;
     const remDate=addMonthsIso(s.date,mInt);
     return`
@@ -395,21 +507,74 @@ function vServices(){
         <button type="button" class="sm" data-del-svc="${E(s.id)}">Изтрий запис</button>
       </div>
     </div>`;
-  }).join(''):`<p class="m">Все още няма записани смени. Направи снимка или попълни данните по-горе.</p>`;
+  }).join(''):`<p class="m">Все още няма записани смени за този профил.</p>`;
 
   return`
   <div class="card">
-    <div class="grid g2">
+    <div class="row sp" style="margin-bottom:8px">
       <div>
-        <label class="k">Превозно средство</label>
-        <input id="vehInput" value="${E(S.vehicle)}" placeholder="Напр. 330i xDrive / Raptor 350">
+        <h3 style="margin:0">Профили на превозни средства</h3>
+        <div class="m">Данните се пазят за всеки профил поотделно — сменяш с едно натискане.</div>
+      </div>
+      <div class="row">
+        <button type="button" class="sm" id="editVehBtn">Редактирай</button>
+        <button type="button" class="pri sm" id="addVehBtn">+ Нов профил</button>
+      </div>
+    </div>
+    <div class="row" style="margin-bottom:10px">${profileChips}</div>
+    ${veh.photo?`<img src="${veh.photo}" class="veh-photo" style="margin-bottom:10px" alt="${E(veh.name)}">`:''}
+    <div class="grid g3">
+      <div>
+        <label class="k">Текущ профил</label>
+        <input id="vehInput" value="${E(veh.name)}" placeholder="Напр. 330i xDrive / Raptor 350">
+      </div>
+      <div>
+        <label class="k">Рег. номер</label>
+        <input id="plateInput" class="mono" value="${E(veh.plate)}" placeholder="Напр. PB1234AB">
       </div>
       <div>
         <label class="k">Текущ пробег (km)</label>
-        <input id="odoInput" type="number" inputmode="numeric" value="${S.odo||''}" placeholder="Напр. 118500">
+        <input id="odoInput" type="number" inputmode="numeric" value="${veh.odo||''}" placeholder="Напр. 118500">
       </div>
     </div>
-    <div class="m" style="margin-top:8px">Снимките се обработват само временно за разчитане на текста и не се запазват — след запис можеш да ги изтриеш от галерията.</div>
+    <div class="grid g2" style="margin-top:8px">
+      <div>
+        <label class="k">ЕГН / Булстат (запазва се за КАТ)</label>
+        <input id="egnInput" class="mono" value="${E(veh.egn)}" placeholder="За бърза проверка на глоби">
+      </div>
+      <div>
+        <label class="k">№ СРМПС / талон (запазва се за КАТ)</label>
+        <input id="regCertInput" class="mono" value="${E(veh.regCert)}" placeholder="Номер на свидетелство за регистрация">
+      </div>
+    </div>
+    <div class="m" style="margin-top:8px">Снимките при смяна се обработват само временно за OCR и не се пазят — след запис можеш да ги изтриеш от галерията.</div>
+  </div>
+
+  <div class="card">
+    <div class="row sp" style="margin-bottom:8px">
+      <div>
+        <h3 style="margin:0">Проверки: застраховка, винетка и КАТ</h3>
+        <div class="m">Запазените рег. номер, ЕГН и № СРМПС остават в профила — не ги въвеждаш повторно.</div>
+      </div>
+      ${(veh.plate||veh.egn||veh.regCert)?`<button type="button" class="sm" id="copyCheckInfo">Копирай данните</button>`:''}
+    </div>
+    <div class="grid g3">
+      <div class="item" style="margin:0">
+        <b>Гражданска отговорност</b>
+        <div class="m" style="margin:4px 0 8px">Проверка по рег. номер във Гаранционен фонд.</div>
+        <a class="btn sm pri" target="_blank" rel="noopener" href="https://www.guarantee.bg/bg/citizens/check-for-valid-insurance${plateClean?`?plate=${plateClean}`:''}">Отвори проверка</a>
+      </div>
+      <div class="item" style="margin:0">
+        <b>Електронна винетка</b>
+        <div class="m" style="margin:4px 0 8px">Проверка за валидност по рег. номер и държава.</div>
+        <a class="btn sm pri" target="_blank" rel="noopener" href="https://bgtoll.bg/bg/elektronni-vinetki">Отвори BGTOLL</a>
+      </div>
+      <div class="item" style="margin:0">
+        <b>Глоби и фишове КАТ</b>
+        <div class="m" style="margin:4px 0 8px">Портал на МВР за електронни фишове и НП.</div>
+        <a class="btn sm pri" target="_blank" rel="noopener" href="https://e-uslugi.mvr.bg/services/obligations">Отвори МВР КАТ</a>
+      </div>
+    </div>
   </div>
 
   <div class="card">
@@ -475,13 +640,13 @@ function vServices(){
   </div>
 
   <div class="card">
-    <h3 style="margin:0 0 10px">Състояние на консумативите (${E(S.vehicle)})</h3>
+    <h3 style="margin:0 0 10px">Състояние на консумативите (${E(veh.name)})</h3>
     <div class="grid g2">${cards}</div>
   </div>
 
   <div class="card">
     <div class="row sp" style="margin-bottom:8px">
-      <h3 style="margin:0">История на смените (${S.services.length})</h3>
+      <h3 style="margin:0">История на смените (${(veh.services||[]).length})</h3>
       <div class="row">
         <button type="button" class="sm" id="btnExport">Експорт JSON</button>
         <label class="btn sm">Импорт<input type="file" id="fileImport" accept="application/json,.json" hidden></label>
@@ -491,7 +656,7 @@ function vServices(){
   </div>`;
 }
 
-/* ---------- Карти за отстъпки на бензиностанции (вкл. скрийншоти от приложения) ---------- */
+/* ---------- Карти за отстъпка ---------- */
 function vFuel(){
   const tiles=S.fuels.map(f=>{
     const hasNum=!!(f.number&&f.number.trim());
@@ -503,8 +668,9 @@ function vFuel(){
         <span class="m">${ready?(hasImg?'Карта + '+(hasNum?'№':'визуална'):'Готова'):'Без карта'}</span>
       </div>
       <div class="mono" style="margin-top:6px;font-size:15px;color:${ready?'#7dd3fc':'var(--m)'}">
-        ${hasNum?E(f.number):(hasImg?'Натисни за показване на снимката':'Натисни за въвеждане на карта')}
+        ${hasNum?E(f.number):(hasImg?'Натисни за голям изглед на картата':'Натисни за въвеждане на карта')}
       </div>
+      ${hasImg?`<img src="${f.image}" class="card-shot" style="max-height:140px;min-height:80px;margin:8px 0 0" alt="${E(f.name)}">`:''}
       ${f.note?`<div class="m" style="margin-top:4px">${E(f.note)}</div>`:''}
     </div>`;
   }).join('');
@@ -513,8 +679,8 @@ function vFuel(){
   <div class="card">
     <div class="row sp" style="margin-bottom:8px">
       <div>
-        <h3 style="margin:0">Карти за отстъпки на бензиностанции</h3>
-        <div class="m">Подходящо за карти от приложения (Shell, OMV и др.) — пази номер и/или скрийншот директно в приложението.</div>
+        <h3 style="margin:0">Карти за отстъпка</h3>
+        <div class="m">Картите се отварят уголемени с ярък фон за по-лесно сканиране на касата.</div>
       </div>
       <button type="button" class="pri sm" id="addFuel">+ Нова карта</button>
     </div>
@@ -529,8 +695,12 @@ function render(){
 }
 
 function syncFormFromDom(){
-  const v=$('#vehInput');if(v)S.vehicle=v.value.trim()||'Основно МПС';
-  const o=$('#odoInput');if(o&&o.value!=='')S.odo=Math.max(0,Number(o.value)||0);
+  const veh=getVeh();
+  const v=$('#vehInput');if(v)veh.name=v.value.trim()||'Основно МПС';
+  const pl=$('#plateInput');if(pl)veh.plate=pl.value.trim().toUpperCase();
+  const o=$('#odoInput');if(o&&o.value!=='')veh.odo=Math.max(0,Number(o.value)||0);
+  const eg=$('#egnInput');if(eg)veh.egn=eg.value.trim();
+  const rc=$('#regCertInput');if(rc)veh.regCert=rc.value.trim();
   const ft=$('#fType');if(ft)S.form.type=ft.value;
   const fk=$('#fKm');if(fk)S.form.km=fk.value;
   const fd=$('#fDetail');if(fd)S.form.detail=fd.value;
@@ -538,6 +708,21 @@ function syncFormFromDom(){
   const fm=$('#fMonths');if(fm)S.form.months=Math.max(1,Number(fm.value)||12);
   const fdt=$('#fDate');if(fdt)S.form.date=fdt.value;
   const fn=$('#fNote');if(fn)S.form.note=fn.value;
+}
+
+function openVehEditor(id){
+  syncFormFromDom();
+  const item=id?S.vehicles.find(v=>v.id===id):null;
+  S.editVehId=item?item.id:null;
+  $('#vDlgTitle').textContent=item?'Редакция на профил':'Нов профил на МПС';
+  $('#vName').value=item?item.name:'';
+  $('#vPlate').value=item?item.plate:'';
+  $('#vOdo').value=item&&item.odo?String(item.odo):'';
+  $('#vEgn').value=item?item.egn:'';
+  $('#vRegCert').value=item?item.regCert:'';
+  $('#vDel').style.display=item&&S.vehicles.length>1?'':'none';
+  setVehPhotoPreview(item?item.photo:'');
+  openDlg($('#vehDlg'));
 }
 
 function openCardEditor(id){
@@ -552,16 +737,14 @@ function openCardEditor(id){
   openDlg($('#cardDlg'));
 }
 
-function applyBrightStyle(){
+function applyViewerStyle(){
   const box=$('#sBox');
-  const btn=$('#sBright');
-  if(S.brightCard){
-    box.classList.add('bright');
-    btn.classList.add('on');
-  }else{
-    box.classList.remove('bright');
-    btn.classList.remove('on');
-  }
+  const bBtn=$('#sBright');
+  const zBtn=$('#sZoom');
+  box.classList.toggle('bright',!!S.brightCard);
+  box.classList.toggle('zoomed',!!S.zoomCard);
+  bBtn.classList.toggle('on',!!S.brightCard);
+  zBtn.classList.toggle('on',!!S.zoomCard);
 }
 
 function openCardViewer(id){
@@ -574,8 +757,9 @@ function openCardViewer(id){
     return;
   }
   S.showFuelId=id;
-  S.brightCard=false;
-  applyBrightStyle();
+  S.brightCard=true;
+  S.zoomCard=false;
+  applyViewerStyle();
   $('#sTitle').textContent=item.name;
   $('#sNote').textContent=item.note||'';
   const img=$('#sImg');
@@ -596,25 +780,82 @@ function openCardViewer(id){
 document.addEventListener('click',e=>{
   const t=e.target.closest('button,.fuel-tile');
   if(!t)return;
+  const veh=getVeh();
   if(t.id==='tabSvc'){syncFormFromDom();S.tab='svc';render()}
   else if(t.id==='tabFuel'){syncFormFromDom();S.tab='fuel';render()}
+  else if(t.dataset.switchVeh){
+    syncFormFromDom();
+    save();
+    S.activeVehId=t.dataset.switchVeh;
+    const nextVeh=getVeh();
+    S.form.km=nextVeh.odo?String(nextVeh.odo):'';
+    render();
+    toast('Профил: '+nextVeh.name);
+  }
+  else if(t.id==='addVehBtn')openVehEditor(null);
+  else if(t.id==='editVehBtn')openVehEditor(veh.id);
+  else if(t.id==='vClearPhoto')setVehPhotoPreview('');
+  else if(t.id==='vCancel')closeDlg($('#vehDlg'));
+  else if(t.id==='vSave'){
+    const name=$('#vName').value.trim()||'Ново МПС';
+    const plate=$('#vPlate').value.trim().toUpperCase();
+    const odo=Math.max(0,Number($('#vOdo').value)||0);
+    const egn=$('#vEgn').value.trim();
+    const regCert=$('#vRegCert').value.trim();
+    const photo=S.editVehPhoto||'';
+    if(S.editVehId){
+      const existing=S.vehicles.find(v=>v.id===S.editVehId);
+      if(existing){
+        existing.name=name;existing.plate=plate;existing.odo=odo;existing.egn=egn;existing.regCert=regCert;existing.photo=photo;
+      }
+      S.activeVehId=existing.id;
+    }else{
+      const created=makeVehicle(name,plate,odo,photo);
+      created.egn=egn;created.regCert=regCert;
+      S.vehicles.push(created);
+      S.activeVehId=created.id;
+    }
+    const cur=getVeh();
+    S.form.km=cur.odo?String(cur.odo):'';
+    save();closeDlg($('#vehDlg'));render();toast('Профилът е запазен.');
+  }
+  else if(t.id==='vDel'){
+    if(!S.editVehId||S.vehicles.length<=1)return;
+    S.vehicles=S.vehicles.filter(v=>v.id!==S.editVehId);
+    S.activeVehId=S.vehicles[0].id;
+    save();closeDlg($('#vehDlg'));render();toast('Профилът е изтрит.');
+  }
+  else if(t.id==='copyCheckInfo'){
+    syncFormFromDom();
+    save();
+    const parts=[];
+    if(veh.plate)parts.push('Рег. №: '+veh.plate);
+    if(veh.egn)parts.push('ЕГН/Булстат: '+veh.egn);
+    if(veh.regCert)parts.push('СРМПС: '+veh.regCert);
+    const info=parts.join(' | ');
+    if(info&&navigator.clipboard){
+      navigator.clipboard.writeText(info).then(()=>toast('Данните за проверка са копирани.')).catch(()=>toast(info));
+    }else{
+      toast(info||'Няма въведени данни.');
+    }
+  }
   else if(t.dataset.pickType){
     syncFormFromDom();
     S.form.type=t.dataset.pickType;
     S.form.interval=Number(t.dataset.pickInt)||10000;
     S.form.months=Number(t.dataset.pickMonths)||12;
-    if(!S.form.km&&S.odo)S.form.km=String(S.odo);
+    if(!S.form.km&&veh.odo)S.form.km=String(veh.odo);
     render();
     window.scrollTo({top:0,behavior:'smooth'});
   }
   else if(t.id==='saveSvc'){
     syncFormFromDom();
-    const km=Number(S.form.km)||Number(S.odo)||0;
+    const km=Number(S.form.km)||Number(veh.odo)||0;
     const detail=S.form.detail.trim();
     const months=Number(S.form.months)||12;
     if(!detail&&!km)return toast('Въведи или снимай консуматив и километри.');
-    if(km>S.odo)S.odo=km;
-    S.services.unshift({
+    if(km>veh.odo)veh.odo=km;
+    veh.services.unshift({
       id:'s_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
       type:S.form.type,
       detail:detail||S.form.type,
@@ -626,7 +867,7 @@ document.addEventListener('click',e=>{
     });
     S.form.detail='';
     S.form.note='';
-    S.form.km=S.odo?String(S.odo):'';
+    S.form.km=veh.odo?String(veh.odo):'';
     save();
     render();
     toast('Смяната е записана. Снимката не се пази и може да я изтриеш от галерията.');
@@ -635,32 +876,32 @@ document.addEventListener('click',e=>{
     syncFormFromDom();
     const months=Number(S.form.months)||12;
     const targetDate=addMonthsIso(S.form.date,months);
-    const km=Number(S.form.km)||Number(S.odo)||0;
+    const km=Number(S.form.km)||Number(veh.odo)||0;
     const nextKm=km+(Number(S.form.interval)||10000);
     triggerCalendarReminder({
-      title:`${S.form.type} — ${S.vehicle}`,
+      title:`${S.form.type} — ${veh.name}`,
       desc:`Смяна на ${S.form.type}${S.form.detail?' ('+S.form.detail+')':''} на ${km.toLocaleString()} km. Следващ интервал: ~${nextKm.toLocaleString()} km или след ${months} мес.`,
       targetDate
     });
   }
   else if(t.dataset.calSvc){
-    const s=S.services.find(x=>x.id===t.dataset.calSvc);
+    const s=(veh.services||[]).find(x=>x.id===t.dataset.calSvc);
     if(!s)return;
     const months=Number(s.months)||12;
     const targetDate=addMonthsIso(s.date,months);
     const nextKm=(Number(s.km)||0)+(Number(s.interval)||10000);
     triggerCalendarReminder({
-      title:`${s.type} — ${S.vehicle}`,
+      title:`${s.type} — ${veh.name}`,
       desc:`Последна смяна на ${Number(s.km||0).toLocaleString()} km (${s.detail||s.type}). Следваща смяна ориентировъчно на ${nextKm.toLocaleString()} km.`,
       targetDate
     });
   }
   else if(t.id==='clearForm'){
-    S.form.detail='';S.form.note='';S.form.km=S.odo?String(S.odo):'';
+    S.form.detail='';S.form.note='';S.form.km=veh.odo?String(veh.odo):'';
     render();
   }
   else if(t.dataset.delSvc){
-    S.services=S.services.filter(x=>x.id!==t.dataset.delSvc);
+    veh.services=(veh.services||[]).filter(x=>x.id!==t.dataset.delSvc);
     save();render();toast('Записът е изтрит.');
   }
   else if(t.id==='addFuel')openCardEditor(null);
@@ -672,7 +913,7 @@ document.addEventListener('click',e=>{
     const number=$('#cNum').value.trim();
     const note=$('#cNote').value.trim();
     const image=S.editFuelImage||'';
-    if(!name)return toast('Въведи име на бензиностанцията.');
+    if(!name)return toast('Въведи име на обекта / веригата.');
     if(S.editFuelId){
       const f=S.fuels.find(x=>x.id===S.editFuelId);
       if(f){f.name=name;f.number=number;f.note=note;f.image=image}
@@ -686,9 +927,13 @@ document.addEventListener('click',e=>{
     S.fuels=S.fuels.filter(x=>x.id!==S.editFuelId);
     save();closeDlg($('#cardDlg'));render();toast('Картата е премахната.');
   }
+  else if(t.id==='sZoom'){
+    S.zoomCard=!S.zoomCard;
+    applyViewerStyle();
+  }
   else if(t.id==='sBright'){
     S.brightCard=!S.brightCard;
-    applyBrightStyle();
+    applyViewerStyle();
   }
   else if(t.id==='sClose')closeDlg($('#showDlg'));
   else if(t.id==='sEdit'){closeDlg($('#showDlg'));openCardEditor(S.showFuelId)}
@@ -697,7 +942,8 @@ document.addEventListener('click',e=>{
     if(txt&&navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>toast('Номерът е копиран.')).catch(()=>toast(txt));
   }
   else if(t.id==='btnExport'){
-    const blob=new Blob([JSON.stringify({vehicle:S.vehicle,odo:S.odo,services:S.services,fuels:S.fuels},null,2)],{type:'application/json'});
+    syncFormFromDom();
+    const blob=new Blob([JSON.stringify({activeVehId:S.activeVehId,vehicles:S.vehicles,fuels:S.fuels},null,2)],{type:'application/json'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
     a.download='garage-fuel-backup.json';
@@ -722,9 +968,20 @@ document.addEventListener('change',async e=>{
     t.value='';
     if(!f)return;
     try{
-      const compressed=await compressCardImage(f);
+      const compressed=await compressImage(f,1400,0.86);
       setCardEditorPreview(compressed);
-      toast('Снимката е добавена към картата.');
+      toast('Снимката на картата е добавена.');
+    }catch(err){
+      toast('Неуспешно зареждане на снимката.');
+    }
+  }else if(t.id==='vPhotoFile'){
+    const f=t.files&&t.files[0];
+    t.value='';
+    if(!f)return;
+    try{
+      const compressed=await compressImage(f,1000,0.82);
+      setVehPhotoPreview(compressed);
+      toast('Снимката на превозното средство е добавена.');
     }catch(err){
       toast('Неуспешно зареждане на снимката.');
     }
@@ -736,20 +993,31 @@ document.addEventListener('change',async e=>{
     r.onload=ev=>{
       try{
         const d=JSON.parse(String(ev.target.result||''));
-        if(d.vehicle)S.vehicle=d.vehicle;
-        if(d.odo!=null)S.odo=Number(d.odo)||0;
-        if(Array.isArray(d.services))S.services=d.services;
+        if(Array.isArray(d.vehicles)&&d.vehicles.length){
+          S.vehicles=d.vehicles.map(v=>({
+            id:v.id||('v_'+Math.random().toString(36).slice(2,6)),
+            name:v.name||'Основно МПС',
+            plate:v.plate||'',
+            odo:Number(v.odo)||0,
+            egn:v.egn||'',
+            regCert:v.regCert||'',
+            photo:v.photo||'',
+            services:Array.isArray(v.services)?v.services:[]
+          }));
+          S.activeVehId=d.activeVehId&&S.vehicles.some(v=>v.id===d.activeVehId)?d.activeVehId:S.vehicles[0].id;
+        }
         if(Array.isArray(d.fuels)&&d.fuels.length){
           S.fuels=d.fuels.map(x=>({id:x.id||('f_'+Math.random()),name:x.name||'',number:x.number||'',note:x.note||'',image:x.image||''}));
         }
-        S.form.km=S.odo?String(S.odo):'';
+        const cur=getVeh();
+        S.form.km=cur.odo?String(cur.odo):'';
         save();render();toast('Данните са възстановени.');
       }catch(err){toast('Невалиден JSON файл.')}
     };
     r.readAsText(f);
-  }else if(t.id==='vehInput'||t.id==='odoInput'||t.id==='fType'||t.id==='fKm'||t.id==='fInt'||t.id==='fMonths'||t.id==='fDate'){
+  }else if(t.id==='vehInput'||t.id==='plateInput'||t.id==='odoInput'||t.id==='egnInput'||t.id==='regCertInput'||t.id==='fType'||t.id==='fKm'||t.id==='fInt'||t.id==='fMonths'||t.id==='fDate'){
     syncFormFromDom();
-    if(t.id==='vehInput'||t.id==='odoInput')save();
+    if(t.id==='vehInput'||t.id==='plateInput'||t.id==='odoInput'||t.id==='egnInput'||t.id==='regCertInput')save();
     if(t.id==='fType'||t.id==='fDate'||t.id==='fMonths')render();
   }
 });
