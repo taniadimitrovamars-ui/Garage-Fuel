@@ -653,7 +653,7 @@ dialog::backdrop{background:#000c}
 
   <div style="margin-top:10px">
     <label class="k">Безплатен ключ от Google AI Studio (пази се само в този браузър)</label>
-    <input id="tsApiKey" type="password" class="mono" placeholder="AIza...">
+    <input id="tsApiKey" type="password" class="mono" placeholder="AQ.Ab8RN6...">
   </div>
 
   <div class="row sp" style="margin-top:12px">
@@ -2165,7 +2165,7 @@ async function solveTestWithGemini(){
     else promptLines.push('Дай ясен и точен отговор на въпроса / задачата.');
     parts.push({text:promptLines.join('\n\n')});
 
-    const endpoint=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const endpoint=`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
     const resp=await fetch(endpoint,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
