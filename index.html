@@ -65,6 +65,9 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .good{color:var(--g)}.mid{color:var(--y)}.bad{color:var(--r)}
 .item{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:11px;margin-bottom:8px}
 
+.veh-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.extra-box{border:1px solid #26354d;background:var(--p2);border-radius:14px;padding:12px;margin-top:10px}
+
 .svc-pick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 @media(min-width:640px){.svc-pick-grid{grid-template-columns:repeat(3,1fr)}}
 .svc-pick-btn{min-height:66px;padding:10px 11px;border-radius:14px;background:var(--p2);border:1px solid #26354d;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;text-align:left;width:100%}
@@ -118,7 +121,7 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .dash-footer:hover{background:#111c31}
 
 .veh-photo{width:100%;max-height:210px;object-fit:cover;border-radius:14px;border:1px solid #334155;background:#050810;display:block}
-.veh-thumb{width:46px;height:34px;object-fit:cover;border-radius:8px;border:1px solid #334155;background:#050810;display:block}
+.veh-thumb{width:34px;height:26px;object-fit:cover;border-radius:6px;border:1px solid #334155;background:#050810;display:block}
 .card-screen{background:#0f172a;border:1px solid #334155;border-radius:18px;padding:16px;margin:10px 0;display:flex;flex-direction:column}
 .card-screen.bright{background:#ffffff;color:#090d16;border-color:#cbd5e1}
 .card-screen.bright .m{color:#475569}
@@ -152,7 +155,7 @@ dialog::backdrop{background:#000c}
 
 <dialog id="quickDlg">
   <h3 style="margin:0 0 8px">Бързо обновяване на данните</h3>
-  <div class="m" style="margin-bottom:10px">Въведи новия пробег или дати — записват се веднага в профила.</div>
+  <div class="m" style="margin-bottom:10px">Въведи новия пробег или дати — записват се веднага в активния профил.</div>
   <div class="grid g2">
     <div>
       <label class="k">Текущ пробег (km)</label>
@@ -192,31 +195,45 @@ dialog::backdrop{background:#000c}
     <h3 id="vDlgTitle" style="margin:0">Профил на превозно средство</h3>
     <button type="button" class="sm" id="vCancelTop">Затвори</button>
   </div>
-  <div class="m" style="margin-bottom:10px">Снимай малък или голям талон (СРМПС) без отблясъци, за да се разчетат VIN, първа регистрация и данни — снимката не се пази.</div>
+  <div class="m" id="vDlgHint" style="margin-bottom:10px">Добави кола, АТВ, мотор или друго МПС — всеки профил си пази отделни данни, консумативи и фактури.</div>
   <div class="row" style="margin-bottom:12px">
     <label class="btn ok" style="flex:1;min-height:46px" title="Снимай или избери снимка на талона">
-      📄 Снимай / избери малък или голям талон
+      📄 Снимай / избери талон за разчитане
       <input type="file" id="vRegScanFile" accept="image/*" capture="environment" hidden>
     </label>
   </div>
   <div class="grid g2">
     <div>
-      <label class="k">Марка / модел</label>
-      <input id="vName" placeholder="Напр. Модел / марка">
+      <label class="k">Име / марка / модел</label>
+      <input id="vName" placeholder="Напр. Лична кола или АТВ на малкия">
     </div>
     <div>
       <label class="k">Регистрационен номер</label>
-      <input id="vPlate" class="mono" placeholder="Напр. CB1234AB">
+      <input id="vPlate" class="mono" placeholder="Напр. PB1234AB или без номер">
     </div>
   </div>
   <div class="grid g2" style="margin-top:8px">
     <div>
       <label class="k">VIN номер (рама)</label>
-      <input id="vVin" class="mono" maxlength="20" placeholder="17-символен VIN номер">
+      <input id="vVin" class="mono" maxlength="20" placeholder="17-символен VIN номер (по избор)">
     </div>
     <div>
       <label class="k">Дата на първа регистрация</label>
       <input id="vFirstReg" type="date">
+    </div>
+  </div>
+  <div class="grid g3" style="margin-top:8px">
+    <div>
+      <label class="k">Мощност (kW)</label>
+      <input id="vPowerKw" type="number" step="0.1" inputmode="decimal" placeholder="Напр. 185">
+    </div>
+    <div>
+      <label class="k">Мощност (к.с.)</label>
+      <input id="vPowerHp" type="number" step="1" inputmode="numeric" placeholder="Напр. 252">
+    </div>
+    <div>
+      <label class="k">Тегло / маса (kg)</label>
+      <input id="vWeightKg" type="number" step="1" inputmode="numeric" placeholder="Напр. 1580">
     </div>
   </div>
   <div class="grid g3" style="margin-top:8px">
@@ -233,35 +250,45 @@ dialog::backdrop{background:#000c}
       <input id="vRegCert" class="mono" placeholder="По избор">
     </div>
   </div>
-  <div class="grid g3" style="margin-top:8px">
-    <div>
-      <label class="k">ГТП валиден до</label>
-      <input id="vGtpDate" type="date">
-    </div>
-    <div>
-      <label class="k">Застраховка (ГО) до</label>
-      <input id="vMtplDate" type="date">
-    </div>
-    <div>
-      <label class="k">Винетка валидна до</label>
-      <input id="vVignetteDate" type="date">
+
+  <div style="margin-top:10px">
+    <button type="button" class="sm" id="toggleVehExtraBtn" style="width:100%;justify-content:space-between">
+      <span>📋 Допълнителни опции (ГТП, ГО, винетка, глоби)</span>
+      <span id="toggleVehExtraArrow">▾</span>
+    </button>
+    <div id="vehExtraPanel" class="extra-box" style="display:none">
+      <div class="grid g3">
+        <div>
+          <label class="k">ГТП валиден до</label>
+          <input id="vGtpDate" type="date">
+        </div>
+        <div>
+          <label class="k">Застраховка (ГО) до</label>
+          <input id="vMtplDate" type="date">
+        </div>
+        <div>
+          <label class="k">Винетка валидна до</label>
+          <input id="vVignetteDate" type="date">
+        </div>
+      </div>
+      <div class="grid g2" style="margin-top:8px">
+        <div>
+          <label class="k">Глоби към АПИ / КАТ</label>
+          <select id="vApiFines">
+            <option value="Няма">Няма</option>
+            <option value="Има за проверка">Има за проверка</option>
+            <option value="Непроверено">Непроверено</option>
+          </select>
+        </div>
+        <div>
+          <label class="k">Ресурс / износване (%)</label>
+          <input id="vWearPct" type="number" min="0" max="100" inputmode="numeric" placeholder="0 – 100">
+        </div>
+      </div>
     </div>
   </div>
-  <div class="grid g2" style="margin-top:8px">
-    <div>
-      <label class="k">Глоби към АПИ / КАТ</label>
-      <select id="vApiFines">
-        <option value="Няма">Няма</option>
-        <option value="Има за проверка">Има за проверка</option>
-        <option value="Непроверено">Непроверено</option>
-      </select>
-    </div>
-    <div>
-      <label class="k">Ресурс / износване (%)</label>
-      <input id="vWearPct" type="number" min="0" max="100" inputmode="numeric" placeholder="0 – 100">
-    </div>
-  </div>
-  <label class="k" style="margin-top:8px">Снимка на превозното средство</label>
+
+  <label class="k" style="margin-top:10px">Снимка на превозното средство</label>
   <div class="row">
     <label class="btn sm">
       🖼 От галерията
@@ -385,7 +412,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v19';
+const KEY='garage_fuel_pwa_v21';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -467,6 +494,9 @@ function makeVehicle(name,plate,odo,photo){
     plate:plate||'',
     vin:'',
     firstRegDate:'',
+    powerKw:'',
+    powerHp:'',
+    weightKg:'',
     odo:Number(odo)||0,
     egn:'',
     regCert:'',
@@ -484,7 +514,7 @@ let S={
   tab:'dash',
   activeCardCat:null,
   activeVehId:'',
-  vehicles:[makeVehicle('Ново превозно средство','',0,'')],
+  vehicles:[makeVehicle('Основно МПС','',0,'')],
   fuels:DEFAULT_CHAINS.map((name,i)=>({id:'f_'+i+'_'+Date.now(),category:'Бензиностанции',name,number:'',note:'',image:''})),
   form:{type:'Масло двигател',detail:'',km:'',interval:10000,months:12,date:new Date().toISOString().slice(0,10),note:'',docImage:''},
   ocrBusy:'',
@@ -542,6 +572,9 @@ function normalizeVeh(v){
     plate:v.plate||'',
     vin:v.vin||'',
     firstRegDate:v.firstRegDate||'',
+    powerKw:v.powerKw!==undefined&&v.powerKw!==null?String(v.powerKw):'',
+    powerHp:v.powerHp!==undefined&&v.powerHp!==null?String(v.powerHp):'',
+    weightKg:v.weightKg!==undefined&&v.weightKg!==null?String(v.weightKg):'',
     odo:Number(v.odo)||0,
     egn:v.egn||'',
     regCert:v.regCert||'',
@@ -557,14 +590,14 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
       S.vehicles=d.vehicles.map(normalizeVeh);
       S.activeVehId=d.activeVehId&&S.vehicles.some(v=>v.id===d.activeVehId)?d.activeVehId:S.vehicles[0].id;
     }else{
-      const base=makeVehicle(d.vehicle||'Ново превозно средство',d.plate||'',Number(d.odo)||0,d.vehiclePhoto||'');
+      const base=makeVehicle(d.vehicle||'Основно МПС',d.plate||'',Number(d.odo)||0,d.vehiclePhoto||'');
       base.egn=d.egn||'';
       base.regCert=d.regCert||'';
       base.services=Array.isArray(d.services)?d.services.map(normalizeServiceItem):[];
@@ -816,6 +849,14 @@ function setVehPhotoPreview(dataUrl){
     img.removeAttribute('src');
     wrap.style.display='none';
   }
+}
+
+function setVehExtraOpen(open){
+  const panel=$('#vehExtraPanel');
+  const arrow=$('#toggleVehExtraArrow');
+  if(!panel)return;
+  panel.style.display=open?'block':'none';
+  if(arrow)arrow.textContent=open?'▴':'▾';
 }
 
 const C128_PATTERNS=[
@@ -1207,11 +1248,40 @@ function parseRegistrationCardText(rawText){
   const candidates=[...clean.matchAll(/\b\d{7,12}\b/g)].map(m=>m[0]);
   const regCert=candidates.find(n=>!clean.includes(n+'KM')&&n.length>=8)||candidates[0]||'';
 
-  const brandList=['BMW','MERCEDES','AUDI','VW','VOLKSWAGEN','TOYOTA','YAMAHA','HONDA','FORD','OPEL','PEUGEOT','RENAULT','SKODA','HYUNDAI','KIA','MAZDA','NISSAN','VOLVO','DACIA','FIAT','CITROEN','SEAT','LEXUS','SUBARU','SUZUKI'];
+  const brandList=['BMW','MERCEDES','AUDI','VW','VOLKSWAGEN','TOYOTA','YAMAHA','HONDA','FORD','OPEL','PEUGEOT','RENAULT','SKODA','HYUNDAI','KIA','MAZDA','NISSAN','VOLVO','DACIA','FIAT','CITROEN','SEAT','LEXUS','SUBARU','SUZUKI','LONCIN','TELSTAR','ZEDA'];
   const foundBrand=brandList.find(b=>new RegExp(`\\b${b}\\b`).test(clean))||'';
 
+  let powerKw='';
+  let powerHp='';
+  const kwMatch=clean.match(/\b(\d{1,4}(?:[.,]\d{1,2})?)\s*(?:KW|КВТ)\b/);
+  const hpMatch=clean.match(/\b(\d{1,4}(?:[.,]\d{1,2})?)\s*(?:HP|К\.?\s*С\.?|КС)\b/);
+  if(kwMatch){
+    const kwVal=Number(kwMatch[1].replace(',','.'));
+    if(kwVal>0&&kwVal<=2000){
+      powerKw=String(kwVal);
+      powerHp=String(Math.round(kwVal*1.35962));
+    }
+  }
+  if(hpMatch){
+    const hpVal=Number(hpMatch[1].replace(',','.'));
+    if(hpVal>0&&hpVal<=2800){
+      powerHp=String(Math.round(hpVal));
+      if(!powerKw)powerKw=String(Math.round(hpVal/1.35962*10)/10);
+    }
+  }
+
+  let weightKg='';
+  const kgMatches=[...clean.matchAll(/\b(\d{2,5}(?:[.,]\d{1,2})?)\s*(?:KG|КГ)\b/g)];
+  if(kgMatches.length){
+    const nums=kgMatches.map(m=>Math.round(Number(m[1].replace(',','.'))))
+      .filter(n=>n>=40&&n<=45000);
+    if(nums.length){
+      weightKg=String(Math.min(...nums));
+    }
+  }
+
   const dates=extractAllIsoDatesFromText(rawText);
-  return{vin,plate,regCert,brand:foundBrand,firstRegDate:dates[0]||'',dates};
+  return{vin,plate,regCert,brand:foundBrand,powerKw,powerHp,weightKg,firstRegDate:dates[0]||'',dates};
 }
 function fmtCalDate(d){
   const y=d.getFullYear();
@@ -1277,7 +1347,7 @@ async function readRegistrationCard(file){
     toast('OCR библиотеката не е заредена — въведи данните ръчно.');
     return;
   }
-  toast('Разчитам талона и VIN номера...');
+  toast('Разчитам талона, VIN, мощност и килограми...');
   let procUrl='';
   try{
     procUrl=await preprocessForOcr(file,'reg');
@@ -1297,7 +1367,20 @@ async function readRegistrationCard(file){
       $('#vRegCert').value=parsed.regCert;
       found.push('СРМПС: '+parsed.regCert);
     }
-    if(parsed.brand&&(!$('#vName').value.trim()||$('#vName').value.trim()==='Ново превозно средство')){
+    if(parsed.powerKw){
+      $('#vPowerKw').value=parsed.powerKw;
+      found.push('Мощност: '+parsed.powerKw+' kW');
+    }
+    if(parsed.powerHp){
+      $('#vPowerHp').value=parsed.powerHp;
+      if(!parsed.powerKw)found.push('Мощност: '+parsed.powerHp+' к.с.');
+    }
+    if(parsed.weightKg){
+      $('#vWeightKg').value=parsed.weightKg;
+      found.push('Тегло: '+parsed.weightKg+' kg');
+    }
+    const curName=$('#vName').value.trim();
+    if(parsed.brand&&(!curName||curName==='Основно МПС'||curName==='Ново превозно средство')){
       $('#vName').value=parsed.brand;
       found.push('Марка: '+parsed.brand);
     }
@@ -1404,9 +1487,7 @@ function dateBadgeClass(dateStr){
   return'';
 }
 
-function vVehicleCard(veh){
-  const plateDisplay=(veh.plate||'').trim().toUpperCase();
-  const pct=Math.max(0,Math.min(100,Number(veh.wearPct)||0));
+function vVehicleSwitcherBar(veh){
   const chips=S.vehicles.map(v=>{
     const active=v.id===veh.id;
     return`<button type="button" class="sm ${active?'on':''}" data-switch-veh="${E(v.id)}">
@@ -1415,8 +1496,22 @@ function vVehicleCard(veh){
     </button>`;
   }).join('');
 
+  return`<div class="veh-bar">
+    ${chips}
+    <button type="button" class="sm ok" id="addVehInlineBtn">+ Добави кола / АТВ</button>
+  </div>`;
+}
+
+function vVehicleCard(veh){
+  const plateDisplay=(veh.plate||'').trim().toUpperCase();
+  const pct=Math.max(0,Math.min(100,Number(veh.wearPct)||0));
+  const powerLabel=[
+    veh.powerKw?`${E(veh.powerKw)} kW`:'',
+    veh.powerHp?`${E(veh.powerHp)} к.с.`:''
+  ].filter(Boolean).join(' / ');
+
   return`
-  ${S.vehicles.length>1?`<div class="row" style="margin-bottom:8px">${chips}</div>`:''}
+  ${vVehicleSwitcherBar(veh)}
   <div class="dash-card">
     <div class="dash-body">
       <div class="row sp">
@@ -1430,6 +1525,8 @@ function vVehicleCard(veh){
           <div class="eu-num">${E(plateDisplay)}</div>
         </div>`:`<span class="m">Без зададен рег. номер</span>`}
         <div class="row" style="gap:10px">
+          ${powerLabel?`<span class="m mono">Мощност: <b style="color:var(--t)">${powerLabel}</b></span>`:''}
+          ${veh.weightKg?`<span class="m mono">Тегло: <b style="color:var(--t)">${Number(veh.weightKg).toLocaleString()} kg</b></span>`:''}
           ${veh.firstRegDate?`<span class="m mono">1-ва рег.: <b style="color:var(--t)">${E(fmtDotDate(veh.firstRegDate))}</b></span>`:''}
           ${veh.vin?`<span class="m mono">VIN: <b style="color:var(--t)">${E(veh.vin)}</b></span>`:''}
           ${veh.odo?`<span class="m mono">Пробег: <b style="color:var(--t)">${Number(veh.odo).toLocaleString()} km</b></span>`:''}
@@ -1512,7 +1609,7 @@ function vHomeDash(veh){
     </button>
     <button type="button" class="sheet-btn" id="addVehBtn">
       <b>🚗 + Нов профил</b>
-      <span>Снимай талон или добави МПС</span>
+      <span>Добави кола, АТВ или друго МПС</span>
     </button>
     <button type="button" class="sheet-btn" id="shareAppBtn">
       <b>📲 QR за споделяне</b>
@@ -1576,11 +1673,12 @@ function vServices(){
   }).join(''):`<p class="m">Все още няма записани смени за този профил.</p>`;
 
   return`
+  ${vVehicleSwitcherBar(veh)}
   <div class="card">
     <div class="row sp" style="margin-bottom:8px">
       <div>
         <h3 style="margin:0">Нова смяна на консуматив</h3>
-        <div class="m">Профил: <b>${E(veh.name)}</b>${veh.plate?` · <span class="mono">${E(veh.plate)}</span>`:''}</div>
+        <div class="m">Активен профил: <b>${E(veh.name)}</b>${veh.plate?` · <span class="mono">${E(veh.plate)}</span>`:''}</div>
       </div>
       <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
     </div>
@@ -1691,11 +1789,12 @@ function vChecks(){
   const veh=getVeh();
 
   return`
+  ${vVehicleSwitcherBar(veh)}
   <div class="card">
     <div class="row sp" style="margin-bottom:8px">
       <div>
         <h3 style="margin:0">Данни за проверки и напомняния</h3>
-        <div class="m">Профил: <b>${E(veh.name)}</b> · Датата на първа регистрация е отделена от ГТП, ГО и винетката, за да не се смесват при разчитане.</div>
+        <div class="m">Активен профил: <b>${E(veh.name)}</b> · Датата на първа регистрация е отделена от ГТП, ГО и винетката, за да не се смесват при разчитане.</div>
       </div>
       <div class="row">
         ${(veh.plate||veh.vin||veh.firstRegDate||veh.egn||veh.regCert)?`<button type="button" class="sm" id="copyCheckInfo">Копирай данните</button>`:''}
@@ -1929,11 +2028,17 @@ function openVehEditor(id){
   syncFormFromDom();
   const item=id?S.vehicles.find(v=>v.id===id):null;
   S.editVehId=item?item.id:null;
-  $('#vDlgTitle').textContent=item?'Редакция на профил':'Нов профил на МПС';
+  $('#vDlgTitle').textContent=item?'Редакция на профил':'Добавяне на ново превозно средство';
+  $('#vDlgHint').textContent=item
+    ?'Редактирай данните на този профил.'
+    :'Добави кола, АТВ, мотор или друго МПС — всеки профил си пази отделни данни, консумативи и фактури.';
   $('#vName').value=item?item.name:'';
   $('#vPlate').value=item?item.plate:'';
   $('#vVin').value=item?item.vin:'';
   $('#vFirstReg').value=item?item.firstRegDate:'';
+  $('#vPowerKw').value=item?item.powerKw:'';
+  $('#vPowerHp').value=item?item.powerHp:'';
+  $('#vWeightKg').value=item?item.weightKg:'';
   $('#vOdo').value=item&&item.odo?String(item.odo):'';
   $('#vEgn').value=item?item.egn:'';
   $('#vRegCert').value=item?item.regCert:'';
@@ -1942,6 +2047,8 @@ function openVehEditor(id){
   $('#vVignetteDate').value=item?item.vignetteDate:'';
   $('#vApiFines').value=item&&item.apiFines?item.apiFines:'Няма';
   $('#vWearPct').value=item&&item.wearPct!=null?String(item.wearPct):'0';
+  const hasExtra=!!(item&&(item.gtpDate||item.mtplDate||item.vignetteDate||item.wearPct||(item.apiFines&&item.apiFines!=='Няма')));
+  setVehExtraOpen(hasExtra);
   $('#vDel').style.display=item?'':'none';
   setVehPhotoPreview(item?item.photo:'');
   openDlg($('#vehDlg'));
@@ -2105,9 +2212,13 @@ document.addEventListener('click',e=>{
     const nextVeh=getVeh();
     S.form.km=nextVeh.odo?String(nextVeh.odo):'';
     render();
-    toast('Профил: '+nextVeh.name);
+    toast('Активен профил: '+nextVeh.name);
   }
-  else if(t.id==='addVehBtn')openVehEditor(null);
+  else if(t.id==='addVehBtn'||t.id==='addVehInlineBtn')openVehEditor(null);
+  else if(t.id==='toggleVehExtraBtn'){
+    const p=$('#vehExtraPanel');
+    setVehExtraOpen(!(p&&p.style.display==='block'));
+  }
   else if(t.id==='shareAppBtn'){
     const shareUrl=window.location.href;
     drawQrCode($('#shQrCanvas'),shareUrl,$('#shQrStatus'));
@@ -2123,10 +2234,14 @@ document.addEventListener('click',e=>{
   else if(t.id==='vClearPhoto')setVehPhotoPreview('');
   else if(t.id==='vCancel'||t.id==='vCancelTop')closeDlg($('#vehDlg'));
   else if(t.id==='vSave'){
-    const name=$('#vName').value.trim()||'Ново превозно средство';
+    const isNew=!S.editVehId;
+    const name=$('#vName').value.trim()||(isNew?`МПС ${S.vehicles.length+1}`:'Ново превозно средство');
     const plate=$('#vPlate').value.trim().toUpperCase();
     const vin=$('#vVin').value.trim().toUpperCase();
     const firstRegDate=$('#vFirstReg').value;
+    const powerKw=$('#vPowerKw').value.trim();
+    const powerHp=$('#vPowerHp').value.trim();
+    const weightKg=$('#vWeightKg').value.trim();
     const odo=Math.max(0,Number($('#vOdo').value)||0);
     const egn=$('#vEgn').value.trim();
     const regCert=$('#vRegCert').value.trim();
@@ -2139,18 +2254,18 @@ document.addEventListener('click',e=>{
     if(S.editVehId){
       const existing=S.vehicles.find(v=>v.id===S.editVehId);
       if(existing){
-        Object.assign(existing,{name,plate,vin,firstRegDate,odo,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines,wearPct,photo});
+        Object.assign(existing,{name,plate,vin,firstRegDate,powerKw,powerHp,weightKg,odo,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines,wearPct,photo});
+        S.activeVehId=existing.id;
       }
-      S.activeVehId=existing.id;
     }else{
       const created=makeVehicle(name,plate,odo,photo);
-      Object.assign(created,{vin,firstRegDate,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines,wearPct});
+      Object.assign(created,{vin,firstRegDate,powerKw,powerHp,weightKg,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines,wearPct});
       S.vehicles.push(created);
       S.activeVehId=created.id;
     }
     const cur=getVeh();
     S.form.km=cur.odo?String(cur.odo):'';
-    save();closeDlg($('#vehDlg'));render();toast('Профилът е запазен.');
+    save();closeDlg($('#vehDlg'));render();toast(isNew?'Добавен е нов профил: '+cur.name:'Профилът е запазен.');
   }
   else if(t.id==='vDel'){
     if(!S.editVehId)return;
@@ -2159,7 +2274,7 @@ document.addEventListener('click',e=>{
     if(!confirm(`Да изтрия ли „${label}“ заедно с историята на консумативите му?`))return;
     S.vehicles=S.vehicles.filter(v=>v.id!==S.editVehId);
     if(!S.vehicles.length){
-      const fresh=makeVehicle('Ново превозно средство','',0,'');
+      const fresh=makeVehicle('Основно МПС','',0,'');
       S.vehicles=[fresh];
     }
     S.activeVehId=S.vehicles[0].id;
@@ -2173,6 +2288,8 @@ document.addEventListener('click',e=>{
     const parts=[];
     if(veh.plate)parts.push('Рег. №: '+veh.plate);
     if(veh.vin)parts.push('VIN: '+veh.vin);
+    if(veh.powerKw||veh.powerHp)parts.push('Мощност: '+[veh.powerKw?veh.powerKw+' kW':'',veh.powerHp?veh.powerHp+' к.с.':''].filter(Boolean).join(' / '));
+    if(veh.weightKg)parts.push('Тегло: '+veh.weightKg+' kg');
     if(veh.firstRegDate)parts.push('1-ва рег.: '+fmtDotDate(veh.firstRegDate));
     if(veh.egn)parts.push('ЕГН/Булстат: '+veh.egn);
     if(veh.regCert)parts.push('СРМПС: '+veh.regCert);
@@ -2323,6 +2440,12 @@ document.addEventListener('change',async e=>{
     const f=t.files&&t.files[0];
     t.value='';
     readRegistrationCard(f);
+  }else if(t.id==='vPowerKw'){
+    const kw=Number(t.value);
+    if(kw>0&&!$('#vPowerHp').value.trim())$('#vPowerHp').value=String(Math.round(kw*1.35962));
+  }else if(t.id==='vPowerHp'){
+    const hp=Number(t.value);
+    if(hp>0&&!$('#vPowerKw').value.trim())$('#vPowerKw').value=String(Math.round(hp/1.35962*10)/10);
   }else if(t.dataset.ocrDate){
     syncFormFromDom();
     const f=t.files&&t.files[0];
