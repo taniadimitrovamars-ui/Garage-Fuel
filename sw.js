@@ -1,4 +1,4 @@
-const CACHE = 'garage-fuel-v17';
+const CACHE = 'garage-fuel-v19';
 const FILES = [
   './',
   './index.html',
