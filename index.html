@@ -27,45 +27,71 @@ if(!window.QRCode){
 html,body{margin:0;background:var(--bg);color:var(--t);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow-x:hidden}
 body{padding:var(--sat) 0 calc(2.4rem + env(safe-area-inset-bottom,0))}
 header{position:sticky;top:0;z-index:10;background:#080c16fa;backdrop-filter:blur(10px);border-bottom:1px solid #26354d;padding:calc(var(--sat) + 7px) 10px 9px;display:flex;flex-direction:column;gap:8px;align-items:stretch}
-header:after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#dc2626,#cbd5e1,#dc2626)}
+header:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,#009ada,#38bdf8,#ef4444)}
+
 .brand-banner{
-  display:flex;align-items:center;justify-content:center;
-  width:100%;min-height:68px;
-  border-radius:14px;
-  background:radial-gradient(ellipse at 50% 35%,#dc262633,#090d16 74%);
-  border:1px solid #2b384e;
-  padding:4px 10px;
-  box-shadow:0 4px 18px #00000088,inset 0 1px 0 #ffffff1a
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;min-height:62px;
+  border-radius:16px;
+  background:
+    radial-gradient(circle at 12% 50%, #009ada2e, transparent 42%),
+    radial-gradient(circle at 88% 50%, #ef444424, transparent 42%),
+    linear-gradient(135deg, #0d1526 0%, #080d18 55%, #111b2e 100%);
+  border:1px solid #2b3b56;
+  padding:8px 14px;
+  box-shadow:0 6px 22px #00000080,inset 0 1px 0 #ffffff14
 }
-.brand-banner svg{
-  width:min(360px,100%);
-  height:62px;
-  display:block;
-  filter:drop-shadow(0 2px 8px #000000aa)
+.brand-left{display:flex;align-items:center;gap:11px;min-width:0}
+.brand-badge{
+  width:42px;height:42px;border-radius:12px;flex:0 0 auto;
+  background:linear-gradient(145deg,#132238,#0a111e);
+  border:1px solid #38bdf855;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 1px 0 #ffffff1a,0 2px 8px #00000066
+}
+.brand-badge svg{width:26px;height:26px;display:block}
+.brand-titles{display:flex;flex-direction:column;min-width:0}
+.brand-name{
+  font-size:17px;font-weight:800;letter-spacing:1.4px;line-height:1.1;
+  background:linear-gradient(90deg,#ffffff 0%,#e2e8f0 65%,#7dd3fc 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  white-space:nowrap
+}
+.brand-sub{
+  font-size:10px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;
+  color:#94a3b8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.brand-pill{
+  flex:0 0 auto;
+  font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+  color:#7dd3fc;background:#009ada1c;border:1px solid #38bdf844;
+  border-radius:999px;padding:4px 9px;white-space:nowrap
 }
 @media(min-width:760px){
   header{padding:calc(var(--sat) + 9px) 16px 10px}
-  .brand-banner{min-height:82px}
-  .brand-banner svg{width:min(440px,100%);height:74px}
+  .brand-banner{min-height:70px;padding:10px 18px}
+  .brand-badge{width:46px;height:46px;border-radius:14px}
+  .brand-badge svg{width:28px;height:28px}
+  .brand-name{font-size:20px;letter-spacing:1.8px}
+  .brand-sub{font-size:11px;letter-spacing:2px}
 }
 
-.nav-tabs{display:flex;gap:6px;width:100%;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:1px 0}
-.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;width:100%}
 .nav-tabs button{
-  flex:1 0 auto;
+  width:100%;
   min-height:36px;
-  padding:0 9px;
-  font-size:12px;
+  padding:0 6px;
+  font-size:11.5px;
   font-weight:600;
   border-radius:999px;
   white-space:nowrap;
-  gap:5px;
+  gap:4px;
   background:#111b2e;
   border:1px solid #293852;
   color:#cbd5e1;
-  letter-spacing:.01em
+  letter-spacing:0
 }
-.nav-tabs button svg{width:14px;height:14px;flex:0 0 auto;opacity:.85}
+.nav-tabs button svg{width:13px;height:13px;flex:0 0 auto;opacity:.85}
 .nav-tabs button:hover{border-color:#009ada77;color:#f8fafc}
 .nav-tabs button.on{
   background:linear-gradient(180deg,#009ada3d,#009ada22);
@@ -75,8 +101,9 @@ header:after{content:"";position:absolute;left:0;right:0;top:0;height:3px;backgr
 }
 .nav-tabs button.on svg{opacity:1;color:#38bdf8}
 @media(min-width:620px){
-  .nav-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;overflow-x:visible}
+  .nav-tabs{gap:8px}
   .nav-tabs button{min-height:40px;padding:0 12px;font-size:13px;gap:6px}
+  .nav-tabs button svg{width:14px;height:14px}
 }
 
 .wrap{max-width:980px;margin:0 auto;padding:12px 14px}
@@ -201,6 +228,15 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .dash-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 16px;background:#0b1220;border-top:1px solid #1e293b;cursor:pointer}
 .dash-footer:hover{background:#111c31}
 
+.dash-svc-box{margin-top:12px;border-top:1px solid #1b2638;padding-top:12px}
+.dash-svc-item{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:9px 10px;border-radius:12px;background:#0b1220;border:1px solid #1b283c;
+  margin-bottom:7px;cursor:pointer
+}
+.dash-svc-item:last-child{margin-bottom:0}
+.dash-svc-item:hover{border-color:#38bdf866;background:#0f192d}
+
 .veh-photo{width:100%;max-height:210px;object-fit:cover;border-radius:14px;border:1px solid #334155;background:#050810;display:block;cursor:zoom-in}
 .card-screen{background:#0f172a;border:1px solid #334155;border-radius:18px;padding:16px;margin:10px 0;display:flex;flex-direction:column}
 .card-screen.bright{background:#ffffff;color:#090d16;border-color:#cbd5e1}
@@ -229,35 +265,23 @@ dialog::backdrop{background:#000c}
 </head>
 <body>
 <header>
-  <div class="brand-banner" aria-label="PITSTOP · LOG HOT RODS">
-    <svg viewBox="0 0 420 74" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PITSTOP · LOG лого">
-      <defs>
-        <linearGradient id="metalGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#f8fafc"/>
-          <stop offset="48%" stop-color="#cbd5e1"/>
-          <stop offset="52%" stop-color="#64748b"/>
-          <stop offset="100%" stop-color="#e2e8f0"/>
-        </linearGradient>
-        <linearGradient id="redGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="#ef4444"/>
-          <stop offset="100%" stop-color="#991b1b"/>
-        </linearGradient>
-      </defs>
-      <path d="M126 52 A56 38 0 0 1 294 52" stroke="#475569" stroke-width="2.5" stroke-linecap="round"/>
-      <path d="M238 19 A56 38 0 0 1 294 52" stroke="#ef4444" stroke-width="3.2" stroke-linecap="round"/>
-      <line x1="210" y1="48" x2="262" y2="23" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round"/>
-      <circle cx="210" cy="48" r="4" fill="#e2e8f0" stroke="#dc2626" stroke-width="1.5"/>
-      <rect x="196" y="7" width="28" height="19" rx="3" fill="url(#metalGrad)" stroke="#0f172a" stroke-width="1.5"/>
-      <line x1="198" y1="12" x2="222" y2="12" stroke="#334155" stroke-width="1.2"/>
-      <line x1="198" y1="16" x2="222" y2="16" stroke="#334155" stroke-width="1.2"/>
-      <circle cx="210" cy="21" r="3" fill="#090d16" stroke="#94a3b8" stroke-width="1"/>
-      <path d="M207 24 L204 42 L216 42 L213 24 Z" fill="url(#metalGrad)" stroke="#0f172a" stroke-width="1.2"/>
-      <path d="M132 63 Q210 72 288 63" stroke="#64748b" stroke-width="2.5" stroke-dasharray="6 4" stroke-linecap="round"/>
-      <polygon points="34,27 386,25 376,53 44,55" fill="#090d16" stroke="url(#metalGrad)" stroke-width="2.2"/>
-      <polygon points="300,26 386,25 376,53 292,54" fill="url(#redGrad)" opacity="0.92"/>
-      <text x="208" y="45" text-anchor="middle" fill="url(#metalGrad)" stroke="#050810" stroke-width="1.1" font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif" font-size="25" font-style="italic" letter-spacing="2.2">PITSTOP · LOG</text>
-      <text x="210" y="62" text-anchor="middle" fill="#ef4444" stroke="#050810" stroke-width="0.6" font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif" font-size="11.5" font-style="italic" letter-spacing="3.5">HOT RODS</text>
-    </svg>
+  <div class="brand-banner" aria-label="PITSTOP · LOG">
+    <div class="brand-left">
+      <div class="brand-badge" aria-hidden="true">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 17 A9.5 9.5 0 0 1 23 17" stroke="#64748b" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M18.5 7.8 A9.5 9.5 0 0 1 23 17" stroke="#38bdf8" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M14 17 L19.2 11.2" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="14" cy="17" r="2.3" fill="#f8fafc"/>
+          <path d="M7.5 22.5 H20.5" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-titles">
+        <div class="brand-name">PITSTOP · LOG</div>
+        <div class="brand-sub">SERVICE &amp; GARAGE BOOK</div>
+      </div>
+    </div>
+    <div class="brand-pill">PRO LOG</div>
   </div>
   <nav class="nav-tabs" aria-label="Основно меню">
     <button type="button" id="tabDash" class="on">
@@ -569,7 +593,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v30';
+const KEY='garage_fuel_pwa_v32';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -673,7 +697,7 @@ let S={
   activeVehId:'',
   vehicles:[makeVehicle('Основно МПС','',0,'')],
   fuels:DEFAULT_CHAINS.map((name,i)=>({id:'f_'+i+'_'+Date.now(),category:'Бензиностанции',name,number:'',note:'',image:''})),
-  form:{type:'Масло двигател',detail:'',price:'',km:'',interval:10000,months:12,date:new Date().toISOString().slice(0,10),note:'',docImage:''},
+  form:{id:'',type:'Масло двигател',detail:'',price:'',km:'',interval:10000,months:12,date:new Date().toISOString().slice(0,10),note:'',docImage:''},
   historyFilterType:null,
   ocrBusy:'',
   editVehId:null,
@@ -762,7 +786,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -1884,6 +1908,41 @@ function vVehicleSwitcherBar(veh){
   </div>`;
 }
 
+function vRecentServicesBlock(veh){
+  const sorted=sortServicesLatestFirst(veh.services||[]);
+  const latest=sorted.slice(0,3);
+
+  const rowsHtml=latest.length
+    ?latest.map(s=>{
+      const pStr=fmtPrice(s.price);
+      return`<div class="dash-svc-item" data-dash-open-hist="${E(s.type)}" title="Отвори историята за ${E(s.type)}">
+        <div style="min-width:0;flex:1">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${E(s.type)} · <span class="mono">${Number(s.km||0).toLocaleString()} km</span></div>
+          <div class="m" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${E(s.detail||'—')}</div>
+        </div>
+        <div style="text-align:right;flex:0 0 auto">
+          <div class="m mono">${E(s.date||'')}</div>
+          ${pStr?`<div class="good mono" style="font-size:12px;font-weight:700">${E(pStr)}</div>`:''}
+        </div>
+      </div>`;
+    }).join('')
+    :`<div class="m" style="padding:4px 0">Няма записани обслужвания за този профил. Натисни „Консумативи →“, за да добавиш.</div>`;
+
+  return`
+  <div class="dash-svc-box">
+    <div class="row sp" style="margin-bottom:8px">
+      <div>
+        <b style="font-size:13.5px">🛠 Обслужвания на МПС (${sorted.length})</b>
+        <span class="m"> · последната най-отгоре</span>
+      </div>
+      <div class="row" style="gap:6px">
+        <button type="button" class="sm pri" data-go-tab="svc">Консумативи →</button>
+      </div>
+    </div>
+    ${rowsHtml}
+  </div>`;
+}
+
 function vVehicleCard(veh){
   const plateDisplay=(veh.plate||'').trim().toUpperCase();
   const powerLabel=[
@@ -1915,6 +1974,8 @@ function vVehicleCard(veh){
       </div>
 
       ${isSafeDataUrl(veh.photo)?`<img src="${veh.photo}" class="veh-photo" style="margin-top:12px" data-zoom-src="${E(veh.photo)}" data-zoom-title="${E(veh.name)}" alt="${E(veh.name)}">`:''}
+
+      ${vRecentServicesBlock(veh)}
 
       <div class="dash-list">
         <div class="dash-row">
@@ -2036,6 +2097,7 @@ function renderServiceHistoryModal(){
       ${s.note?`<div class="m" style="margin-top:2px">${E(s.note)}</div>`:''}
       ${hasDoc?`<img src="${s.docImage}" class="doc-thumb" data-zoom-src="${E(s.docImage)}" data-zoom-title="Фактура — ${E(s.type)} (${E(s.date||'')})" title="Натисни за увеличение" alt="Фактура / документ за ${E(s.type)}">`:''}
       <div class="row" style="margin-top:8px">
+        <button type="button" class="sm pri" data-edit-svc="${E(s.id)}">✎ Редакция</button>
         <button type="button" class="sm" data-cal-svc="${E(s.id)}">📅 Напомни след ${mInt} мес. (${fmtReadableDate(remDate)})</button>
         <label class="btn sm">
           🧾 ${hasDoc?'Смени фактура':'Прикачи фактура'}
@@ -2057,13 +2119,14 @@ function openServiceHistory(filterType){
 
 function renderServiceEntryModal(){
   const veh=getVeh();
+  const isEditing=!!S.form.id;
   const preset=PRESET_PARTS.find(p=>p.type===S.form.type)||PRESET_PARTS[0];
   const dueDate=addMonthsIso(S.form.date,S.form.months||12);
 
   $('#svcEntryBody').innerHTML=`
     <div class="row sp" style="margin-bottom:8px">
       <div>
-        <h3 style="margin:0">${E(preset.ico)} Нова смяна — ${E(S.form.type)}</h3>
+        <h3 style="margin:0">${isEditing?'✎ Редакция на смяна':E(preset.ico)+' Нова смяна'} — ${E(S.form.type)}</h3>
         <div class="m">Профил: <b>${E(veh.name)}</b>${veh.plate?` · <span class="mono">${E(veh.plate)}</span>`:''}</div>
       </div>
       <button type="button" class="sm" id="svcEntryClose">Затвори</button>
@@ -2150,22 +2213,40 @@ function renderServiceEntryModal(){
 
     <div class="row sp" style="margin-top:14px">
       <div class="row">
-        <button type="button" class="pri" id="saveSvc">Запази смяната</button>
+        <button type="button" class="pri" id="saveSvc">${isEditing?'Запази промените':'Запази смяната'}</button>
         <button type="button" class="ok" id="addCalForm">📅 Напомни на ${fmtReadableDate(dueDate)}</button>
       </div>
-      <button type="button" class="sm" id="clearForm">Изчисти</button>
+      <button type="button" class="sm" id="clearForm">${isEditing?'Нов запис':'Изчисти'}</button>
     </div>
   `;
 }
 
 function openServiceEntryModal(opts){
   const veh=getVeh();
-  if(opts&&opts.type){
-    S.form.type=opts.type;
-    if(opts.interval)S.form.interval=Number(opts.interval)||10000;
-    if(opts.months)S.form.months=Number(opts.months)||12;
+  if(opts&&opts.editId){
+    const existing=(veh.services||[]).find(x=>x.id===opts.editId);
+    if(!existing)return;
+    S.form={
+      id:existing.id,
+      type:existing.type||'Масло двигател',
+      detail:existing.detail||'',
+      price:existing.price!==undefined&&existing.price!==null?String(existing.price):'',
+      km:existing.km!==undefined&&existing.km!==null?String(existing.km):'',
+      interval:Number(existing.interval)||10000,
+      months:Number(existing.months)||12,
+      date:existing.date||new Date().toISOString().slice(0,10),
+      note:existing.note||'',
+      docImage:isSafeDataUrl(existing.docImage)?existing.docImage:''
+    };
+  }else{
+    S.form.id='';
+    if(opts&&opts.type){
+      S.form.type=opts.type;
+      if(opts.interval)S.form.interval=Number(opts.interval)||10000;
+      if(opts.months)S.form.months=Number(opts.months)||12;
+    }
+    if(!S.form.km&&veh.odo)S.form.km=String(veh.odo);
   }
-  if(!S.form.km&&veh.odo)S.form.km=String(veh.odo);
   renderServiceEntryModal();
   openDlg($('#svcEntryDlg'));
 }
@@ -2182,7 +2263,7 @@ function vServices(){
     const months=Number(last?.months||p.months||12);
     const nextKm=last?(Number(last.km)||0)+inter:null;
     const rem=nextKm!=null&&curKm>0?nextKm-curKm:null;
-    const isSel=S.form.type===p.type;
+    const isSel=!S.form.id&&S.form.type===p.type;
     let sub='Няма смяна';
     if(last){
       const pStr=fmtPrice(last.price);
@@ -2217,7 +2298,7 @@ function vServices(){
       </div>
     </div>
 
-    <label class="k">Натисни консуматив за въвеждане в прозорец или „История“ за преглед</label>
+    <label class="k">Натисни консуматив за въвеждане в прозорец или „История“ за преглед и редакция</label>
     <div class="svc-pick-grid">${partCards}</div>
   </div>`;
 }
@@ -2633,7 +2714,7 @@ document.addEventListener('click',e=>{
     openImageZoom(zoomImg.dataset.zoomSrc,zoomImg.dataset.zoomTitle);
     return;
   }
-  const t=e.target.closest('button,.fuel-tile,.dash-footer');
+  const t=e.target.closest('button,.fuel-tile,.dash-footer,.dash-svc-item');
   if(!t)return;
   const veh=getVeh();
   if(t.id==='tabDash'){syncFormFromDom();save();S.tab='dash';render()}
@@ -2643,6 +2724,7 @@ document.addEventListener('click',e=>{
   else if(t.dataset.enterCat){S.activeCardCat=normalizeCardCat(t.dataset.enterCat);render()}
   else if(t.id==='backCardCats'){S.activeCardCat=null;render()}
   else if(t.dataset.goTab){syncFormFromDom();save();S.tab=t.dataset.goTab;if(S.tab==='fuel')S.activeCardCat=null;render();window.scrollTo({top:0,behavior:'smooth'})}
+  else if(t.dataset.dashOpenHist){openServiceHistory(t.dataset.dashOpenHist)}
   else if(t.id==='syncDashBtn')openQuickUpdate(veh);
   else if(t.id==='qCancel')closeDlg($('#quickDlg'));
   else if(t.id==='qSave'){
@@ -2744,6 +2826,12 @@ document.addEventListener('click',e=>{
     }
   }
   else if(t.id==='openNewSvcDlg'){
+    S.form.id='';
+    S.form.detail='';
+    S.form.price='';
+    S.form.note='';
+    S.form.docImage='';
+    S.form.km=veh.odo?String(veh.odo):'';
     openServiceEntryModal();
   }
   else if(t.id==='svcEntryClose'){
@@ -2751,6 +2839,7 @@ document.addEventListener('click',e=>{
     closeDlg($('#svcEntryDlg'));
   }
   else if(t.dataset.pickType){
+    S.form.id='';
     openServiceEntryModal({
       type:t.dataset.pickType,
       interval:Number(t.dataset.pickInt)||10000,
@@ -2760,6 +2849,9 @@ document.addEventListener('click',e=>{
   else if(t.dataset.openHist){
     const ft=t.dataset.openHist==='__ALL__'?null:t.dataset.openHist;
     openServiceHistory(ft);
+  }
+  else if(t.dataset.editSvc){
+    openServiceEntryModal({editId:t.dataset.editSvc});
   }
   else if(t.id==='svcHistClose'){
     closeDlg($('#svcHistDlg'));
@@ -2785,8 +2877,9 @@ document.addEventListener('click',e=>{
     const docImage=isSafeDataUrl(S.form.docImage)?S.form.docImage:'';
     if(!detail&&!km&&!price&&!docImage)return toast('Въведи или снимай консуматив, километри, цена или документ.');
     if(km>veh.odo)veh.odo=km;
-    veh.services.unshift({
-      id:'s_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+
+    const wasEditing=!!S.form.id;
+    const payload={
       type:S.form.type,
       detail:detail||S.form.type,
       price,
@@ -2796,8 +2889,22 @@ document.addEventListener('click',e=>{
       date:S.form.date||new Date().toISOString().slice(0,10),
       note:S.form.note.trim(),
       docImage
-    });
+    };
+
+    if(wasEditing){
+      const idx=(veh.services||[]).findIndex(x=>x.id===S.form.id);
+      if(idx!==-1){
+        veh.services[idx]={...veh.services[idx],...payload};
+      }
+    }else{
+      veh.services.unshift({
+        id:'s_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+        ...payload
+      });
+    }
+
     veh.services=sortServicesLatestFirst(veh.services);
+    S.form.id='';
     S.form.detail='';
     S.form.price='';
     S.form.note='';
@@ -2805,8 +2912,11 @@ document.addEventListener('click',e=>{
     S.form.km=veh.odo?String(veh.odo):'';
     save();
     closeDlg($('#svcEntryDlg'));
+    if($('#svcHistDlg')?.hasAttribute('open')||$('#svcHistDlg')?.open){
+      renderServiceHistoryModal();
+    }
     render();
-    toast('Смяната е записана.');
+    toast(wasEditing?'Промените по смяната са запазени.':'Смяната е записана.');
   }
   else if(t.id==='addCalForm'){
     syncFormFromDom();
@@ -2837,7 +2947,7 @@ document.addEventListener('click',e=>{
     });
   }
   else if(t.id==='clearForm'){
-    S.form.detail='';S.form.price='';S.form.note='';S.form.docImage='';S.form.km=veh.odo?String(veh.odo):'';
+    S.form.id='';S.form.detail='';S.form.price='';S.form.note='';S.form.docImage='';S.form.km=veh.odo?String(veh.odo):'';
     renderServiceEntryModal();
   }
   else if(t.dataset.delSvc){
