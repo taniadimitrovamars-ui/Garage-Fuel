@@ -124,6 +124,7 @@ button.sm{min-height:34px;padding:0 9px;font-size:12px}
 button.ghost{background:transparent;border-color:transparent;color:var(--m);min-height:34px;padding:0 8px;font-size:13px}
 button.ghost:hover{color:var(--t);background:#ffffff0d}
 input,select,textarea{width:100%;max-width:100%;background:#050810;border:1px solid #334155;border-radius:12px;padding:8px 11px}
+textarea{min-height:76px;resize:vertical}
 input,select{min-height:42px}
 label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;overflow-wrap:break-word}
 .card{background:var(--p);border:1px solid var(--b);border-radius:16px;padding:13px;margin-bottom:12px}
@@ -606,8 +607,8 @@ dialog::backdrop{background:#000c}
 <dialog id="testSolverDlg">
   <div class="row sp" style="margin-bottom:8px">
     <div>
-      <h3 style="margin:0">📝 Контролно / тест — отговори от Claude</h3>
-      <div class="m">Снимай листа и избери клас — отговорите се показват тук в приложението.</div>
+      <h3 style="margin:0">📝 Контролно / тест</h3>
+      <div class="m">Избери клас, зареди снимка или напиши въпроси / бележки — отговорите излизат тук.</div>
     </div>
     <button type="button" class="sm" id="tsClose">Затвори</button>
   </div>
@@ -646,13 +647,18 @@ dialog::backdrop{background:#000c}
   </div>
 
   <div style="margin-top:10px">
-    <label class="k">Claude API ключ (пази се само в този браузър)</label>
-    <input id="tsApiKey" type="password" class="mono" placeholder="sk-ant-...">
+    <label class="k">Напиши въпроси, условие или уточнение (по желание)</label>
+    <textarea id="tsNotes" placeholder="Напиши тук въпрос, пояснение към снимката или условие..."></textarea>
+  </div>
+
+  <div style="margin-top:10px">
+    <label class="k">Ключ за достъп (пази се само в този браузър)</label>
+    <input id="tsApiKey" type="password" class="mono" placeholder="Въведи ключ за достъп">
   </div>
 
   <div class="row sp" style="margin-top:12px">
-    <span class="m" id="tsStatus">Избери клас и зареди снимка.</span>
-    <button type="button" class="pri" id="tsSolveBtn">Изпрати към Claude</button>
+    <span class="m" id="tsStatus">Избери клас и зареди снимка или напиши въпрос.</span>
+    <button type="button" class="pri" id="tsSolveBtn">Изпрати</button>
   </div>
 
   <div id="tsAnswerBox" class="ans-box" style="display:none"></div>
@@ -667,9 +673,10 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v35';
-const CLAUDE_KEY_STORAGE='pitstop_claude_api_key_v1';
-const CLAUDE_GRADE_STORAGE='pitstop_school_grade_v1';
+const KEY='garage_fuel_pwa_v36';
+const SOLVER_KEY_STORAGE='pitstop_solver_key_v1';
+const SOLVER_GRADE_STORAGE='pitstop_school_grade_v1';
+const SOLVER_NOTES_STORAGE='pitstop_solver_notes_v1';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -863,7 +870,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -2090,16 +2097,18 @@ function vHomeDash(veh){
     </button>
     <button type="button" class="sheet-btn" id="openTestSolverBtn">
       <b>📝 Контролно / тест</b>
-      <span>Снимка, клас и отговори</span>
+      <span>Снимка, клас и текст</span>
     </button>
   </div>`;
 }
 
 function openTestSolverModal(){
-  const savedKey=localStorage.getItem(CLAUDE_KEY_STORAGE)||'';
-  const savedGrade=localStorage.getItem(CLAUDE_GRADE_STORAGE)||'9 клас';
+  const savedKey=localStorage.getItem(SOLVER_KEY_STORAGE)||'';
+  const savedGrade=localStorage.getItem(SOLVER_GRADE_STORAGE)||'9 клас';
+  const savedNotes=localStorage.getItem(SOLVER_NOTES_STORAGE)||'';
   $('#tsApiKey').value=savedKey;
   $('#tsGrade').value=savedGrade;
+  $('#tsNotes').value=savedNotes;
   if(isSafeDataUrl(S.testPhoto)){
     $('#tsImgPreview').src=S.testPhoto;
     $('#tsImgWrap').style.display='block';
@@ -2112,36 +2121,50 @@ function openTestSolverModal(){
 
 async function solveTestWithClaude(){
   const grade=$('#tsGrade').value||'9 клас';
+  const notes=$('#tsNotes').value.trim();
   const apiKey=$('#tsApiKey').value.trim();
-  localStorage.setItem(CLAUDE_GRADE_STORAGE,grade);
-  if(apiKey)localStorage.setItem(CLAUDE_KEY_STORAGE,apiKey);
+  localStorage.setItem(SOLVER_GRADE_STORAGE,grade);
+  localStorage.setItem(SOLVER_NOTES_STORAGE,notes);
+  if(apiKey)localStorage.setItem(SOLVER_KEY_STORAGE,apiKey);
 
-  if(!isSafeDataUrl(S.testPhoto)){
-    toast('Първо избери или снимай контролната / теста.');
+  const hasPhoto=isSafeDataUrl(S.testPhoto);
+  if(!hasPhoto&&!notes){
+    toast('Зареди снимка или напиши въпрос / бележка.');
     return;
   }
   if(!apiKey){
-    toast('Въведи Claude API ключ (sk-ant-...), за да върне Claude отговорите тук.');
+    toast('Въведи ключ за достъп, за да върне системата отговорите тук.');
     return;
   }
 
-  const match=S.testPhoto.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
-  if(!match){
-    toast('Невалиден формат на снимката.');
-    return;
+  let match=null;
+  if(hasPhoto){
+    match=S.testPhoto.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
+    if(!match){
+      toast('Невалиден формат на снимката.');
+      return;
+    }
   }
-  const mediaType=match[1];
-  const base64Data=match[2];
 
   const statusEl=$('#tsStatus');
   const ansBox=$('#tsAnswerBox');
   const btn=$('#tsSolveBtn');
-  statusEl.textContent=`Изпращам снимката за ${grade} към Claude...`;
+  statusEl.textContent=`Обработвам за ${grade}...`;
   ansBox.style.display='block';
-  ansBox.textContent='Изчакай, Claude обработва снимката и подготвя отговорите...';
+  ansBox.textContent='Изчакай, подготвям отговорите...';
   btn.disabled=true;
 
   try{
+    const contentBlocks=[];
+    if(match){
+      contentBlocks.push({type:'image',source:{type:'base64',media_type:match[1],data:match[2]}});
+    }
+    const promptParts=[`Ученикът е в ${grade}.`];
+    if(notes)promptParts.push(`Допълнителен текст / въпроси от ученика:\n${notes}`);
+    if(hasPhoto)promptParts.push('Дай директно и подредено отговорите на задачите / въпросите от снимката.');
+    else promptParts.push('Дай ясен и точен отговор на въпроса / задачата.');
+    contentBlocks.push({type:'text',text:promptParts.join('\n\n')});
+
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{
@@ -2153,14 +2176,11 @@ async function solveTestWithClaude(){
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',
         max_tokens:1800,
-        system:`Ти си учител и помощник за ученик в ${grade} в България. Отговаряй ясно, структурирано и на български език с точните отговори към въпросите/задачите от снимката на контролното или теста, съобразени с материала за ${grade}.`,
+        system:`Ти си полезен помощник за ученик в ${grade} в България. Отговаряй ясно, структурирано и на български език с точните отговори към въпросите/задачите, съобразени с материала за ${grade}.`,
         messages:[
           {
             role:'user',
-            content:[
-              {type:'image',source:{type:'base64',media_type:mediaType,data:base64Data}},
-              {type:'text',text:`Ученикът е в ${grade}. Дай директно и подредено отговорите на контролното или теста от снимката.`}
-            ]
+            content:contentBlocks
           }
         ]
       })
@@ -2169,7 +2189,7 @@ async function solveTestWithClaude(){
     const data=await resp.json().catch(()=>({}));
     if(!resp.ok){
       const errMsg=data?.error?.message||`HTTP ${resp.status}`;
-      statusEl.textContent='Грешка при заявката към Claude.';
+      statusEl.textContent='Грешка при заявката.';
       ansBox.textContent='Неуспешна заявка: '+errMsg;
       return;
     }
@@ -2181,10 +2201,10 @@ async function solveTestWithClaude(){
       .trim();
 
     statusEl.textContent=`Готово (${grade}).`;
-    ansBox.textContent=outText||'Няма върнат текст от Claude.';
+    ansBox.textContent=outText||'Няма върнат текст.';
   }catch(err){
     statusEl.textContent='Връзката беше блокирана или неуспешна.';
-    ansBox.textContent='Не успях да получа отговор директно от браузъра (възможно е браузърът/средата да блокира пряка заявка към api.anthropic.com без сървърно прокси).';
+    ansBox.textContent='Не успях да получа отговор директно от браузъра (възможно е браузърът/средата да блокира пряката заявка без сървърно прокси).';
   }finally{
     btn.disabled=false;
   }
@@ -3145,6 +3165,12 @@ document.addEventListener('click',e=>{
   }
 });
 
+document.addEventListener('input',e=>{
+  if(e.target.id==='tsNotes'){
+    localStorage.setItem(SOLVER_NOTES_STORAGE,e.target.value);
+  }
+});
+
 document.addEventListener('change',async e=>{
   const t=e.target;
   const veh=getVeh();
@@ -3165,13 +3191,13 @@ document.addEventListener('change',async e=>{
       S.testPhoto=compressed;
       $('#tsImgPreview').src=compressed;
       $('#tsImgWrap').style.display='block';
-      $('#tsStatus').textContent='Снимката е готова за изпращане към Claude.';
-      toast('Снимката на контролното / теста е заредена.');
+      $('#tsStatus').textContent='Снимката е готова за изпращане.';
+      toast('Снимката е заредена.');
     }catch(err){
       toast('Неуспешно зареждане на снимката.');
     }
   }else if(t.id==='tsGrade'){
-    localStorage.setItem(CLAUDE_GRADE_STORAGE,t.value);
+    localStorage.setItem(SOLVER_GRADE_STORAGE,t.value);
   }else if(t.id==='svcShotParseFile'){
     syncFormFromDom();
     const f=t.files&&t.files[0];
