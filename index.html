@@ -64,6 +64,17 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .m{color:var(--m);font-size:12px;line-height:1.35}.mono{font-family:ui-monospace,Menlo,monospace}
 .good{color:var(--g)}.mid{color:var(--y)}.bad{color:var(--r)}
 .item{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:11px;margin-bottom:8px}
+
+.svc-pick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(min-width:640px){.svc-pick-grid{grid-template-columns:repeat(3,1fr)}}
+.svc-pick-btn{min-height:66px;padding:10px 11px;border-radius:14px;background:var(--p2);border:1px solid #26354d;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;text-align:left;width:100%}
+.svc-pick-btn:hover{border-color:#009ada88;background:#131e33}
+.svc-pick-btn.active{background:#009ada26;border-color:var(--a);box-shadow:0 0 0 1px #009ada55}
+.svc-pick-btn b{font-size:13px;color:var(--t);line-height:1.25}
+.svc-pick-btn span{font-size:11px;color:var(--m);line-height:1.25}
+
+.doc-thumb{width:100%;max-height:220px;object-fit:contain;border-radius:12px;border:1px solid #334155;background:#050810;display:block;margin-top:8px}
+
 .fuel-tile{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:12px;cursor:pointer;transition:.15s}
 .fuel-tile:hover,.fuel-tile.has{border-color:#009ada77}
 .cat-menu{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
@@ -117,7 +128,7 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .card-screen.zoomed #sNum{font-size:32px}
 .code-canvas{display:block;margin:10px auto 8px;max-width:100%;height:auto;border-radius:8px;background:#fff;padding:6px}
 .qr-status{font-size:12px;color:#475569;margin-top:6px;display:none}
-dialog{background:var(--p);color:var(--t);border:1px solid #334155;border-radius:18px;width:min(620px,96vw);max-width:96vw;padding:15px}
+dialog{background:var(--p);color:var(--t);border:1px solid #334155;border-radius:18px;width:min(620px,96vw);max-width:96vw;padding:15px;max-height:92vh;overflow-y:auto}
 dialog::backdrop{background:#000c}
 #toast{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0));z-index:40;background:#0f172af5;border:1px solid #334155;border-radius:14px;padding:11px 14px;font-size:13px;display:none}
 </style>
@@ -179,12 +190,15 @@ dialog::backdrop{background:#000c}
 <dialog id="vehDlg">
   <div class="row sp" style="margin-bottom:8px">
     <h3 id="vDlgTitle" style="margin:0">Профил на превозно средство</h3>
-    <label class="btn sm ok" title="Снимай или избери снимка на талона">
-      📄 Снимай талон
+    <button type="button" class="sm" id="vCancelTop">Затвори</button>
+  </div>
+  <div class="m" style="margin-bottom:10px">Снимай малък или голям талон (СРМПС) без отблясъци, за да се разчетат VIN, първа регистрация и данни — снимката не се пази.</div>
+  <div class="row" style="margin-bottom:12px">
+    <label class="btn ok" style="flex:1;min-height:46px" title="Снимай или избери снимка на талона">
+      📄 Снимай / избери малък или голям талон
       <input type="file" id="vRegScanFile" accept="image/*" capture="environment" hidden>
     </label>
   </div>
-  <div class="m" style="margin-bottom:10px">Снимай малък или голям талон (СРМПС) без отблясъци, за да се разчетат VIN, първа регистрация и данни — снимката не се пази.</div>
   <div class="grid g2">
     <div>
       <label class="k">Марка / модел</label>
@@ -371,7 +385,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v17';
+const KEY='garage_fuel_pwa_v19';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -385,12 +399,12 @@ const CAT_META={
 };
 const DEFAULT_CHAINS=['OMV','Shell','Lukoil','Petrol','Eco','Круиз'];
 const PRESET_PARTS=[
-  {type:'Масло двигател',interval:10000,months:12,hint:'Напр. 5W-30 или марка/артикул'},
-  {type:'Маслен филтър',interval:10000,months:12,hint:'Марка или код'},
-  {type:'Въздушен филтър',interval:15000,months:18,hint:'Марка или код на филтъра'},
-  {type:'Филтър купе',interval:15000,months:12,hint:'Поленов / активен въглен'},
-  {type:'Трансмисионно масло',interval:60000,months:48,hint:'Скоростна кутия / диференциал / раздатка'},
-  {type:'Спирачна течност / накладки',interval:30000,months:24,hint:'DOT 4 / предни / задни'}
+  {ico:'🛢️',type:'Масло двигател',interval:10000,months:12,hint:'Напр. 5W-30 или Motul 10W-40'},
+  {ico:'🔩',type:'Маслен филтър',interval:10000,months:12,hint:'Марка или код'},
+  {ico:'💨',type:'Въздушен филтър',interval:15000,months:18,hint:'Марка или код на филтъра'},
+  {ico:'🌿',type:'Филтър купе',interval:15000,months:12,hint:'Поленов / активен въглен'},
+  {ico:'⚙️',type:'Трансмисионно масло',interval:60000,months:48,hint:'Скоростна кутия / диференциал / раздатка'},
+  {ico:'🛑',type:'Спирачна течност / накладки',interval:30000,months:24,hint:'DOT 4 / предни / задни'}
 ];
 
 let idbPromise=null;
@@ -472,7 +486,7 @@ let S={
   activeVehId:'',
   vehicles:[makeVehicle('Ново превозно средство','',0,'')],
   fuels:DEFAULT_CHAINS.map((name,i)=>({id:'f_'+i+'_'+Date.now(),category:'Бензиностанции',name,number:'',note:'',image:''})),
-  form:{type:'Масло двигател',detail:'',km:'',interval:10000,months:12,date:new Date().toISOString().slice(0,10),note:''},
+  form:{type:'Масло двигател',detail:'',km:'',interval:10000,months:12,date:new Date().toISOString().slice(0,10),note:'',docImage:''},
   ocrBusy:'',
   editVehId:null,
   editVehPhoto:'',
@@ -507,6 +521,20 @@ function getVeh(){
   return S.vehicles.find(v=>v.id===S.activeVehId)||S.vehicles[0];
 }
 
+function normalizeServiceItem(s){
+  return{
+    id:s.id||('s_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)),
+    type:s.type||'Масло двигател',
+    detail:s.detail||'',
+    km:Number(s.km)||0,
+    interval:Number(s.interval)||10000,
+    months:Number(s.months)||12,
+    date:s.date||'',
+    note:s.note||'',
+    docImage:isSafeDataUrl(s.docImage)?s.docImage:''
+  };
+}
+
 function normalizeVeh(v){
   return{
     id:v.id||('v_'+Math.random().toString(36).slice(2,6)),
@@ -523,13 +551,13 @@ function normalizeVeh(v){
     apiFines:v.apiFines||'Няма',
     wearPct:Number.isFinite(Number(v.wearPct))?Math.max(0,Math.min(100,Number(v.wearPct))):0,
     photo:isSafeDataUrl(v.photo)?v.photo:'',
-    services:Array.isArray(v.services)?v.services:[]
+    services:Array.isArray(v.services)?v.services.map(normalizeServiceItem):[]
   };
 }
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -539,7 +567,7 @@ function load(){
       const base=makeVehicle(d.vehicle||'Ново превозно средство',d.plate||'',Number(d.odo)||0,d.vehiclePhoto||'');
       base.egn=d.egn||'';
       base.regCert=d.regCert||'';
-      base.services=Array.isArray(d.services)?d.services:[];
+      base.services=Array.isArray(d.services)?d.services.map(normalizeServiceItem):[];
       S.vehicles=[base];
       S.activeVehId=base.id;
     }
@@ -567,6 +595,14 @@ async function hydrateMediaFromIdb(){
     }else{
       await idbPut('veh_'+v.id,v.photo);
     }
+    for(const s of (v.services||[])){
+      if(!s.docImage){
+        const storedDoc=await idbGet('svc_doc_'+s.id);
+        if(storedDoc){s.docImage=storedDoc;changed=true;}
+      }else{
+        await idbPut('svc_doc_'+s.id,s.docImage);
+      }
+    }
   }
   for(const f of S.fuels){
     if(!f.image){
@@ -580,7 +616,11 @@ async function hydrateMediaFromIdb(){
 }
 
 function save(){
-  const compactVehicles=S.vehicles.map(v=>({...v,photo:''}));
+  const compactVehicles=S.vehicles.map(v=>({
+    ...v,
+    photo:'',
+    services:(v.services||[]).map(s=>({...s,docImage:''}))
+  }));
   const compactFuels=S.fuels.map(f=>({...f,image:''}));
   try{
     localStorage.setItem(KEY,JSON.stringify({
@@ -594,6 +634,9 @@ function save(){
   (async()=>{
     for(const v of S.vehicles){
       await idbPut('veh_'+v.id,v.photo||'');
+      for(const s of (v.services||[])){
+        await idbPut('svc_doc_'+s.id,s.docImage||'');
+      }
     }
     for(const f of S.fuels){
       await idbPut('fuel_'+f.id,f.image||'');
@@ -629,6 +672,124 @@ function compressImage(file,maxSide,quality){
     };
     img.src=url;
   });
+}
+
+function preprocessForOcr(file,mode){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+    img.onload=()=>{
+      try{
+        let sx=0,sy=0,sw=img.naturalWidth||img.width,sh=img.naturalHeight||img.height;
+        if(mode==='km'){
+          sx=Math.round(sw*0.06);
+          sy=Math.round(sh*0.18);
+          sw=Math.round(sw*0.88);
+          sh=Math.round(sh*0.64);
+        }else if(mode==='part'){
+          sx=Math.round(sw*0.05);
+          sy=Math.round(sh*0.08);
+          sw=Math.round(sw*0.90);
+          sh=Math.round(sh*0.84);
+        }
+
+        const targetMax=mode==='km'?1600:1400;
+        let dw=sw,dh=sh;
+        const scale=Math.min(2.5,Math.max(1,targetMax/Math.max(sw,sh)));
+        dw=Math.max(400,Math.round(sw*scale));
+        dh=Math.max(200,Math.round(sh*scale));
+
+        const cv=document.createElement('canvas');
+        cv.width=dw;cv.height=dh;
+        const ctx=cv.getContext('2d');
+        ctx.fillStyle='#ffffff';
+        ctx.fillRect(0,0,dw,dh);
+        ctx.drawImage(img,sx,sy,sw,sh,0,0,dw,dh);
+
+        const imgData=ctx.getImageData(0,0,dw,dh);
+        const d=imgData.data;
+        const contrast=mode==='km'?1.55:1.35;
+        const thresh=mode==='km'?132:120;
+
+        for(let i=0;i<d.length;i+=4){
+          let lum=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+          lum=((lum-128)*contrast)+128;
+          if(lum<0)lum=0;
+          if(lum>255)lum=255;
+          if(mode==='km'){
+            const bin=lum<thresh?0:255;
+            d[i]=d[i+1]=d[i+2]=bin;
+          }else{
+            const soft=lum<thresh?Math.max(0,lum*0.65):Math.min(255,lum*1.12);
+            d[i]=d[i+1]=d[i+2]=soft;
+          }
+        }
+        ctx.putImageData(imgData,0,0);
+        URL.revokeObjectURL(url);
+        resolve(cv.toDataURL('image/png'));
+      }catch(err){
+        URL.revokeObjectURL(url);
+        reject(err);
+      }
+    };
+    img.onerror=()=>{
+      URL.revokeObjectURL(url);
+      reject(new Error('ocr_preprocess_error'));
+    };
+    img.src=url;
+  });
+}
+
+function cleanOilLabelText(rawText){
+  const lines=String(rawText||'')
+    .split(/\r?\n/)
+    .map(l=>l.replace(/[^A-Za-zА-Яа-я0-9W.\-/+ ]+/g,' ').replace(/\s+/g,' ').trim())
+    .filter(l=>l.length>=2);
+
+  const filtered=[];
+  for(const l of lines){
+    const words=l.split(' ').filter(w=>w.length>=2||/^\d+$/.test(w)||/^[0-9]{1,2}W-?[0-9]{2}$/i.test(w)||/^[12]T$/i.test(w));
+    if(words.length>=1){
+      const joined=words.join(' ');
+      if(!filtered.includes(joined))filtered.push(joined);
+    }
+  }
+  return filtered.slice(0,5).join(' · ').slice(0,110);
+}
+
+function extractOdometerValue(rawText,currentOdo){
+  const txt=String(rawText||'');
+  const candidates=[];
+
+  const matches=txt.match(/\b\d{1,3}(?:[\s.,]\d{3})+\b|\b\d{3,7}\b/g)||[];
+  for(const m of matches){
+    const digitsOnly=m.replace(/[^\d]/g,'');
+    const n=Number(digitsOnly);
+    if(Number.isFinite(n)&&n>=100&&n<=1999999){
+      candidates.push(n);
+    }
+  }
+
+  for(const line of txt.split(/\r?\n/)){
+    const parts=(line.match(/\d+/g)||[]).filter(p=>p.length<=4);
+    if(parts.length>=2){
+      const joined=Number(parts.join(''));
+      if(Number.isFinite(joined)&&joined>=1000&&joined<=1999999){
+        candidates.push(joined);
+      }
+    }
+  }
+
+  if(!candidates.length)return null;
+  const unique=[...new Set(candidates)];
+  if(currentOdo>0){
+    return unique.reduce((best,cur)=>{
+      const dCur=Math.abs(cur-currentOdo);
+      const dBest=Math.abs(best-currentOdo);
+      return dCur<dBest?cur:best;
+    });
+  }
+  return Math.max(...unique);
 }
 
 function setCardEditorPreview(dataUrl){
@@ -708,7 +869,6 @@ function drawCode128(canvas,text){
   return true;
 }
 
-// Pure offline QR Code generator (Versions 1..6, EC Level L) with GF(256) Reed-Solomon
 const OfflineQR=(()=>{
   const EXP=new Uint8Array(512);
   const LOG=new Uint8Array(256);
@@ -751,7 +911,6 @@ const OfflineQR=(()=>{
     return rem;
   }
 
-  // [version, totalCodewords, ecCodewordsPerBlock, numBlocks, alignCenters]
   const SPECS=[
     null,
     [1,26,7,1,[]],
@@ -776,7 +935,6 @@ const OfflineQR=(()=>{
       const [,totalCw,ecPerBlock,numBlocks]=SPECS[v];
       const dataCap=totalCw-(ecPerBlock*numBlocks);
       const ccBits=v<=9?8:16;
-      // 4 bits mode (0100=Byte) + ccBits + 8*bytes.length + up to 4 bits terminator
       const maxBytes=Math.floor((dataCap*8-4-ccBits)/8);
       if(bytes.length<=maxBytes){
         const bits=[];
@@ -881,10 +1039,8 @@ const OfflineQR=(()=>{
       if(!reserved[i][6])put(i,6,bit,true);
     }
 
-    // Dark module at (4*version + 9, 8)
     put(4*version+9,8,1,true);
 
-    // Reserve format info areas (around finders) without placing final bits yet
     for(let i=0;i<9;i++){
       if(i<size)reserved[8][i]=true;
       if(i<size)reserved[i][8]=true;
@@ -894,7 +1050,6 @@ const OfflineQR=(()=>{
       reserved[size-1-i][8]=true;
     }
 
-    // Version info for version >= 7 (not reached here, max 6)
     return {size,grid,reserved};
   }
 
@@ -906,7 +1061,7 @@ const OfflineQR=(()=>{
     }
 
     let bitIdx=0;
-    let dir=-1; // -1 = up, +1 = down
+    let dir=-1;
     for(let col=size-1;col>=1;col-=2){
       if(col===6)col=5;
       for(let count=0;count<size;count++){
@@ -915,7 +1070,7 @@ const OfflineQR=(()=>{
           const c=col-cOff;
           if(reserved[r][c])continue;
           let val=bitIdx<bits.length?bits[bitIdx++]:0;
-          const maskCond=((r+c)%2)===0; // Mask 0: (r + c) % 2 == 0
+          const maskCond=((r+c)%2)===0;
           if(mask===0&&maskCond)val^=1;
           grid[r][c]=val;
         }
@@ -923,18 +1078,8 @@ const OfflineQR=(()=>{
       dir=-dir;
     }
 
-    // Format info for Level L (01) and Mask 0 (000) -> 5-bit data 01000 -> BCH(15,5) = 0x77c0 -> XOR 0x5412 = 0x23d2
     const fmtBits=0x23d2;
     const getFmtBit=idx=>(fmtBits>>>(14-idx))&1;
-    const horizCoords=[[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[8,size-8],[8,size-7],[8,size-6],[8,size-5],[8,size-4],[8,size-3],[8,size-2],[8,size-1]];
-    const vertCoords=[[size-1,8],[size-2,8],[size-3,8],[size-4,8],[size-5,8],[size-6,8],[size-7,8],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
-    // Map standard 15 format bits cleanly:
-    // Top-left & top-right horizontal + bottom-left & top-left vertical
-    const tlH=[0,1,2,3,4,5,7,8,14,13,12,11,10,9];
-    const tlV=[8,7,5,4,3,2,1,0];
-    const trH=[7,6,5,4,3,2,1,0];
-    const blV=[14,13,12,11,10,9,8];
-    // Standard ISO format bit positions:
     const posA=[[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
     for(let i=0;i<15;i++){
       const [r,c]=posA[i];
@@ -1133,10 +1278,10 @@ async function readRegistrationCard(file){
     return;
   }
   toast('Разчитам талона и VIN номера...');
-  let url='';
+  let procUrl='';
   try{
-    url=URL.createObjectURL(file);
-    const {data}=await Tesseract.recognize(url,'eng+bul');
+    procUrl=await preprocessForOcr(file,'reg');
+    const {data}=await Tesseract.recognize(procUrl,'eng+bul');
     const txt=(data.text||'').replace(/\s+/g,' ').trim();
     const parsed=parseRegistrationCardText(txt);
     const found=[];
@@ -1168,7 +1313,7 @@ async function readRegistrationCard(file){
   }catch(e){
     toast('Проблем при разчитането на талона.');
   }finally{
-    if(url)URL.revokeObjectURL(url);
+    procUrl='';
   }
 }
 
@@ -1181,10 +1326,9 @@ async function readDateFromImage(file,fieldKey){
   const veh=getVeh();
   S.ocrBusy='Разчитам датата на валидност от снимката...';
   render();
-  let url='';
   try{
-    url=URL.createObjectURL(file);
-    const {data}=await Tesseract.recognize(url,'eng+bul');
+    const procUrl=await preprocessForOcr(file,'date');
+    const {data}=await Tesseract.recognize(procUrl,'eng+bul');
     const txt=(data.text||'').replace(/\s+/g,' ').trim();
     const dates=extractAllIsoDatesFromText(txt);
     const iso=(veh.firstRegDate&&dates.length>1)?dates.find(d=>d!==veh.firstRegDate)||dates[0]:dates[0]||'';
@@ -1198,7 +1342,6 @@ async function readDateFromImage(file,fieldKey){
   }catch(e){
     toast('Проблем при разчитането на снимката.');
   }finally{
-    if(url)URL.revokeObjectURL(url);
     S.ocrBusy='';
     render();
   }
@@ -1211,40 +1354,40 @@ async function readImage(file,mode){
     return;
   }
   const cur=getVeh();
-  S.ocrBusy=mode==='part'?'Разчитам етикета от снимката...':mode==='card'?'Разчитам номера от скрийншота...':'Разчитам километрите от снимката...';
+  S.ocrBusy=mode==='part'?'Обработвам и разчитам етикета...':mode==='card'?'Разчитам номера от скрийншота...':'Обработвам и разчитам километрите...';
   if(mode!=='card')render();
   else toast(S.ocrBusy);
-  let url='';
   try{
-    url=URL.createObjectURL(file);
-    const {data}=await Tesseract.recognize(url,'eng+bul');
-    const txt=(data.text||'').replace(/\s+/g,' ').trim();
-    if(!txt){toast('Не се разчете ясен текст — опитай пак или попълни ръчно.');return;}
+    const procUrl=await preprocessForOcr(file,mode);
+    const lang=mode==='km'?'eng':'eng+bul';
+    const {data}=await Tesseract.recognize(procUrl,lang);
+    const rawTxt=(data.text||'').trim();
+    if(!rawTxt){toast('Не се разчете ясен текст — опитай пак или попълни ръчно.');return;}
+
     if(mode==='part'){
-      const picked=txt.slice(0,90);
+      const picked=cleanOilLabelText(rawTxt);
+      if(!picked){
+        toast('Не се разчете ясен текст от етикета — доближи надписа с модела и вискозитета.');
+        return;
+      }
       S.form.detail=S.form.detail?(S.form.detail+' · '+picked):picked;
-      toast('Разчетено от етикета. Можеш да изтриеш снимката от галерията.');
+      toast('Разчетено от етикета: '+picked);
     }else if(mode==='card'){
-      const candidate=(txt.match(/[A-Z0-9][A-Z0-9\s-]{4,28}/gi)||[])[0]?.trim()||txt.slice(0,28);
+      const candidate=(rawTxt.match(/[A-Z0-9][A-Z0-9\s-]{4,28}/gi)||[])[0]?.trim()||rawTxt.slice(0,28);
       $('#cNum').value=candidate;
       toast('Разчетено от скрийншота. Провери и запази картата.');
     }else{
-      const nums=(data.text||'').match(/\d[\d\s.,]{2,8}\d/g)||[];
-      const cleanNums=nums.map(x=>Number(x.replace(/[^\d]/g,''))).filter(n=>n>=100&&n<=2000000);
-      if(cleanNums.length){
-        const best=cur.odo>0
-          ? cleanNums.reduce((a,b)=>Math.abs(b-cur.odo)<Math.abs(a-cur.odo)?b:a)
-          : Math.max(...cleanNums);
+      const best=extractOdometerValue(rawTxt,Number(cur.odo)||0);
+      if(best!==null){
         S.form.km=String(best);
-        toast('Разпознат пробег: '+best+' km. Снимката не се пази.');
+        toast('Разпознат пробег: '+best.toLocaleString()+' km. Снимката не се пази.');
       }else{
-        toast('Не открих ясни цифри за пробег — въведи ги ръчно.');
+        toast('Не открих ясни цифри за пробег — снимай отблизо без отблясъци или въведи ръчно.');
       }
     }
   }catch(e){
     toast('Проблем при разчитането на снимката.');
   }finally{
-    if(url)URL.revokeObjectURL(url);
     S.ocrBusy='';
     if(mode!=='card')render();
   }
@@ -1388,30 +1531,29 @@ function vServices(){
   const preset=PRESET_PARTS.find(p=>p.type===S.form.type)||PRESET_PARTS[0];
   const dueDate=addMonthsIso(S.form.date,S.form.months||12);
 
-  const cards=PRESET_PARTS.map(p=>{
+  const partButtons=PRESET_PARTS.map(p=>{
     const last=lastByType(veh,p.type);
     const inter=Number(last?.interval||p.interval||10000);
     const months=Number(last?.months||p.months||12);
     const nextKm=last?(Number(last.km)||0)+inter:null;
     const rem=nextKm!=null&&curKm>0?nextKm-curKm:null;
-    let st='<span class="m">Няма записана смяна</span>';
+    const isSel=S.form.type===p.type;
+    let sub='Няма смяна';
     if(last){
-      const remTxt=rem==null?'':rem<0
-        ?`<span class="bad"> · просрочено с ${Math.abs(rem).toLocaleString()} km</span>`
-        :rem<=1000?`<span class="mid"> · остават ${rem.toLocaleString()} km</span>`
-        :`<span class="good"> · остават ${rem.toLocaleString()} km</span>`;
-      st=`<b>${Number(last.km||0).toLocaleString()} km</b> <span class="m">(${E(last.date||'')})</span>${remTxt}`;
+      if(rem==null)sub=`${Number(last.km||0).toLocaleString()} km`;
+      else if(rem<0)sub=`Просрочено ${Math.abs(rem).toLocaleString()} km`;
+      else sub=`Остават ${rem.toLocaleString()} km`;
     }
-    return`<div class="item" style="margin:0">
-      <div class="row sp"><b>${E(p.type)}</b><button type="button" class="sm" data-pick-type="${E(p.type)}" data-pick-int="${inter}" data-pick-months="${months}">+ Смяна</button></div>
-      <div style="margin-top:4px">${st}</div>
-      <div class="m" style="margin-top:2px">${E(last?.detail||'Няма въведен продукт')}</div>
-    </div>`;
+    return`<button type="button" class="svc-pick-btn ${isSel?'active':''}" data-pick-type="${E(p.type)}" data-pick-int="${inter}" data-pick-months="${months}">
+      <b>${p.ico} ${E(p.type)}</b>
+      <span>${E(sub)}</span>
+    </button>`;
   }).join('');
 
   const hist=(veh.services||[]).length?(veh.services||[]).map(s=>{
     const mInt=Number(s.months)||12;
     const remDate=addMonthsIso(s.date,mInt);
+    const hasDoc=isSafeDataUrl(s.docImage);
     return`
     <div class="item">
       <div class="row sp">
@@ -1420,8 +1562,14 @@ function vServices(){
       </div>
       <div style="margin-top:4px">${E(s.detail||'—')}</div>
       ${s.note?`<div class="m" style="margin-top:2px">${E(s.note)}</div>`:''}
+      ${hasDoc?`<img src="${s.docImage}" class="doc-thumb" alt="Фактура / документ за ${E(s.type)}">`:''}
       <div class="row" style="margin-top:8px">
         <button type="button" class="sm" data-cal-svc="${E(s.id)}">📅 Напомни след ${mInt} мес. (${fmtReadableDate(remDate)})</button>
+        <label class="btn sm">
+          🧾 ${hasDoc?'Смени фактура':'Прикачи фактура'}
+          <input type="file" accept="image/*" data-svc-doc="${E(s.id)}" hidden>
+        </label>
+        ${hasDoc?`<button type="button" class="sm" data-rem-svc-doc="${E(s.id)}">Махни снимка</button>`:''}
         <button type="button" class="sm" data-del-svc="${E(s.id)}">Изтрий запис</button>
       </div>
     </div>`;
@@ -1436,10 +1584,14 @@ function vServices(){
       </div>
       <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
     </div>
+
+    <label class="k">Избери консуматив с бутон</label>
+    <div class="svc-pick-grid" style="margin-bottom:10px">${partButtons}</div>
+
     ${S.ocrBusy?`<div class="item" style="border-color:#009ada88"><b class="good">${E(S.ocrBusy)}</b></div>`:''}
     <div class="grid g2">
       <div>
-        <label class="k">Консуматив</label>
+        <label class="k">Избран консуматив</label>
         <select id="fType">
           ${PRESET_PARTS.map(p=>`<option value="${E(p.type)}"${S.form.type===p.type?' selected':''}>${E(p.type)}</option>`).join('')}
         </select>
@@ -1448,7 +1600,7 @@ function vServices(){
         <label class="k">Километри при смяната</label>
         <div class="row">
           <input id="fKm" type="number" inputmode="numeric" style="flex:1" value="${E(S.form.km)}" placeholder="km">
-          <label class="btn sm" title="Снимай километраж">
+          <label class="btn sm" title="Снимай километраж отблизо">
             📷 Километри
             <input type="file" accept="image/*" capture="environment" data-ocr="km" hidden>
           </label>
@@ -1460,11 +1612,27 @@ function vServices(){
       <label class="k">Масло / филтър / част (разпознато или ръчно)</label>
       <div class="row">
         <input id="fDetail" style="flex:1" value="${E(S.form.detail)}" placeholder="${E(preset.hint)}">
-        <label class="btn sm" title="Снимай етикет / продукт">
+        <label class="btn sm" title="Снимай етикета с модела и вискозитета">
           📷 Етикет
           <input type="file" accept="image/*" capture="environment" data-ocr="part" hidden>
         </label>
       </div>
+    </div>
+
+    <div style="margin-top:10px">
+      <label class="k">Фактура или снимка на документ (пази се локално в IndexedDB)</label>
+      <div class="row">
+        <label class="btn sm">
+          🧾 Избери от галерията
+          <input type="file" id="fDocGallery" accept="image/*" hidden>
+        </label>
+        <label class="btn sm">
+          📷 Снимай документ
+          <input type="file" id="fDocCamera" accept="image/*" capture="environment" hidden>
+        </label>
+        ${isSafeDataUrl(S.form.docImage)?`<button type="button" class="sm" id="fClearDoc">Махни документа</button>`:''}
+      </div>
+      ${isSafeDataUrl(S.form.docImage)?`<img src="${S.form.docImage}" class="doc-thumb" alt="Прикачен документ">`:''}
     </div>
 
     <div class="grid g3" style="margin-top:10px">
@@ -1484,7 +1652,7 @@ function vServices(){
 
     <div style="margin-top:10px">
       <label class="k">Бележка (по желание)</label>
-      <input id="fNote" value="${E(S.form.note)}" placeholder="Напр. количество литри, сервиз, забележка">
+      <input id="fNote" value="${E(S.form.note)}" placeholder="Напр. № на фактура, количество литри, сервиз">
     </div>
 
     <div class="row sp" style="margin-top:12px">
@@ -1497,13 +1665,8 @@ function vServices(){
   </div>
 
   <div class="card">
-    <h3 style="margin:0 0 10px">Състояние на консумативите (${E(veh.name)})</h3>
-    <div class="grid g2">${cards}</div>
-  </div>
-
-  <div class="card">
     <div class="row sp" style="margin-bottom:8px">
-      <h3 style="margin:0">История на смените (${(veh.services||[]).length})</h3>
+      <h3 style="margin:0">История на смените и документи (${(veh.services||[]).length})</h3>
       <div class="row">
         <button type="button" class="sm" id="btnExport">Експорт JSON</button>
         <label class="btn sm">Импорт<input type="file" id="fileImport" accept="application/json,.json" hidden></label>
@@ -1896,7 +2059,11 @@ function remindCheckKind(veh,kind){
 function buildSafeExportPayload(){
   const safeVehicles=S.vehicles.map(v=>{
     const {egn:_ignoredEgn,...rest}=v;
-    return {...rest,photo:isSafeDataUrl(v.photo)?v.photo:''};
+    return {
+      ...rest,
+      photo:isSafeDataUrl(v.photo)?v.photo:'',
+      services:(v.services||[]).map(s=>({...s,docImage:isSafeDataUrl(s.docImage)?s.docImage:''}))
+    };
   });
   const safeFuels=S.fuels.map(f=>({
     ...f,
@@ -1954,7 +2121,7 @@ document.addEventListener('click',e=>{
   else if(t.id==='shClose'||t.id==='shDone')closeDlg($('#shareDlg'));
   else if(t.id==='editVehBtn')openVehEditor(veh.id);
   else if(t.id==='vClearPhoto')setVehPhotoPreview('');
-  else if(t.id==='vCancel')closeDlg($('#vehDlg'));
+  else if(t.id==='vCancel'||t.id==='vCancelTop')closeDlg($('#vehDlg'));
   else if(t.id==='vSave'){
     const name=$('#vName').value.trim()||'Ново превозно средство';
     const plate=$('#vPlate').value.trim().toUpperCase();
@@ -2023,14 +2190,24 @@ document.addEventListener('click',e=>{
     S.form.months=Number(t.dataset.pickMonths)||12;
     if(!S.form.km&&veh.odo)S.form.km=String(veh.odo);
     render();
-    window.scrollTo({top:0,behavior:'smooth'});
+    toast('Избран: '+S.form.type);
+  }
+  else if(t.id==='fClearDoc'){
+    syncFormFromDom();
+    S.form.docImage='';
+    render();
+  }
+  else if(t.dataset.remSvcDoc){
+    const s=(veh.services||[]).find(x=>x.id===t.dataset.remSvcDoc);
+    if(s){s.docImage='';save();render();toast('Снимката на документа е премахната.');}
   }
   else if(t.id==='saveSvc'){
     syncFormFromDom();
     const km=Number(S.form.km)||Number(veh.odo)||0;
     const detail=S.form.detail.trim();
     const months=Number(S.form.months)||12;
-    if(!detail&&!km)return toast('Въведи или снимай консуматив и километри.');
+    const docImage=isSafeDataUrl(S.form.docImage)?S.form.docImage:'';
+    if(!detail&&!km&&!docImage)return toast('Въведи или снимай консуматив, километри или документ.');
     if(km>veh.odo)veh.odo=km;
     veh.services.unshift({
       id:'s_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
@@ -2040,14 +2217,16 @@ document.addEventListener('click',e=>{
       interval:Number(S.form.interval)||10000,
       months,
       date:S.form.date||new Date().toISOString().slice(0,10),
-      note:S.form.note.trim()
+      note:S.form.note.trim(),
+      docImage
     });
     S.form.detail='';
     S.form.note='';
+    S.form.docImage='';
     S.form.km=veh.odo?String(veh.odo):'';
     save();
     render();
-    toast('Смяната е записана. Снимката не се пази и може да я изтриеш от галерията.');
+    toast('Смяната е записана.');
   }
   else if(t.id==='addCalForm'){
     syncFormFromDom();
@@ -2076,7 +2255,7 @@ document.addEventListener('click',e=>{
     });
   }
   else if(t.id==='clearForm'){
-    S.form.detail='';S.form.note='';S.form.km=veh.odo?String(veh.odo):'';
+    S.form.detail='';S.form.note='';S.form.docImage='';S.form.km=veh.odo?String(veh.odo):'';
     render();
   }
   else if(t.dataset.delSvc){
@@ -2139,6 +2318,7 @@ document.addEventListener('click',e=>{
 
 document.addEventListener('change',async e=>{
   const t=e.target;
+  const veh=getVeh();
   if(t.id==='vRegScanFile'){
     const f=t.files&&t.files[0];
     t.value='';
@@ -2153,6 +2333,31 @@ document.addEventListener('change',async e=>{
     const f=t.files&&t.files[0];
     t.value='';
     readImage(f,t.dataset.ocr);
+  }else if(t.id==='fDocGallery'||t.id==='fDocCamera'){
+    syncFormFromDom();
+    const f=t.files&&t.files[0];
+    t.value='';
+    if(!f)return;
+    try{
+      S.form.docImage=await compressImage(f,1400,0.85);
+      render();
+      toast('Фактурата / документът е прикачен.');
+    }catch(err){
+      toast('Неуспешно зареждане на документа.');
+    }
+  }else if(t.dataset.svcDoc){
+    const s=(veh.services||[]).find(x=>x.id===t.dataset.svcDoc);
+    const f=t.files&&t.files[0];
+    t.value='';
+    if(!s||!f)return;
+    try{
+      s.docImage=await compressImage(f,1400,0.85);
+      save();
+      render();
+      toast('Документът е прикачен към смяната.');
+    }catch(err){
+      toast('Неуспешно зареждане на документа.');
+    }
   }else if(t.id==='cOcrFile'){
     const f=t.files&&t.files[0];
     t.value='';
