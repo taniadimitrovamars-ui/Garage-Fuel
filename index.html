@@ -164,7 +164,7 @@ dialog::backdrop{background:#000c}
       <input type="file" id="vRegScanFile" accept="image/*" capture="environment" hidden>
     </label>
   </div>
-  <div class="m" style="margin-bottom:10px">Снимай малък или голям талон (СРМПС) без отблясъци, за да се разчетат VIN, рег. номер и данни — снимката не се пази.</div>
+  <div class="m" style="margin-bottom:10px">Снимай малък или голям талон (СРМПС) без отблясъци, за да се разчетат VIN, първа регистрация и данни — снимката не се пази.</div>
   <div class="grid g2">
     <div>
       <label class="k">Марка / модел</label>
@@ -175,9 +175,15 @@ dialog::backdrop{background:#000c}
       <input id="vPlate" class="mono" placeholder="Напр. PB5023HE">
     </div>
   </div>
-  <div style="margin-top:8px">
-    <label class="k">VIN номер (рама)</label>
-    <input id="vVin" class="mono" maxlength="20" placeholder="17-символен VIN номер">
+  <div class="grid g2" style="margin-top:8px">
+    <div>
+      <label class="k">VIN номер (рама)</label>
+      <input id="vVin" class="mono" maxlength="20" placeholder="17-символен VIN номер">
+    </div>
+    <div>
+      <label class="k">Дата на първа регистрация</label>
+      <input id="vFirstReg" type="date">
+    </div>
   </div>
   <div class="grid g3" style="margin-top:8px">
     <div>
@@ -313,7 +319,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v12';
+const KEY='garage_fuel_pwa_v13';
 const $=s=>document.querySelector(s);
 const E=v=>String(v??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const DEFAULT_CHAINS=['OMV','Shell','Lukoil','Petrol','Eco','Круиз'];
@@ -332,6 +338,7 @@ function makeVehicle(name,plate,odo,photo){
     name:name||'BMW 330i XDrive - BMW 3 series',
     plate:plate||'',
     vin:'',
+    firstRegDate:'',
     odo:Number(odo)||0,
     egn:'',
     regCert:'',
@@ -390,6 +397,7 @@ function normalizeVeh(v){
     name:v.name||'Основно МПС',
     plate:v.plate||'',
     vin:v.vin||'',
+    firstRegDate:v.firstRegDate||'',
     odo:Number(v.odo)||0,
     egn:v.egn||'',
     regCert:v.regCert||'',
@@ -405,7 +413,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -512,18 +520,26 @@ function fmtDotDate(dateStr){
   const p=dateStr.split('-');
   return p.length===3?`${p[2]}.${p[1]}.${p[0]}`:dateStr;
 }
+function extractAllIsoDatesFromText(txt){
+  const out=[];
+  const seen=new Set();
+  const pushValid=iso=>{
+    if(iso&&parseIsoDate(iso)&&!seen.has(iso)){
+      seen.add(iso);
+      out.push(iso);
+    }
+  };
+  for(const m of String(txt||'').matchAll(/\b(\d{2})[./-](\d{2})[./-](\d{4})\b/g)){
+    pushValid(`${m[3]}-${m[2]}-${m[1]}`);
+  }
+  for(const m of String(txt||'').matchAll(/\b(\d{4})[./-](\d{2})[./-](\d{2})\b/g)){
+    pushValid(`${m[1]}-${m[2]}-${m[3]}`);
+  }
+  return out;
+}
 function extractIsoDateFromText(txt){
-  const m1=txt.match(/\b(\d{2})[./-](\d{2})[./-](\d{4})\b/);
-  if(m1){
-    const iso=`${m1[3]}-${m1[2]}-${m1[1]}`;
-    if(parseIsoDate(iso))return iso;
-  }
-  const m2=txt.match(/\b(\d{4})[./-](\d{2})[./-](\d{2})\b/);
-  if(m2){
-    const iso=`${m2[1]}-${m2[2]}-${m2[3]}`;
-    if(parseIsoDate(iso))return iso;
-  }
-  return '';
+  const all=extractAllIsoDatesFromText(txt);
+  return all[0]||'';
 }
 function parseRegistrationCardText(rawText){
   const clean=String(rawText||'').toUpperCase();
@@ -540,8 +556,8 @@ function parseRegistrationCardText(rawText){
   const brandList=['BMW','MERCEDES','AUDI','VW','VOLKSWAGEN','TOYOTA','YAMAHA','HONDA','FORD','OPEL','PEUGEOT','RENAULT','SKODA','HYUNDAI','KIA','MAZDA','NISSAN','VOLVO','DACIA','FIAT','CITROEN','SEAT','LEXUS','SUBARU','SUZUKI'];
   const foundBrand=brandList.find(b=>new RegExp(`\\b${b}\\b`).test(clean))||'';
 
-  const isoDate=extractIsoDateFromText(rawText);
-  return{vin,plate,regCert,brand:foundBrand,isoDate};
+  const dates=extractAllIsoDatesFromText(rawText);
+  return{vin,plate,regCert,brand:foundBrand,firstRegDate:dates[0]||'',dates};
 }
 function fmtCalDate(d){
   const y=d.getFullYear();
@@ -619,9 +635,9 @@ async function readRegistrationCard(file){
       $('#vName').value=parsed.brand;
       found.push('Марка: '+parsed.brand);
     }
-    if(parsed.isoDate&&!$('#vGtpDate').value){
-      $('#vGtpDate').value=parsed.isoDate;
-      found.push('Дата: '+fmtDotDate(parsed.isoDate));
+    if(parsed.firstRegDate&&!$('#vFirstReg').value){
+      $('#vFirstReg').value=parsed.firstRegDate;
+      found.push('1-ва рег.: '+fmtDotDate(parsed.firstRegDate));
     }
     if(found.length){
       toast('Разпознато от талона: '+found.join(' · '));
@@ -649,7 +665,8 @@ async function readDateFromImage(file,fieldKey){
     url=URL.createObjectURL(file);
     const {data}=await Tesseract.recognize(url,'eng+bul');
     const txt=(data.text||'').replace(/\s+/g,' ').trim();
-    const iso=extractIsoDateFromText(txt);
+    const dates=extractAllIsoDatesFromText(txt);
+    const iso=(veh.firstRegDate&&dates.length>1)?dates.find(d=>d!==veh.firstRegDate)||dates[0]:dates[0]||'';
     if(iso){
       veh[fieldKey]=iso;
       save();
@@ -749,6 +766,7 @@ function vVehicleCard(veh){
           <div class="eu-num">${E(plateDisplay)}</div>
         </div>
         <div class="row" style="gap:10px">
+          ${veh.firstRegDate?`<span class="m mono">1-ва рег.: <b style="color:var(--t)">${E(fmtDotDate(veh.firstRegDate))}</b></span>`:''}
           ${veh.vin?`<span class="m mono">VIN: <b style="color:var(--t)">${E(veh.vin)}</b></span>`:''}
           ${veh.odo?`<span class="m mono">Пробег: <b style="color:var(--t)">${Number(veh.odo).toLocaleString()} km</b></span>`:''}
         </div>
@@ -989,10 +1007,10 @@ function vChecks(){
     <div class="row sp" style="margin-bottom:8px">
       <div>
         <h3 style="margin:0">Данни за проверки и напомняния</h3>
-        <div class="m">Профил: <b>${E(veh.name)}</b> · Външните сайтове не позволяват автоматично изтегляне на дати в браузър — копирай данните, отвори сайта и при нужда разчети датата от скрийншот.</div>
+        <div class="m">Профил: <b>${E(veh.name)}</b> · Датата на първа регистрация е отделена от ГТП, ГО и винетката, за да не се смесват при разчитане.</div>
       </div>
       <div class="row">
-        ${(veh.plate||veh.vin||veh.egn||veh.regCert)?`<button type="button" class="sm" id="copyCheckInfo">Копирай данните</button>`:''}
+        ${(veh.plate||veh.vin||veh.firstRegDate||veh.egn||veh.regCert)?`<button type="button" class="sm" id="copyCheckInfo">Копирай данните</button>`:''}
         <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
       </div>
     </div>
@@ -1007,16 +1025,27 @@ function vChecks(){
         <input id="vinInputCheck" class="mono" value="${E(veh.vin)}" placeholder="17-символен VIN">
       </div>
       <div>
-        <label class="k">ЕГН / Булстат</label>
-        <input id="egnInput" class="mono" value="${E(veh.egn)}" placeholder="За проверка в КАТ">
+        <label class="k">Дата на първа регистрация</label>
+        <input id="firstRegInputCheck" type="date" value="${E(veh.firstRegDate)}">
       </div>
     </div>
 
     <div class="grid g3" style="margin-top:10px">
       <div>
+        <label class="k">ЕГН / Булстат</label>
+        <input id="egnInput" class="mono" value="${E(veh.egn)}" placeholder="За проверка в КАТ">
+      </div>
+      <div>
         <label class="k">№ СРМПС / талон</label>
         <input id="regCertInput" class="mono" value="${E(veh.regCert)}" placeholder="№ на талон">
       </div>
+      <div>
+        <label class="k">Пробег (km)</label>
+        <input id="odoInputCheck" type="number" inputmode="numeric" value="${veh.odo||''}" placeholder="km">
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top:10px">
       <div>
         <label class="k">ГТП валиден до</label>
         <input id="gtpDateInput" type="date" value="${E(veh.gtpDate)}">
@@ -1025,13 +1054,13 @@ function vChecks(){
         <label class="k">Гражданска до</label>
         <input id="mtplDateInput" type="date" value="${E(veh.mtplDate)}">
       </div>
-    </div>
-
-    <div class="grid g3" style="margin-top:10px">
       <div>
         <label class="k">Винетка до</label>
         <input id="vignetteDateInput" type="date" value="${E(veh.vignetteDate)}">
       </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:10px">
       <div>
         <label class="k">Глоби към АПИ / КАТ</label>
         <select id="apiFinesInput">
@@ -1039,10 +1068,6 @@ function vChecks(){
           <option value="Има за проверка"${veh.apiFines==='Има за проверка'?' selected':''}>Има за проверка</option>
           <option value="Непроверено"${veh.apiFines==='Непроверено'?' selected':''}>Непроверено</option>
         </select>
-      </div>
-      <div>
-        <label class="k">Пробег (km)</label>
-        <input id="odoInputCheck" type="number" inputmode="numeric" value="${veh.odo||''}" placeholder="km">
       </div>
     </div>
   </div>
@@ -1146,6 +1171,7 @@ function syncFormFromDom(){
   const veh=getVeh();
   const pl=$('#plateInputCheck');if(pl)veh.plate=pl.value.trim().toUpperCase();
   const vn=$('#vinInputCheck');if(vn)veh.vin=vn.value.trim().toUpperCase();
+  const fr=$('#firstRegInputCheck');if(fr)veh.firstRegDate=fr.value;
   const o=$('#odoInputCheck');if(o&&o.value!=='')veh.odo=Math.max(0,Number(o.value)||0);
   const eg=$('#egnInput');if(eg)veh.egn=eg.value.trim();
   const rc=$('#regCertInput');if(rc)veh.regCert=rc.value.trim();
@@ -1180,6 +1206,7 @@ function openVehEditor(id){
   $('#vName').value=item?item.name:'';
   $('#vPlate').value=item?item.plate:'';
   $('#vVin').value=item?item.vin:'';
+  $('#vFirstReg').value=item?item.firstRegDate:'';
   $('#vOdo').value=item&&item.odo?String(item.odo):'';
   $('#vEgn').value=item?item.egn:'';
   $('#vRegCert').value=item?item.regCert:'';
@@ -1310,6 +1337,7 @@ document.addEventListener('click',e=>{
     const name=$('#vName').value.trim()||'Ново МПС';
     const plate=$('#vPlate').value.trim().toUpperCase();
     const vin=$('#vVin').value.trim().toUpperCase();
+    const firstRegDate=$('#vFirstReg').value;
     const odo=Math.max(0,Number($('#vOdo').value)||0);
     const egn=$('#vEgn').value.trim();
     const regCert=$('#vRegCert').value.trim();
@@ -1322,12 +1350,12 @@ document.addEventListener('click',e=>{
     if(S.editVehId){
       const existing=S.vehicles.find(v=>v.id===S.editVehId);
       if(existing){
-        Object.assign(existing,{name,plate,vin,odo,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines,wearPct,photo});
+        Object.assign(existing,{name,plate,vin,firstRegDate,odo,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines,wearPct,photo});
       }
       S.activeVehId=existing.id;
     }else{
       const created=makeVehicle(name,plate,odo,photo);
-      Object.assign(created,{vin,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines,wearPct});
+      Object.assign(created,{vin,firstRegDate,egn,regCert,gtpDate,mtplDate,vignetteDate,apiFines,wearPct});
       S.vehicles.push(created);
       S.activeVehId=created.id;
     }
@@ -1347,6 +1375,7 @@ document.addEventListener('click',e=>{
     const parts=[];
     if(veh.plate)parts.push('Рег. №: '+veh.plate);
     if(veh.vin)parts.push('VIN: '+veh.vin);
+    if(veh.firstRegDate)parts.push('1-ва рег.: '+fmtDotDate(veh.firstRegDate));
     if(veh.egn)parts.push('ЕГН/Булстат: '+veh.egn);
     if(veh.regCert)parts.push('СРМПС: '+veh.regCert);
     const info=parts.join(' | ');
@@ -1534,9 +1563,9 @@ document.addEventListener('change',async e=>{
       }catch(err){toast('Невалиден JSON файл.')}
     };
     r.readAsText(f);
-  }else if(t.id==='plateInputCheck'||t.id==='vinInputCheck'||t.id==='odoInputCheck'||t.id==='egnInput'||t.id==='regCertInput'||t.id==='mtplDateInput'||t.id==='vignetteDateInput'||t.id==='gtpDateInput'||t.id==='apiFinesInput'||t.id==='fType'||t.id==='fKm'||t.id==='fInt'||t.id==='fMonths'||t.id==='fDate'){
+  }else if(t.id==='plateInputCheck'||t.id==='vinInputCheck'||t.id==='firstRegInputCheck'||t.id==='odoInputCheck'||t.id==='egnInput'||t.id==='regCertInput'||t.id==='mtplDateInput'||t.id==='vignetteDateInput'||t.id==='gtpDateInput'||t.id==='apiFinesInput'||t.id==='fType'||t.id==='fKm'||t.id==='fInt'||t.id==='fMonths'||t.id==='fDate'){
     syncFormFromDom();
-    if(t.id==='plateInputCheck'||t.id==='vinInputCheck'||t.id==='odoInputCheck'||t.id==='egnInput'||t.id==='regCertInput'||t.id==='mtplDateInput'||t.id==='vignetteDateInput'||t.id==='gtpDateInput'||t.id==='apiFinesInput')save();
+    if(t.id==='plateInputCheck'||t.id==='vinInputCheck'||t.id==='firstRegInputCheck'||t.id==='odoInputCheck'||t.id==='egnInput'||t.id==='regCertInput'||t.id==='mtplDateInput'||t.id==='vignetteDateInput'||t.id==='gtpDateInput'||t.id==='apiFinesInput')save();
     if(t.id==='mtplDateInput'||t.id==='vignetteDateInput'||t.id==='gtpDateInput'||t.id==='apiFinesInput'||t.id==='fType'||t.id==='fDate'||t.id==='fMonths')render();
   }
 });
