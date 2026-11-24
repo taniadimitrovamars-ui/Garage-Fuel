@@ -26,44 +26,44 @@ if(!window.QRCode){
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--t);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow-x:hidden}
 body{padding:var(--sat) 0 calc(2.4rem + env(safe-area-inset-bottom,0))}
-header{position:sticky;top:0;z-index:10;background:#080c16fa;backdrop-filter:blur(10px);border-bottom:1px solid #26354d;padding:calc(var(--sat) + 7px) 10px 9px;display:flex;flex-direction:column;gap:8px;align-items:stretch}
+header{position:sticky;top:0;z-index:10;background:#080c16fa;backdrop-filter:blur(10px);border-bottom:1px solid #26354d;padding:calc(var(--sat) + 6px) 8px 8px;display:flex;flex-direction:column;gap:7px;align-items:stretch}
 header:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,#009ada,#38bdf8,#ef4444)}
 
 .brand-banner{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
-  width:100%;min-height:62px;
+  width:100%;min-height:58px;
   border-radius:16px;
   background:
     radial-gradient(circle at 12% 50%, #009ada2e, transparent 42%),
     radial-gradient(circle at 88% 50%, #ef444424, transparent 42%),
     linear-gradient(135deg, #0d1526 0%, #080d18 55%, #111b2e 100%);
   border:1px solid #2b3b56;
-  padding:8px 14px;
+  padding:8px 12px;
   box-shadow:0 6px 22px #00000080,inset 0 1px 0 #ffffff14
 }
-.brand-left{display:flex;align-items:center;gap:11px;min-width:0}
+.brand-left{display:flex;align-items:center;gap:10px;min-width:0}
 .brand-badge{
-  width:42px;height:42px;border-radius:12px;flex:0 0 auto;
+  width:40px;height:40px;border-radius:12px;flex:0 0 auto;
   background:linear-gradient(145deg,#132238,#0a111e);
   border:1px solid #38bdf855;
   display:flex;align-items:center;justify-content:center;
   box-shadow:inset 0 1px 0 #ffffff1a,0 2px 8px #00000066
 }
-.brand-badge svg{width:26px;height:26px;display:block}
+.brand-badge svg{width:24px;height:24px;display:block}
 .brand-titles{display:flex;flex-direction:column;min-width:0}
 .brand-name{
-  font-size:17px;font-weight:800;letter-spacing:1.4px;line-height:1.1;
+  font-size:17px;font-weight:800;letter-spacing:1.3px;line-height:1.1;
   background:linear-gradient(90deg,#ffffff 0%,#e2e8f0 65%,#7dd3fc 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   white-space:nowrap
 }
 .brand-sub{
-  font-size:10px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;
+  font-size:10px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;
   color:#94a3b8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
 }
 .brand-pill{
   flex:0 0 auto;
-  font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+  font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;
   color:#7dd3fc;background:#009ada1c;border:1px solid #38bdf844;
   border-radius:999px;padding:4px 9px;white-space:nowrap
 }
@@ -76,22 +76,25 @@ header:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;backgr
   .brand-sub{font-size:11px;letter-spacing:2px}
 }
 
-.nav-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;width:100%}
+.nav-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;width:100%}
 .nav-tabs button{
   width:100%;
-  min-height:36px;
-  padding:0 6px;
-  font-size:11.5px;
+  min-height:34px;
+  padding:0 4px;
+  font-size:10.5px;
   font-weight:600;
   border-radius:999px;
   white-space:nowrap;
-  gap:4px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  gap:3px;
   background:#111b2e;
   border:1px solid #293852;
   color:#cbd5e1;
-  letter-spacing:0
+  letter-spacing:-.01em
 }
-.nav-tabs button svg{width:13px;height:13px;flex:0 0 auto;opacity:.85}
+.nav-tabs button span{overflow:hidden;text-overflow:ellipsis}
+.nav-tabs button svg{width:11px;height:11px;flex:0 0 auto;opacity:.85}
 .nav-tabs button:hover{border-color:#009ada77;color:#f8fafc}
 .nav-tabs button.on{
   background:linear-gradient(180deg,#009ada3d,#009ada22);
@@ -100,6 +103,11 @@ header:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;backgr
   box-shadow:0 2px 10px #009ada2b
 }
 .nav-tabs button.on svg{opacity:1;color:#38bdf8}
+@media(min-width:420px){
+  .nav-tabs{gap:5px}
+  .nav-tabs button{min-height:36px;padding:0 7px;font-size:11.5px;gap:4px}
+  .nav-tabs button svg{width:12px;height:12px}
+}
 @media(min-width:620px){
   .nav-tabs{gap:8px}
   .nav-tabs button{min-height:40px;padding:0 12px;font-size:13px;gap:6px}
@@ -228,14 +236,10 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .dash-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 16px;background:#0b1220;border-top:1px solid #1e293b;cursor:pointer}
 .dash-footer:hover{background:#111c31}
 
-.dash-svc-box{margin-top:12px;border-top:1px solid #1b2638;padding-top:12px}
-.dash-svc-item{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:9px 10px;border-radius:12px;background:#0b1220;border:1px solid #1b283c;
-  margin-bottom:7px;cursor:pointer
+.dash-svc-box{
+  margin-top:12px;border-top:1px solid #1b2638;padding-top:11px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px
 }
-.dash-svc-item:last-child{margin-bottom:0}
-.dash-svc-item:hover{border-color:#38bdf866;background:#0f192d}
 
 .veh-photo{width:100%;max-height:210px;object-fit:cover;border-radius:14px;border:1px solid #334155;background:#050810;display:block;cursor:zoom-in}
 .card-screen{background:#0f172a;border:1px solid #334155;border-radius:18px;padding:16px;margin:10px 0;display:flex;flex-direction:column}
@@ -593,7 +597,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v32';
+const KEY='garage_fuel_pwa_v33';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -786,7 +790,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -1909,37 +1913,14 @@ function vVehicleSwitcherBar(veh){
 }
 
 function vRecentServicesBlock(veh){
-  const sorted=sortServicesLatestFirst(veh.services||[]);
-  const latest=sorted.slice(0,3);
-
-  const rowsHtml=latest.length
-    ?latest.map(s=>{
-      const pStr=fmtPrice(s.price);
-      return`<div class="dash-svc-item" data-dash-open-hist="${E(s.type)}" title="Отвори историята за ${E(s.type)}">
-        <div style="min-width:0;flex:1">
-          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${E(s.type)} · <span class="mono">${Number(s.km||0).toLocaleString()} km</span></div>
-          <div class="m" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${E(s.detail||'—')}</div>
-        </div>
-        <div style="text-align:right;flex:0 0 auto">
-          <div class="m mono">${E(s.date||'')}</div>
-          ${pStr?`<div class="good mono" style="font-size:12px;font-weight:700">${E(pStr)}</div>`:''}
-        </div>
-      </div>`;
-    }).join('')
-    :`<div class="m" style="padding:4px 0">Няма записани обслужвания за този профил. Натисни „Консумативи →“, за да добавиш.</div>`;
-
+  const count=(veh.services||[]).length;
   return`
   <div class="dash-svc-box">
-    <div class="row sp" style="margin-bottom:8px">
-      <div>
-        <b style="font-size:13.5px">🛠 Обслужвания на МПС (${sorted.length})</b>
-        <span class="m"> · последната най-отгоре</span>
-      </div>
-      <div class="row" style="gap:6px">
-        <button type="button" class="sm pri" data-go-tab="svc">Консумативи →</button>
-      </div>
+    <div style="min-width:0">
+      <b style="font-size:13.5px">🛠 Консумативи (${count})</b>
+      <div class="m">История и записи за обслужване</div>
     </div>
-    ${rowsHtml}
+    <button type="button" class="sm pri" data-go-tab="svc">Консумативи →</button>
   </div>`;
 }
 
@@ -2714,7 +2695,7 @@ document.addEventListener('click',e=>{
     openImageZoom(zoomImg.dataset.zoomSrc,zoomImg.dataset.zoomTitle);
     return;
   }
-  const t=e.target.closest('button,.fuel-tile,.dash-footer,.dash-svc-item');
+  const t=e.target.closest('button,.fuel-tile,.dash-footer');
   if(!t)return;
   const veh=getVeh();
   if(t.id==='tabDash'){syncFormFromDom();save();S.tab='dash';render()}
@@ -2724,7 +2705,6 @@ document.addEventListener('click',e=>{
   else if(t.dataset.enterCat){S.activeCardCat=normalizeCardCat(t.dataset.enterCat);render()}
   else if(t.id==='backCardCats'){S.activeCardCat=null;render()}
   else if(t.dataset.goTab){syncFormFromDom();save();S.tab=t.dataset.goTab;if(S.tab==='fuel')S.activeCardCat=null;render();window.scrollTo({top:0,behavior:'smooth'})}
-  else if(t.dataset.dashOpenHist){openServiceHistory(t.dataset.dashOpenHist)}
   else if(t.id==='syncDashBtn')openQuickUpdate(veh);
   else if(t.id==='qCancel')closeDlg($('#quickDlg'));
   else if(t.id==='qSave'){
