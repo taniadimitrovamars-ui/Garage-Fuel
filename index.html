@@ -335,6 +335,22 @@ dialog::backdrop{background:#000c}
   </div>
 </dialog>
 
+<dialog id="shareDlg">
+  <div class="row sp">
+    <h3 style="margin:0">Сподели приложението</h3>
+    <button type="button" class="sm" id="shClose">Затвори</button>
+  </div>
+  <div class="m" style="margin-top:6px">Сканирай кода с камерата на друг телефон, за да отвори приложението със собствени локални данни.</div>
+  <div class="card-screen bright" style="text-align:center">
+    <canvas id="shQrCanvas" class="code-canvas"></canvas>
+    <div class="mono" id="shUrlText" style="font-size:12px;word-break:break-all;margin-top:6px"></div>
+  </div>
+  <div class="row sp">
+    <button type="button" class="sm" id="shCopy">Копирай адреса</button>
+    <button type="button" class="pri" id="shDone">Готово</button>
+  </div>
+</dialog>
+
 <script>
 window.addEventListener('error',function(ev){
   var app=document.getElementById('app');
@@ -1087,6 +1103,10 @@ function vHomeDash(veh){
       <b>🚗 + Нов профил</b>
       <span>Снимай талон или добави МПС</span>
     </button>
+    <button type="button" class="sheet-btn" id="shareAppBtn">
+      <b>📲 QR за споделяне</b>
+      <span>Отвори на друг телефон с QR</span>
+    </button>
   </div>`;
 }
 
@@ -1650,6 +1670,17 @@ document.addEventListener('click',e=>{
     toast('Профил: '+nextVeh.name);
   }
   else if(t.id==='addVehBtn')openVehEditor(null);
+  else if(t.id==='shareAppBtn'){
+    const shareUrl=window.location.href;
+    drawQrCode($('#shQrCanvas'),shareUrl);
+    $('#shUrlText').textContent=shareUrl;
+    openDlg($('#shareDlg'));
+  }
+  else if(t.id==='shCopy'){
+    const url=$('#shUrlText').textContent||window.location.href;
+    if(url&&navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('Адресът е копиран.')).catch(()=>toast(url));
+  }
+  else if(t.id==='shClose'||t.id==='shDone')closeDlg($('#shareDlg'));
   else if(t.id==='editVehBtn')openVehEditor(veh.id);
   else if(t.id==='vClearPhoto')setVehPhotoPreview('');
   else if(t.id==='vCancel')closeDlg($('#vehDlg'));
