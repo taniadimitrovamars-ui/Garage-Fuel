@@ -209,9 +209,7 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .cat-head{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--m);margin:12px 0 6px;display:flex;align-items:center;justify-content:space-between}
 .cat-head:first-of-type{margin-top:4px}
 
-.sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-@media(min-width:640px){.sheet-grid{grid-template-columns:repeat(4,1fr)}}
-.sheet-btn{min-height:54px;padding:10px 12px;border-radius:16px;background:var(--p);border:1px solid #26354d;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;text-align:left}
+.sheet-btn{width:100%;min-height:54px;padding:10px 14px;border-radius:16px;background:var(--p);border:1px solid #26354d;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;text-align:left}
 .sheet-btn:hover{border-color:#009ada88;background:#131e33}
 .sheet-btn b{font-size:14px;color:var(--t)}
 .sheet-btn span{font-size:11px;color:var(--m)}
@@ -597,7 +595,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v33';
+const KEY='garage_fuel_pwa_v34';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -790,7 +788,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -2008,32 +2006,12 @@ function vVehicleCard(veh){
 }
 
 function vHomeDash(veh){
-  const svcCount=(veh.services||[]).length;
-  const readyCards=S.fuels.filter(f=>(f.number&&f.number.trim())||isSafeDataUrl(f.image)).length;
   return`
   ${vVehicleCard(veh)}
-  <div class="sheet-grid">
-    <button type="button" class="sheet-btn" data-go-tab="svc">
-      <b>🛠 Консумативи</b>
-      <span>${svcCount} записа · масло, филтри, пробег</span>
-    </button>
-    <button type="button" class="sheet-btn" data-go-tab="checks">
-      <b>✅ Проверки</b>
-      <span>VIN, ГТП, ГО, винетка, КАТ</span>
-    </button>
-    <button type="button" class="sheet-btn" data-go-tab="fuel">
-      <b>💳 Карти</b>
-      <span>${readyCards} активни · баркод / скрийншот</span>
-    </button>
-    <button type="button" class="sheet-btn" id="addVehBtn">
-      <b>🚗 + Нов профил</b>
-      <span>Добави кола, АТВ или друго МПС</span>
-    </button>
-    <button type="button" class="sheet-btn" id="shareAppBtn">
-      <b>📲 QR за споделяне</b>
-      <span>Отвори на друг телефон с QR</span>
-    </button>
-  </div>`;
+  <button type="button" class="sheet-btn" id="shareAppBtn">
+    <b>📲 QR за споделяне</b>
+    <span>Отвори на друг телефон с QR</span>
+  </button>`;
 }
 
 function renderServiceHistoryModal(){
@@ -2720,7 +2698,7 @@ document.addEventListener('click',e=>{
   else if(t.dataset.quickCal){
     remindCheckKind(veh,t.dataset.quickCal);
   }
-  else if(t.id==='addVehBtn'||t.id==='addVehInlineBtn')openVehEditor(null);
+  else if(t.id==='addVehInlineBtn')openVehEditor(null);
   else if(t.id==='toggleVehExtraBtn'){
     const p=$('#vehExtraPanel');
     setVehExtraOpen(!(p&&p.style.display==='block'));
