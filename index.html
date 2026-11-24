@@ -673,7 +673,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v36';
+const KEY='garage_fuel_pwa_v37';
 const SOLVER_KEY_STORAGE='pitstop_gemini_key_v1';
 const SOLVER_GRADE_STORAGE='pitstop_school_grade_v1';
 const SOLVER_NOTES_STORAGE='pitstop_solver_notes_v1';
@@ -870,7 +870,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v36')||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -2119,6 +2119,14 @@ function openTestSolverModal(){
   openDlg($('#testSolverDlg'));
 }
 
+function extractGeminiText(data){
+  return (data?.candidates?.[0]?.content?.parts||[])
+    .filter(p=>p&&!p.thought&&typeof p.text==='string')
+    .map(p=>p.text)
+    .join('')
+    .trim();
+}
+
 async function solveTestWithGemini(){
   const grade=$('#tsGrade').value||'9 клас';
   const notes=$('#tsNotes').value.trim();
@@ -2149,9 +2157,9 @@ async function solveTestWithGemini(){
   const statusEl=$('#tsStatus');
   const ansBox=$('#tsAnswerBox');
   const btn=$('#tsSolveBtn');
-  statusEl.textContent=`Обработвам за ${grade}...`;
+  statusEl.textContent=`Изпращам за ${grade}...`;
   ansBox.style.display='block';
-  ansBox.textContent='Изчакай, подготвям отговорите...';
+  ansBox.textContent='';
   btn.disabled=true;
 
   try{
@@ -2160,41 +2168,87 @@ async function solveTestWithGemini(){
       parts.push({inline_data:{mime_type:match[1],data:match[2]}});
     }
     const promptLines=[`Ученикът е в ${grade}.`];
-    if(notes)promptLines.push(`Допълнителен текст / въпроси от ученика:\n${notes}`);
-    if(hasPhoto)promptLines.push('Дай директно и подредено отговорите на задачите / въпросите от снимката.');
-    else promptLines.push('Дай ясен и точен отговор на въпроса / задачата.');
+    if(notes)promptLines.push(`Въпрос / текст:\n${notes}`);
+    if(hasPhoto)promptLines.push('Дай директно и кратко отговорите на задачите / въпросите от снимката на български.');
+    else promptLines.push('Дай точен и стегнат отговор на български.');
     parts.push({text:promptLines.join('\n\n')});
 
-    const endpoint=`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-    const resp=await fetch(endpoint,{
+    const payload={
+      system_instruction:{
+        parts:[{
+          text:`Помагаш на ученик в ${grade} в България. Отговаряй бързо, ясно и на български език.`
+        }]
+      },
+      contents:[{role:'user',parts}],
+      generationConfig:{
+        temperature:0.2,
+        thinkingConfig:{thinkingBudget:hasPhoto?256:0}
+      }
+    };
+
+    const streamUrl=`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:streamGenerateContent?alt=sse&key=${encodeURIComponent(apiKey)}`;
+    const resp=await fetch(streamUrl,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        system_instruction:{
-          parts:[{
-            text:`Ти си полезен помощник за ученик в ${grade} в България. Отговаряй ясно, структурирано и на български език с точните отговори към въпросите/задачите, съобразени с материала за ${grade}.`
-          }]
-        },
-        contents:[{role:'user',parts}]
-      })
+      body:JSON.stringify(payload)
     });
 
-    const data=await resp.json().catch(()=>({}));
     if(!resp.ok){
-      const errMsg=data?.error?.message||`HTTP ${resp.status}`;
+      const errData=await resp.json().catch(()=>({}));
+      const errMsg=errData?.error?.message||`HTTP ${resp.status}`;
       statusEl.textContent='Грешка при заявката.';
       ansBox.textContent='Неуспешна заявка: '+errMsg;
       return;
     }
 
-    const outText=(data?.candidates?.[0]?.content?.parts||[])
-      .map(p=>p&&p.text?p.text:'')
-      .filter(Boolean)
-      .join('\n\n')
-      .trim();
+    let fullText='';
+    if(resp.body&&typeof resp.body.getReader==='function'){
+      const reader=resp.body.getReader();
+      const decoder=new TextDecoder();
+      let buffer='';
+      statusEl.textContent=`Отговаря (${grade})...`;
+      while(true){
+        const {done,value}=await reader.read();
+        if(done)break;
+        buffer+=decoder.decode(value,{stream:true});
+        const lines=buffer.split('\n');
+        buffer=lines.pop()||'';
+        for(const line of lines){
+          const trimmed=line.trim();
+          if(!trimmed.startsWith('data:'))continue;
+          const jsonStr=trimmed.slice(5).trim();
+          if(!jsonStr||jsonStr==='[DONE]')continue;
+          try{
+            const parsedChunk=JSON.parse(jsonStr);
+            const delta=extractGeminiText(parsedChunk);
+            if(delta){
+              fullText=delta.length>=fullText.length&&delta.startsWith(fullText)?delta:(fullText+(fullText?'\n':'')+delta);
+              ansBox.textContent=fullText;
+            }
+          }catch(_){}
+        }
+      }
+    }
+
+    if(!fullText){
+      const fallbackUrl=`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const fbResp=await fetch(fallbackUrl,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
+      const fbData=await fbResp.json().catch(()=>({}));
+      if(!fbResp.ok){
+        const errMsg=fbData?.error?.message||`HTTP ${fbResp.status}`;
+        statusEl.textContent='Грешка при заявката.';
+        ansBox.textContent='Неуспешна заявка: '+errMsg;
+        return;
+      }
+      fullText=extractGeminiText(fbData)||(fbData?.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('\n').trim();
+      ansBox.textContent=fullText||'Няма върнат текст.';
+    }
 
     statusEl.textContent=`Готово (${grade}).`;
-    ansBox.textContent=outText||'Няма върнат текст.';
   }catch(err){
     statusEl.textContent='Връзката беше блокирана или неуспешна.';
     ansBox.textContent='Не успях да получа отговор — провери интернет връзката или ключа от Google AI Studio.';
