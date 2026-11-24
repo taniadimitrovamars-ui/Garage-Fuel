@@ -11,9 +11,6 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
 <title>PITSTOP · LOG — консумативи, проверки и карти за отстъпка</title>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
@@ -29,23 +26,27 @@ if(!window.QRCode){
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--t);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow-x:hidden}
 body{padding:var(--sat) 0 calc(2.4rem + env(safe-area-inset-bottom,0))}
-header{position:sticky;top:0;z-index:10;background:#0b1220f8;backdrop-filter:blur(10px);border-bottom:1px solid #26354d;padding:calc(var(--sat) + 8px) 10px 9px;display:flex;flex-direction:column;gap:9px;align-items:stretch}
-header:after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#009ada,#10b981,#f59e0b)}
-.brand{display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;width:100%}
-.logo-badge{
-  width:36px;height:36px;border-radius:11px;
-  background:radial-gradient(circle at 30% 25%,#ef444444,#090d16 72%);
-  border:1.5px solid #cbd5e199;
-  display:inline-flex;align-items:center;justify-content:center;
-  flex:0 0 auto;box-shadow:0 2px 12px #ef444433,inset 0 1px 0 #ffffff44
+header{position:sticky;top:0;z-index:10;background:#080c16fa;backdrop-filter:blur(10px);border-bottom:1px solid #26354d;padding:calc(var(--sat) + 7px) 10px 9px;display:flex;flex-direction:column;gap:8px;align-items:stretch}
+header:after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#dc2626,#cbd5e1,#dc2626)}
+.brand-banner{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;min-height:68px;
+  border-radius:14px;
+  background:radial-gradient(ellipse at 50% 35%,#dc262633,#090d16 74%);
+  border:1px solid #2b384e;
+  padding:4px 10px;
+  box-shadow:0 4px 18px #00000088,inset 0 1px 0 #ffffff1a
 }
-h1{font-family:'UnifrakturMaguntia','Palatino Linotype','Book Antiqua',Georgia,serif;font-size:21px;font-weight:700;letter-spacing:.04em;margin:0;white-space:nowrap;overflow:visible;line-height:1.15;color:#f8fafc;text-shadow:0 1px 8px #009ada33}
-h1 small{display:none}
+.brand-banner svg{
+  width:min(360px,100%);
+  height:62px;
+  display:block;
+  filter:drop-shadow(0 2px 8px #000000aa)
+}
 @media(min-width:760px){
-  header{padding:calc(var(--sat) + 10px) 16px 10px}
-  .logo-badge{width:40px;height:40px}
-  h1{font-size:25px}
-  h1 small{display:inline;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--m);font-weight:400;font-size:11px;letter-spacing:0;margin-left:8px}
+  header{padding:calc(var(--sat) + 9px) 16px 10px}
+  .brand-banner{min-height:82px}
+  .brand-banner svg{width:min(440px,100%);height:74px}
 }
 
 .nav-tabs{display:flex;gap:6px;width:100%;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:1px 0}
@@ -217,19 +218,35 @@ dialog::backdrop{background:#000c}
 </head>
 <body>
 <header>
-  <div class="brand">
-    <span class="logo-badge" aria-hidden="true">
-      <svg width="24" height="24" viewBox="0 0 36 36" fill="none">
-        <circle cx="18" cy="18" r="15" stroke="#cbd5e1" stroke-width="1.6" fill="#090d16"/>
-        <path d="M9 22 A10 10 0 0 1 27 22" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
-        <path d="M22 10.5 A10 10 0 0 1 27 22" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round"/>
-        <line x1="18" y1="18" x2="24.5" y2="12.5" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round"/>
-        <rect x="14.5" y="9" width="7" height="6.5" rx="1.2" fill="#e2e8f0" stroke="#475569" stroke-width="1"/>
-        <path d="M18 15.5 V26.5" stroke="#cbd5e1" stroke-width="2.4" stroke-linecap="round"/>
-        <circle cx="18" cy="27" r="2.2" fill="#ef4444"/>
-      </svg>
-    </span>
-    <h1>PITSTOP · LOG<small>табло · консумативи · проверки · карти</small></h1>
+  <div class="brand-banner" aria-label="PITSTOP · LOG HOT RODS">
+    <svg viewBox="0 0 420 74" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PITSTOP · LOG лого">
+      <defs>
+        <linearGradient id="metalGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f8fafc"/>
+          <stop offset="48%" stop-color="#cbd5e1"/>
+          <stop offset="52%" stop-color="#64748b"/>
+          <stop offset="100%" stop-color="#e2e8f0"/>
+        </linearGradient>
+        <linearGradient id="redGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#ef4444"/>
+          <stop offset="100%" stop-color="#991b1b"/>
+        </linearGradient>
+      </defs>
+      <path d="M126 52 A56 38 0 0 1 294 52" stroke="#475569" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M238 19 A56 38 0 0 1 294 52" stroke="#ef4444" stroke-width="3.2" stroke-linecap="round"/>
+      <line x1="210" y1="48" x2="262" y2="23" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="210" cy="48" r="4" fill="#e2e8f0" stroke="#dc2626" stroke-width="1.5"/>
+      <rect x="196" y="7" width="28" height="19" rx="3" fill="url(#metalGrad)" stroke="#0f172a" stroke-width="1.5"/>
+      <line x1="198" y1="12" x2="222" y2="12" stroke="#334155" stroke-width="1.2"/>
+      <line x1="198" y1="16" x2="222" y2="16" stroke="#334155" stroke-width="1.2"/>
+      <circle cx="210" cy="21" r="3" fill="#090d16" stroke="#94a3b8" stroke-width="1"/>
+      <path d="M207 24 L204 42 L216 42 L213 24 Z" fill="url(#metalGrad)" stroke="#0f172a" stroke-width="1.2"/>
+      <path d="M132 63 Q210 72 288 63" stroke="#64748b" stroke-width="2.5" stroke-dasharray="6 4" stroke-linecap="round"/>
+      <polygon points="34,27 386,25 376,53 44,55" fill="#090d16" stroke="url(#metalGrad)" stroke-width="2.2"/>
+      <polygon points="300,26 386,25 376,53 292,54" fill="url(#redGrad)" opacity="0.92"/>
+      <text x="208" y="45" text-anchor="middle" fill="url(#metalGrad)" stroke="#050810" stroke-width="1.1" font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif" font-size="25" font-style="italic" letter-spacing="2.2">PITSTOP · LOG</text>
+      <text x="210" y="62" text-anchor="middle" fill="#ef4444" stroke="#050810" stroke-width="0.6" font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif" font-size="11.5" font-style="italic" letter-spacing="3.5">HOT RODS</text>
+    </svg>
   </div>
   <nav class="nav-tabs" aria-label="Основно меню">
     <button type="button" id="tabDash" class="on">
@@ -541,7 +558,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v27';
+const KEY='garage_fuel_pwa_v29';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -660,7 +677,7 @@ let S={
 S.activeVehId=S.vehicles[0].id;
 
 let tt;
-const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',4600)};
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',4800)};
 
 function openDlg(dlg){
   if(!dlg)return;
@@ -720,7 +737,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -856,7 +873,7 @@ function preprocessForOcr(file,mode){
           sh=Math.round(sh*0.84);
         }
 
-        const targetMax=mode==='km'?1600:1400;
+        const targetMax=mode==='km'?1600:1500;
         let dw=sw,dh=sh;
         const scale=Math.min(2.5,Math.max(1,targetMax/Math.max(sw,sh)));
         dw=Math.max(400,Math.round(sw*scale));
@@ -871,8 +888,8 @@ function preprocessForOcr(file,mode){
 
         const imgData=ctx.getImageData(0,0,dw,dh);
         const d=imgData.data;
-        const contrast=mode==='km'?1.55:1.35;
-        const thresh=mode==='km'?132:120;
+        const contrast=mode==='km'?1.55:1.3;
+        const thresh=mode==='km'?132:125;
 
         for(let i=0;i<d.length;i+=4){
           let lum=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
@@ -924,6 +941,11 @@ function extractOdometerValue(rawText,currentOdo){
   const txt=String(rawText||'');
   const candidates=[];
 
+  for(const m of txt.matchAll(/пробег[^\d]{0,16}(\d{1,3}(?:[\s.,]\d{3})+|\d{3,7})/gi)){
+    const n=Number(m[1].replace(/[^\d]/g,''));
+    if(Number.isFinite(n)&&n>=100&&n<=1999999)return n;
+  }
+
   const matches=txt.match(/\b\d{1,3}(?:[\s.,]\d{3})+\b|\b\d{3,7}\b/g)||[];
   for(const m of matches){
     const digitsOnly=m.replace(/[^\d]/g,'');
@@ -953,6 +975,135 @@ function extractOdometerValue(rawText,currentOdo){
     });
   }
   return Math.max(...unique);
+}
+
+function mapEventToPresetType(titleText,descText){
+  const combined=`${titleText||''} ${descText||''}`.toLowerCase();
+  if(/наклад|спирачн|диск|датчик|dot\s*4/i.test(combined))return'Спирачна течност / накладки';
+  if(/маслен\s*филт/i.test(combined))return'Маслен филтър';
+  if(/въздуш.*филт/i.test(combined))return'Въздушен филтър';
+  if(/купе|полен|активен\s*въглен/i.test(combined))return'Филтър купе';
+  if(/трансмис|скорост|диференциал|раздат/i.test(combined))return'Трансмисионно масло';
+  if(/масло/i.test(combined))return'Масло двигател';
+  return'Други';
+}
+
+function parseServiceScreenshotText(rawText,currentOdo){
+  const raw=String(rawText||'');
+  const lines=raw.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+
+  let eventTitle='';
+  const evLine=lines.find(l=>/събити/i.test(l));
+  if(evLine){
+    eventTitle=evLine.replace(/^.*?събити[еиуао]?\s*[-–—:•·]?\s*/i,'').trim();
+  }
+
+  let dateIso='';
+  for(const l of lines){
+    if(/дата/i.test(l)){
+      const found=extractAllIsoDatesFromText(l);
+      if(found.length){dateIso=found[0];break;}
+    }
+  }
+  if(!dateIso){
+    const allDates=extractAllIsoDatesFromText(raw);
+    if(allDates.length)dateIso=allDates[0];
+  }
+
+  let kmVal=null;
+  for(const l of lines){
+    if(/пробег|км|km/i.test(l)){
+      const k=extractOdometerValue(l,currentOdo);
+      if(k!==null){kmVal=k;break;}
+    }
+  }
+  if(kmVal===null)kmVal=extractOdometerValue(raw,currentOdo);
+
+  let priceStr='';
+  for(const l of lines){
+    if(/цена/i.test(l)){
+      const pm=l.match(/(\d+(?:[.,]\d{1,2})?)/);
+      if(pm){priceStr=pm[1].replace(',','.');break;}
+    }
+  }
+
+  let descText='';
+  const descIdx=lines.findIndex(l=>/описание/i.test(l));
+  if(descIdx!==-1){
+    const firstPart=lines[descIdx].replace(/^.*?описание\s*[-–—:•·]?\s*/i,'').trim();
+    const restParts=lines.slice(descIdx+1).filter(l=>!/редакция|изтрий|моят гараж|меню/i.test(l));
+    descText=[firstPart,...restParts].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
+  }
+
+  const mappedType=mapEventToPresetType(eventTitle,descText);
+  const detailParts=[];
+  if(eventTitle&&mappedType==='Други')detailParts.push(eventTitle);
+  else if(eventTitle)detailParts.push(eventTitle);
+  if(descText)detailParts.push(descText);
+
+  return{
+    type:mappedType,
+    date:dateIso,
+    km:kmVal,
+    price:priceStr,
+    detail:detailParts.join(' · ').slice(0,160)
+  };
+}
+
+async function readServiceScreenshot(file){
+  if(!file)return;
+  if(!window.Tesseract){
+    toast('OCR библиотеката не е заредена — попълни ръчно.');
+    return;
+  }
+  const veh=getVeh();
+  S.ocrBusy='Разчитам събитие, дата, цена, пробег и описание от снимката...';
+  if(isSvcEntryOpen())renderServiceEntryModal();
+  else toast(S.ocrBusy);
+
+  try{
+    const procUrl=await preprocessForOcr(file,'shot');
+    const {data}=await Tesseract.recognize(procUrl,'bul+eng');
+    const parsed=parseServiceScreenshotText(data.text||'',Number(veh.odo)||0);
+    const filled=[];
+
+    if(parsed.type){
+      S.form.type=parsed.type;
+      const preset=PRESET_PARTS.find(p=>p.type===parsed.type);
+      if(preset){
+        S.form.interval=preset.interval;
+        S.form.months=preset.months;
+      }
+      filled.push(parsed.type);
+    }
+    if(parsed.date){
+      S.form.date=parsed.date;
+      filled.push('дата '+fmtDotDate(parsed.date));
+    }
+    if(parsed.km!==null){
+      S.form.km=String(parsed.km);
+      filled.push(parsed.km.toLocaleString()+' km');
+    }
+    if(parsed.price){
+      S.form.price=parsed.price;
+      filled.push('цена '+parsed.price);
+    }
+    if(parsed.detail){
+      S.form.detail=parsed.detail;
+      filled.push('описание');
+    }
+
+    if(filled.length){
+      toast('Разпознато от снимката: '+filled.join(' · '));
+    }else{
+      toast('Не се разчетоха ясни полета — провери снимката или попълни ръчно.');
+    }
+  }catch(e){
+    toast('Проблем при разчитането на снимката.');
+  }finally{
+    S.ocrBusy='';
+    if(isSvcEntryOpen())renderServiceEntryModal();
+  }
 }
 
 function setCardEditorPreview(dataUrl){
@@ -1893,6 +2044,13 @@ function renderServiceEntryModal(){
       <button type="button" class="sm" id="svcEntryClose">Затвори</button>
     </div>
 
+    <div class="row" style="margin-bottom:10px">
+      <label class="btn ok" style="flex:1;min-height:42px" title="Качи скрийншот или снимка на запис със събитие, дата, цена, пробег и описание">
+        📸 Попълни автоматично от снимка на запис
+        <input type="file" id="svcShotParseFile" accept="image/*" hidden>
+      </label>
+    </div>
+
     ${S.ocrBusy?`<div class="item" style="border-color:#009ada88"><b class="good">${E(S.ocrBusy)}</b></div>`:''}
 
     <div class="grid g3">
@@ -1913,8 +2071,8 @@ function renderServiceEntryModal(){
         </div>
       </div>
       <div>
-        <label class="k">Цена (€)</label>
-        <input id="fPrice" type="text" inputmode="decimal" value="${E(S.form.price)}" placeholder="Напр. 145">
+        <label class="k">Цена</label>
+        <input id="fPrice" type="text" inputmode="decimal" value="${E(S.form.price)}" placeholder="Напр. 145 или 350.00">
       </div>
     </div>
 
@@ -2725,6 +2883,11 @@ document.addEventListener('change',async e=>{
     S.form.km=nextVeh.odo?String(nextVeh.odo):'';
     render();
     toast('Активен профил: '+nextVeh.name);
+  }else if(t.id==='svcShotParseFile'){
+    syncFormFromDom();
+    const f=t.files&&t.files[0];
+    t.value='';
+    readServiceScreenshot(f);
   }else if(t.id==='vRegScanFile'){
     const f=t.files&&t.files[0];
     t.value='';
