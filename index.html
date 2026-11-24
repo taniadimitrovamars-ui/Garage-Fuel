@@ -17,6 +17,13 @@
 <title>Гараж & Карти — консумативи, проверки и карти за отстъпка</title>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+<script>
+if(!window.QRCode){
+  var sFallback=document.createElement('script');
+  sFallback.src='https://unpkg.com/qrcode@1.5.4/build/qrcode.min.js';
+  document.head.appendChild(sFallback);
+}
+</script>
 <style>
 :root{--bg:#070b14;--p:#101726;--p2:#0b1220;--b:#1e293b;--t:#f1f5f9;--m:#94a3b8;--a:#009ada;--g:#10b981;--y:#f59e0b;--r:#f43f5e;--sat:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
@@ -364,7 +371,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v16';
+const KEY='garage_fuel_pwa_v17';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -522,7 +529,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -701,6 +708,275 @@ function drawCode128(canvas,text){
   return true;
 }
 
+// Pure offline QR Code generator (Versions 1..6, EC Level L) with GF(256) Reed-Solomon
+const OfflineQR=(()=>{
+  const EXP=new Uint8Array(512);
+  const LOG=new Uint8Array(256);
+  let x=1;
+  for(let i=0;i<255;i++){
+    EXP[i]=x;
+    LOG[x]=i;
+    x<<=1;
+    if(x&0x100)x^=0x11d;
+  }
+  for(let i=255;i<512;i++)EXP[i]=EXP[i-255];
+
+  function gfMul(a,b){return(a===0||b===0)?0:EXP[LOG[a]+LOG[b]];}
+  function rsDivisorPoly(ecLen){
+    let poly=[1];
+    for(let i=0;i<ecLen;i++){
+      const next=new Array(poly.length+1).fill(0);
+      const factor=EXP[i];
+      for(let j=0;j<poly.length;j++){
+        next[j]^=poly[j];
+        next[j+1]^=gfMul(poly[j],factor);
+      }
+      poly=next;
+    }
+    return poly.slice(1);
+  }
+  function rsRemainder(dataBytes,ecLen){
+    const gen=rsDivisorPoly(ecLen);
+    const rem=new Array(ecLen).fill(0);
+    for(let i=0;i<dataBytes.length;i++){
+      const lead=dataBytes[i]^rem[0];
+      rem.shift();
+      rem.push(0);
+      if(lead!==0){
+        for(let j=0;j<ecLen;j++){
+          rem[j]^=gfMul(gen[j],lead);
+        }
+      }
+    }
+    return rem;
+  }
+
+  // [version, totalCodewords, ecCodewordsPerBlock, numBlocks, alignCenters]
+  const SPECS=[
+    null,
+    [1,26,7,1,[]],
+    [2,44,10,1,[6,18]],
+    [3,70,15,1,[6,22]],
+    [4,100,20,1,[6,26]],
+    [5,134,26,1,[6,30]],
+    [6,172,18,2,[6,34]]
+  ];
+
+  function toUtf8Bytes(str){
+    if(window.TextEncoder)return Array.from(new TextEncoder().encode(str));
+    const utf8=unescape(encodeURIComponent(str));
+    const out=[];
+    for(let i=0;i<utf8.length;i++)out.push(utf8.charCodeAt(i));
+    return out;
+  }
+
+  function buildCodewords(text){
+    const bytes=toUtf8Bytes(text);
+    for(let v=1;v<=6;v++){
+      const [,totalCw,ecPerBlock,numBlocks]=SPECS[v];
+      const dataCap=totalCw-(ecPerBlock*numBlocks);
+      const ccBits=v<=9?8:16;
+      // 4 bits mode (0100=Byte) + ccBits + 8*bytes.length + up to 4 bits terminator
+      const maxBytes=Math.floor((dataCap*8-4-ccBits)/8);
+      if(bytes.length<=maxBytes){
+        const bits=[];
+        const pushBits=(val,len)=>{for(let i=len-1;i>=0;i--)bits.push((val>>>i)&1);};
+        pushBits(0b0100,4);
+        pushBits(bytes.length,ccBits);
+        for(const b of bytes)pushBits(b,8);
+        const term=Math.min(4,dataCap*8-bits.length);
+        for(let i=0;i<term;i++)bits.push(0);
+        while(bits.length%8!==0)bits.push(0);
+        const cw=[];
+        for(let i=0;i<bits.length;i+=8){
+          let byteVal=0;
+          for(let j=0;j<8;j++)byteVal=(byteVal<<1)|bits[i+j];
+          cw.push(byteVal);
+        }
+        const pads=[0xec,0x11];
+        let pIdx=0;
+        while(cw.length<dataCap){
+          cw.push(pads[pIdx%2]);
+          pIdx++;
+        }
+
+        const shortBlockLen=Math.floor(dataCap/numBlocks);
+        const longBlocks=dataCap%numBlocks;
+        const dataBlocks=[];
+        const ecBlocks=[];
+        let offset=0;
+        for(let b=0;b<numBlocks;b++){
+          const len=shortBlockLen+(b>=numBlocks-longBlocks?1:0);
+          const block=cw.slice(offset,offset+len);
+          offset+=len;
+          dataBlocks.push(block);
+          ecBlocks.push(rsRemainder(block,ecPerBlock));
+        }
+
+        const interleaved=[];
+        const maxDataLen=shortBlockLen+(longBlocks>0?1:0);
+        for(let i=0;i<maxDataLen;i++){
+          for(let b=0;b<numBlocks;b++){
+            if(i<dataBlocks[b].length)interleaved.push(dataBlocks[b][i]);
+          }
+        }
+        for(let i=0;i<ecPerBlock;i++){
+          for(let b=0;b<numBlocks;b++){
+            interleaved.push(ecBlocks[b][i]);
+          }
+        }
+        return {version:v,codewords:interleaved};
+      }
+    }
+    return null;
+  }
+
+  function makeMatrix(version){
+    const size=version*4+17;
+    const grid=Array.from({length:size},()=>new Array(size).fill(null));
+    const reserved=Array.from({length:size},()=>new Array(size).fill(false));
+
+    const put=(r,c,val,isRes=true)=>{
+      if(r>=0&&r<size&&c>=0&&c<size){
+        grid[r][c]=val?1:0;
+        if(isRes)reserved[r][c]=true;
+      }
+    };
+
+    const drawFinder=(r0,c0)=>{
+      for(let r=-1;r<=7;r++){
+        for(let c=-1;c<=7;c++){
+          const rr=r0+r,cc=c0+c;
+          if(rr<0||rr>=size||cc<0||cc>=size)continue;
+          const border=(r===-1||r===7||c===-1||c===7);
+          const outer=(r===0||r===6||c===0||c===6);
+          const inner=(r>=2&&r<=4&&c>=2&&c<=4);
+          put(rr,cc,!border&&(outer||inner),true);
+        }
+      }
+    };
+    drawFinder(0,0);
+    drawFinder(0,size-7);
+    drawFinder(size-7,0);
+
+    const centers=SPECS[version][4];
+    if(centers.length){
+      for(const r of centers){
+        for(const c of centers){
+          const overlapsFinder=(r<9&&c<9)||(r<9&&c>=size-8)||(r>=size-8&&c<9);
+          if(overlapsFinder)continue;
+          for(let dr=-2;dr<=2;dr++){
+            for(let dc=-2;dc<=2;dc++){
+              const dist=Math.max(Math.abs(dr),Math.abs(dc));
+              put(r+dr,c+dc,dist!==1,true);
+            }
+          }
+        }
+      }
+    }
+
+    for(let i=8;i<size-8;i++){
+      const bit=(i%2===0)?1:0;
+      if(!reserved[6][i])put(6,i,bit,true);
+      if(!reserved[i][6])put(i,6,bit,true);
+    }
+
+    // Dark module at (4*version + 9, 8)
+    put(4*version+9,8,1,true);
+
+    // Reserve format info areas (around finders) without placing final bits yet
+    for(let i=0;i<9;i++){
+      if(i<size)reserved[8][i]=true;
+      if(i<size)reserved[i][8]=true;
+    }
+    for(let i=0;i<8;i++){
+      reserved[8][size-1-i]=true;
+      reserved[size-1-i][8]=true;
+    }
+
+    // Version info for version >= 7 (not reached here, max 6)
+    return {size,grid,reserved};
+  }
+
+  function placeDataAndMask(version,codewords,mask){
+    const {size,grid,reserved}=makeMatrix(version);
+    const bits=[];
+    for(const cw of codewords){
+      for(let i=7;i>=0;i--)bits.push((cw>>>i)&1);
+    }
+
+    let bitIdx=0;
+    let dir=-1; // -1 = up, +1 = down
+    for(let col=size-1;col>=1;col-=2){
+      if(col===6)col=5;
+      for(let count=0;count<size;count++){
+        const r=(dir===-1)?(size-1-count):count;
+        for(let cOff=0;cOff<2;cOff++){
+          const c=col-cOff;
+          if(reserved[r][c])continue;
+          let val=bitIdx<bits.length?bits[bitIdx++]:0;
+          const maskCond=((r+c)%2)===0; // Mask 0: (r + c) % 2 == 0
+          if(mask===0&&maskCond)val^=1;
+          grid[r][c]=val;
+        }
+      }
+      dir=-dir;
+    }
+
+    // Format info for Level L (01) and Mask 0 (000) -> 5-bit data 01000 -> BCH(15,5) = 0x77c0 -> XOR 0x5412 = 0x23d2
+    const fmtBits=0x23d2;
+    const getFmtBit=idx=>(fmtBits>>>(14-idx))&1;
+    const horizCoords=[[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[8,size-8],[8,size-7],[8,size-6],[8,size-5],[8,size-4],[8,size-3],[8,size-2],[8,size-1]];
+    const vertCoords=[[size-1,8],[size-2,8],[size-3,8],[size-4,8],[size-5,8],[size-6,8],[size-7,8],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
+    // Map standard 15 format bits cleanly:
+    // Top-left & top-right horizontal + bottom-left & top-left vertical
+    const tlH=[0,1,2,3,4,5,7,8,14,13,12,11,10,9];
+    const tlV=[8,7,5,4,3,2,1,0];
+    const trH=[7,6,5,4,3,2,1,0];
+    const blV=[14,13,12,11,10,9,8];
+    // Standard ISO format bit positions:
+    const posA=[[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
+    for(let i=0;i<15;i++){
+      const [r,c]=posA[i];
+      grid[r][c]=getFmtBit(i);
+    }
+    for(let i=0;i<8;i++){
+      grid[8][size-8+i]=getFmtBit(7-i);
+    }
+    for(let i=0;i<7;i++){
+      grid[size-7+i][8]=getFmtBit(14-i);
+    }
+
+    return {size,grid};
+  }
+
+  function renderToCanvas(canvas,text){
+    const built=buildCodewords(text);
+    if(!built)return false;
+    const {size,grid}=placeDataAndMask(built.version,built.codewords,0);
+    const ctx=canvas.getContext('2d');
+    const targetPx=240;
+    const quietModules=4;
+    const totalModules=size+quietModules*2;
+    const scale=Math.max(3,Math.floor(targetPx/totalModules));
+    canvas.width=totalModules*scale;
+    canvas.height=totalModules*scale;
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#090d16';
+    for(let r=0;r<size;r++){
+      for(let c=0;c<size;c++){
+        if(grid[r][c]){
+          ctx.fillRect((c+quietModules)*scale,(r+quietModules)*scale,scale,scale);
+        }
+      }
+    }
+    return true;
+  }
+
+  return {renderToCanvas};
+})();
+
 function drawQrCode(canvas,text,statusEl){
   if(!canvas)return;
   const val=String(text||'').trim();
@@ -713,29 +989,30 @@ function drawQrCode(canvas,text,statusEl){
     }
     return;
   }
+
+  const showOffline=()=>{
+    const ok=OfflineQR.renderToCanvas(canvas,val);
+    if(ok){
+      canvas.style.display='block';
+      if(statusEl){statusEl.textContent='';statusEl.style.display='none';}
+    }else{
+      ctx.clearRect(0,0,canvas.width||240,canvas.height||80);
+      canvas.style.display='none';
+      if(statusEl){
+        statusEl.textContent='Текстът е прекалено дълъг за вградения офлайн QR генератор.';
+        statusEl.style.display='block';
+      }
+    }
+  };
+
   if(window.QRCode && typeof window.QRCode.toCanvas==='function'){
     canvas.style.display='block';
-    if(statusEl){
-      statusEl.textContent='';
-      statusEl.style.display='none';
-    }
+    if(statusEl){statusEl.textContent='';statusEl.style.display='none';}
     window.QRCode.toCanvas(canvas,val,{width:240,margin:2,color:{dark:'#090d16',light:'#ffffff'}},err=>{
-      if(err){
-        ctx.clearRect(0,0,canvas.width||240,canvas.height||80);
-        canvas.style.display='none';
-        if(statusEl){
-          statusEl.textContent='Неуспешно генериране на QR код: '+(err.message||err);
-          statusEl.style.display='block';
-        }
-      }
+      if(err)showOffline();
     });
   }else{
-    ctx.clearRect(0,0,canvas.width||240,canvas.height||80);
-    canvas.style.display='none';
-    if(statusEl){
-      statusEl.textContent='QR библиотеката не е заредена (провери интернет връзката или презареди страницата).';
-      statusEl.style.display='block';
-    }
+    showOffline();
   }
 }
 
