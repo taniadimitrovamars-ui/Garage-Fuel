@@ -16,6 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
 <title>Гараж & Карти — консумативи, проверки и карти за отстъпка</title>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 <style>
 :root{--bg:#070b14;--p:#101726;--p2:#0b1220;--b:#1e293b;--t:#f1f5f9;--m:#94a3b8;--a:#009ada;--g:#10b981;--y:#f59e0b;--r:#f43f5e;--sat:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
@@ -698,10 +699,8 @@ function drawCode128(canvas,text){
   return true;
 }
 
-function drawQrCode(canvas,text){
-  if(!canvas)return;
+function drawFallbackQrMatrix(canvas,val){
   const ctx=canvas.getContext('2d');
-  const val=String(text||'').trim();
   const n=21;
   const grid=Array.from({length:n},()=>Array(n).fill(false));
   const setFinder=(r0,c0)=>{
@@ -745,6 +744,19 @@ function drawQrCode(canvas,text){
         ctx.fillRect(pad+c*cell,pad+r*cell,cell,cell);
       }
     }
+  }
+}
+
+function drawQrCode(canvas,text){
+  if(!canvas)return;
+  const val=String(text||'').trim();
+  if(!val)return;
+  if(window.QRCode && typeof window.QRCode.toCanvas==='function'){
+    window.QRCode.toCanvas(canvas,val,{width:240,margin:2,color:{dark:'#090d16',light:'#ffffff'}},err=>{
+      if(err)drawFallbackQrMatrix(canvas,val);
+    });
+  }else{
+    drawFallbackQrMatrix(canvas,val);
   }
 }
 
