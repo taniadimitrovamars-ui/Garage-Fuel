@@ -31,18 +31,19 @@ html,body{margin:0;background:var(--bg);color:var(--t);font:14px/1.45 system-ui,
 body{padding:var(--sat) 0 calc(2.4rem + env(safe-area-inset-bottom,0))}
 header{position:sticky;top:0;z-index:10;background:#0b1220f8;backdrop-filter:blur(10px);border-bottom:1px solid #26354d;padding:calc(var(--sat) + 8px) 10px 9px;display:flex;flex-direction:column;gap:9px;align-items:stretch}
 header:after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#009ada,#10b981,#f59e0b)}
-.brand{display:flex;align-items:center;justify-content:center;gap:9px;min-width:0;width:100%}
-.logo-mark{
-  width:28px;height:28px;border-radius:9px;
-  background:linear-gradient(135deg,#009ada2b,#10b98126);
-  border:1px solid #38bdf877;
+.brand{display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;width:100%}
+.logo-badge{
+  width:36px;height:36px;border-radius:11px;
+  background:radial-gradient(circle at 30% 25%,#ef444444,#090d16 72%);
+  border:1.5px solid #cbd5e199;
   display:inline-flex;align-items:center;justify-content:center;
-  color:#38bdf8;flex:0 0 auto;box-shadow:0 2px 10px #009ada22
+  flex:0 0 auto;box-shadow:0 2px 12px #ef444433,inset 0 1px 0 #ffffff44
 }
 h1{font-family:'UnifrakturMaguntia','Palatino Linotype','Book Antiqua',Georgia,serif;font-size:21px;font-weight:700;letter-spacing:.04em;margin:0;white-space:nowrap;overflow:visible;line-height:1.15;color:#f8fafc;text-shadow:0 1px 8px #009ada33}
 h1 small{display:none}
 @media(min-width:760px){
   header{padding:calc(var(--sat) + 10px) 16px 10px}
+  .logo-badge{width:40px;height:40px}
   h1{font-size:25px}
   h1 small{display:inline;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--m);font-weight:400;font-size:11px;letter-spacing:0;margin-left:8px}
 }
@@ -217,8 +218,16 @@ dialog::backdrop{background:#000c}
 <body>
 <header>
   <div class="brand">
-    <span class="logo-mark" aria-hidden="true">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    <span class="logo-badge" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="15" stroke="#cbd5e1" stroke-width="1.6" fill="#090d16"/>
+        <path d="M9 22 A10 10 0 0 1 27 22" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+        <path d="M22 10.5 A10 10 0 0 1 27 22" stroke="#ef4444" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="18" y1="18" x2="24.5" y2="12.5" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round"/>
+        <rect x="14.5" y="9" width="7" height="6.5" rx="1.2" fill="#e2e8f0" stroke="#475569" stroke-width="1"/>
+        <path d="M18 15.5 V26.5" stroke="#cbd5e1" stroke-width="2.4" stroke-linecap="round"/>
+        <circle cx="18" cy="27" r="2.2" fill="#ef4444"/>
+      </svg>
     </span>
     <h1>PITSTOP · LOG<small>табло · консумативи · проверки · карти</small></h1>
   </div>
@@ -244,6 +253,10 @@ dialog::backdrop{background:#000c}
 
 <div class="wrap" id="app"><div class="card"><div class="m">Зареждане на приложението...</div></div></div>
 <div id="toast"></div>
+
+<dialog id="svcEntryDlg">
+  <div id="svcEntryBody"></div>
+</dialog>
 
 <dialog id="svcHistDlg">
   <div class="row sp" style="margin-bottom:8px">
@@ -528,7 +541,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v26';
+const KEY='garage_fuel_pwa_v27';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -707,7 +720,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -1607,6 +1620,11 @@ async function readDateFromImage(file,fieldKey){
   }
 }
 
+function isSvcEntryOpen(){
+  const dlg=$('#svcEntryDlg');
+  return !!(dlg&&(dlg.hasAttribute('open')||dlg.open));
+}
+
 async function readImage(file,mode){
   if(!file)return;
   if(!window.Tesseract){
@@ -1615,7 +1633,8 @@ async function readImage(file,mode){
   }
   const cur=getVeh();
   S.ocrBusy=mode==='part'?'Обработвам и разчитам етикета...':mode==='card'?'Разчитам номера от скрийншота...':'Обработвам и разчитам километрите...';
-  if(mode!=='card')render();
+  if(isSvcEntryOpen())renderServiceEntryModal();
+  else if(mode!=='card')render();
   else toast(S.ocrBusy);
   try{
     const procUrl=await preprocessForOcr(file,mode);
@@ -1649,7 +1668,8 @@ async function readImage(file,mode){
     toast('Проблем при разчитането на снимката.');
   }finally{
     S.ocrBusy='';
-    if(mode!=='card')render();
+    if(isSvcEntryOpen())renderServiceEntryModal();
+    else if(mode!=='card')render();
   }
 }
 
@@ -1798,10 +1818,6 @@ function vHomeDash(veh){
   </div>`;
 }
 
-function lastByType(veh,type){
-  return (veh.services||[]).filter(x=>x.type===type).sort((a,b)=>(b.km||0)-(a.km||0))[0]||null;
-}
-
 function renderServiceHistoryModal(){
   const veh=getVeh();
   const filterType=S.historyFilterType;
@@ -1857,64 +1873,28 @@ function renderServiceHistoryModal(){
 }
 
 function openServiceHistory(filterType){
-  syncFormFromDom();
+  if(isSvcEntryOpen())syncFormFromDom();
   S.historyFilterType=filterType||null;
   renderServiceHistoryModal();
   openDlg($('#svcHistDlg'));
 }
 
-function vServices(){
+function renderServiceEntryModal(){
   const veh=getVeh();
-  const curKm=Number(veh.odo)||0;
   const preset=PRESET_PARTS.find(p=>p.type===S.form.type)||PRESET_PARTS[0];
   const dueDate=addMonthsIso(S.form.date,S.form.months||12);
-  const totalAll=(veh.services||[]).length;
 
-  const partCards=PRESET_PARTS.map(p=>{
-    const itemsOfType=(veh.services||[]).filter(x=>x.type===p.type);
-    const last=itemsOfType.sort((a,b)=>(b.km||0)-(a.km||0))[0]||null;
-    const inter=Number(last?.interval||p.interval||10000);
-    const months=Number(last?.months||p.months||12);
-    const nextKm=last?(Number(last.km)||0)+inter:null;
-    const rem=nextKm!=null&&curKm>0?nextKm-curKm:null;
-    const isSel=S.form.type===p.type;
-    let sub='Няма смяна';
-    if(last){
-      const pStr=fmtPrice(last.price);
-      if(rem==null)sub=`${Number(last.km||0).toLocaleString()} km${pStr?' · '+pStr:''}`;
-      else if(rem<0)sub=`Просрочено ${Math.abs(rem).toLocaleString()} km`;
-      else sub=`Остават ${rem.toLocaleString()} km`;
-    }
-    return`<div class="svc-pick-card ${isSel?'active':''}">
-      <button type="button" class="svc-pick-main" data-pick-type="${E(p.type)}" data-pick-int="${inter}" data-pick-months="${months}">
-        <b>${p.ico} ${E(p.type)}</b>
-        <span>${E(sub)}</span>
-      </button>
-      <div class="svc-pick-foot">
-        <span class="m mono">${itemsOfType.length} бр.</span>
-        <button type="button" class="svc-hist-btn" data-open-hist="${E(p.type)}">📜 История</button>
-      </div>
-    </div>`;
-  }).join('');
-
-  return`
-  ${vVehicleSwitcherBar(veh)}
-  <div class="card">
+  $('#svcEntryBody').innerHTML=`
     <div class="row sp" style="margin-bottom:8px">
       <div>
-        <h3 style="margin:0">Нова смяна на консуматив</h3>
-        <div class="m">Активен профил: <b>${E(veh.name)}</b>${veh.plate?` · <span class="mono">${E(veh.plate)}</span>`:''}</div>
+        <h3 style="margin:0">${E(preset.ico)} Нова смяна — ${E(S.form.type)}</h3>
+        <div class="m">Профил: <b>${E(veh.name)}</b>${veh.plate?` · <span class="mono">${E(veh.plate)}</span>`:''}</div>
       </div>
-      <div class="row">
-        <button type="button" class="sm" data-open-hist="__ALL__">📜 Всички смени (${totalAll})</button>
-        <button type="button" class="sm" data-go-tab="dash">← Табло</button>
-      </div>
+      <button type="button" class="sm" id="svcEntryClose">Затвори</button>
     </div>
 
-    <label class="k">Избери консуматив или отвори историята му</label>
-    <div class="svc-pick-grid" style="margin-bottom:10px">${partCards}</div>
-
     ${S.ocrBusy?`<div class="item" style="border-color:#009ada88"><b class="good">${E(S.ocrBusy)}</b></div>`:''}
+
     <div class="grid g3">
       <div>
         <label class="k">Консуматив / категория</label>
@@ -1985,13 +1965,77 @@ function vServices(){
       <input id="fNote" value="${E(S.form.note)}" placeholder="Напр. № на фактура, количество литри, сервиз">
     </div>
 
-    <div class="row sp" style="margin-top:12px">
+    <div class="row sp" style="margin-top:14px">
       <div class="row">
         <button type="button" class="pri" id="saveSvc">Запази смяната</button>
         <button type="button" class="ok" id="addCalForm">📅 Напомни на ${fmtReadableDate(dueDate)}</button>
       </div>
-      <button type="button" class="sm" id="clearForm">Изчисти полетата</button>
+      <button type="button" class="sm" id="clearForm">Изчисти</button>
     </div>
+  `;
+}
+
+function openServiceEntryModal(opts){
+  const veh=getVeh();
+  if(opts&&opts.type){
+    S.form.type=opts.type;
+    if(opts.interval)S.form.interval=Number(opts.interval)||10000;
+    if(opts.months)S.form.months=Number(opts.months)||12;
+  }
+  if(!S.form.km&&veh.odo)S.form.km=String(veh.odo);
+  renderServiceEntryModal();
+  openDlg($('#svcEntryDlg'));
+}
+
+function vServices(){
+  const veh=getVeh();
+  const curKm=Number(veh.odo)||0;
+  const totalAll=(veh.services||[]).length;
+
+  const partCards=PRESET_PARTS.map(p=>{
+    const itemsOfType=(veh.services||[]).filter(x=>x.type===p.type);
+    const last=itemsOfType.sort((a,b)=>(b.km||0)-(a.km||0))[0]||null;
+    const inter=Number(last?.interval||p.interval||10000);
+    const months=Number(last?.months||p.months||12);
+    const nextKm=last?(Number(last.km)||0)+inter:null;
+    const rem=nextKm!=null&&curKm>0?nextKm-curKm:null;
+    const isSel=S.form.type===p.type;
+    let sub='Няма смяна';
+    if(last){
+      const pStr=fmtPrice(last.price);
+      if(rem==null)sub=`${Number(last.km||0).toLocaleString()} km${pStr?' · '+pStr:''}`;
+      else if(rem<0)sub=`Просрочено ${Math.abs(rem).toLocaleString()} km`;
+      else sub=`Остават ${rem.toLocaleString()} km`;
+    }
+    return`<div class="svc-pick-card ${isSel?'active':''}">
+      <button type="button" class="svc-pick-main" data-pick-type="${E(p.type)}" data-pick-int="${inter}" data-pick-months="${months}">
+        <b>${p.ico} ${E(p.type)}</b>
+        <span>${E(sub)}</span>
+      </button>
+      <div class="svc-pick-foot">
+        <span class="m mono">${itemsOfType.length} бр.</span>
+        <button type="button" class="svc-hist-btn" data-open-hist="${E(p.type)}">📜 История</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  return`
+  ${vVehicleSwitcherBar(veh)}
+  <div class="card">
+    <div class="row sp" style="margin-bottom:8px">
+      <div>
+        <h3 style="margin:0">Консумативи и смени</h3>
+        <div class="m">Активен профил: <b>${E(veh.name)}</b>${veh.plate?` · <span class="mono">${E(veh.plate)}</span>`:''}</div>
+      </div>
+      <div class="row">
+        <button type="button" class="pri sm" id="openNewSvcDlg">+ Нова смяна</button>
+        <button type="button" class="sm" data-open-hist="__ALL__">📜 Всички смени (${totalAll})</button>
+        <button type="button" class="sm" data-go-tab="dash">← Табло</button>
+      </div>
+    </div>
+
+    <label class="k">Натисни консуматив за въвеждане в прозорец или „История“ за преглед</label>
+    <div class="svc-pick-grid">${partCards}</div>
   </div>`;
 }
 
@@ -2516,14 +2560,19 @@ document.addEventListener('click',e=>{
       toast(info||'Няма въведени данни.');
     }
   }
-  else if(t.dataset.pickType){
+  else if(t.id==='openNewSvcDlg'){
+    openServiceEntryModal();
+  }
+  else if(t.id==='svcEntryClose'){
     syncFormFromDom();
-    S.form.type=t.dataset.pickType;
-    S.form.interval=Number(t.dataset.pickInt)||10000;
-    S.form.months=Number(t.dataset.pickMonths)||12;
-    if(!S.form.km&&veh.odo)S.form.km=String(veh.odo);
-    render();
-    toast('Избран: '+S.form.type);
+    closeDlg($('#svcEntryDlg'));
+  }
+  else if(t.dataset.pickType){
+    openServiceEntryModal({
+      type:t.dataset.pickType,
+      interval:Number(t.dataset.pickInt)||10000,
+      months:Number(t.dataset.pickMonths)||12
+    });
   }
   else if(t.dataset.openHist){
     const ft=t.dataset.openHist==='__ALL__'?null:t.dataset.openHist;
@@ -2538,7 +2587,7 @@ document.addEventListener('click',e=>{
   else if(t.id==='fClearDoc'){
     syncFormFromDom();
     S.form.docImage='';
-    render();
+    renderServiceEntryModal();
   }
   else if(t.dataset.remSvcDoc){
     const s=(veh.services||[]).find(x=>x.id===t.dataset.remSvcDoc);
@@ -2571,6 +2620,7 @@ document.addEventListener('click',e=>{
     S.form.docImage='';
     S.form.km=veh.odo?String(veh.odo):'';
     save();
+    closeDlg($('#svcEntryDlg'));
     render();
     toast('Смяната е записана.');
   }
@@ -2604,7 +2654,7 @@ document.addEventListener('click',e=>{
   }
   else if(t.id==='clearForm'){
     S.form.detail='';S.form.price='';S.form.note='';S.form.docImage='';S.form.km=veh.odo?String(veh.odo):'';
-    render();
+    renderServiceEntryModal();
   }
   else if(t.dataset.delSvc){
     veh.services=(veh.services||[]).filter(x=>x.id!==t.dataset.delSvc);
@@ -2702,7 +2752,7 @@ document.addEventListener('change',async e=>{
     if(!f)return;
     try{
       S.form.docImage=await compressImage(f,1400,0.85);
-      render();
+      renderServiceEntryModal();
       toast('Фактурата / документът е прикачен.');
     }catch(err){
       toast('Неуспешно зареждане на документа.');
@@ -2783,7 +2833,8 @@ document.addEventListener('change',async e=>{
   }else if(t.id==='plateInputCheck'||t.id==='vinInputCheck'||t.id==='firstRegInputCheck'||t.id==='odoInputCheck'||t.id==='egnInput'||t.id==='regCertInput'||t.id==='mtplDateInput'||t.id==='vignetteDateInput'||t.id==='gtpDateInput'||t.id==='apiFinesInput'||t.id==='fType'||t.id==='fKm'||t.id==='fPrice'||t.id==='fInt'||t.id==='fMonths'||t.id==='fDate'){
     syncFormFromDom();
     if(t.id==='plateInputCheck'||t.id==='vinInputCheck'||t.id==='firstRegInputCheck'||t.id==='odoInputCheck'||t.id==='egnInput'||t.id==='regCertInput'||t.id==='mtplDateInput'||t.id==='vignetteDateInput'||t.id==='gtpDateInput'||t.id==='apiFinesInput')save();
-    if(t.id==='mtplDateInput'||t.id==='vignetteDateInput'||t.id==='gtpDateInput'||t.id==='apiFinesInput'||t.id==='fType'||t.id==='fDate'||t.id==='fMonths')render();
+    if(t.id==='mtplDateInput'||t.id==='vignetteDateInput'||t.id==='gtpDateInput'||t.id==='apiFinesInput')render();
+    else if(t.id==='fType'||t.id==='fDate'||t.id==='fMonths')renderServiceEntryModal();
   }
 });
 
