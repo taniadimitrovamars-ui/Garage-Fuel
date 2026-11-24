@@ -58,6 +58,12 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .item{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:11px;margin-bottom:8px}
 .fuel-tile{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:12px;cursor:pointer;transition:.15s}
 .fuel-tile:hover,.fuel-tile.has{border-color:#009ada77}
+.cat-menu{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+@media(min-width:640px){.cat-menu{grid-template-columns:repeat(4,1fr)}}
+.cat-btn{min-height:62px;padding:12px;border-radius:16px;background:var(--p2);border:1px solid #26354d;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;text-align:left}
+.cat-btn:hover{border-color:#009ada88;background:#131e33}
+.cat-btn b{font-size:14px;color:var(--t)}
+.cat-btn span{font-size:11px;color:var(--m)}
 .cat-head{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--m);margin:12px 0 6px;display:flex;align-items:center;justify-content:space-between}
 .cat-head:first-of-type{margin-top:4px}
 
@@ -342,6 +348,12 @@ const KEY='garage_fuel_pwa_v14';
 const $=s=>document.querySelector(s);
 const E=v=>String(v??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const CARD_CATS=['Бензиностанции','Магазини','Сервизи и части','Други'];
+const CAT_META={
+  'Бензиностанции':{ico:'⛽',sub:'Горива и вериги'},
+  'Магазини':{ico:'🛒',sub:'Хипермаркети и обекти'},
+  'Сервизи и части':{ico:'🔧',sub:'Авточасти и услуги'},
+  'Други':{ico:'💳',sub:'Други карти за отстъпка'}
+};
 const DEFAULT_CHAINS=['OMV','Shell','Lukoil','Petrol','Eco','Круиз'];
 const PRESET_PARTS=[
   {type:'Масло двигател',interval:10000,months:12,hint:'Напр. 5W-30 LL-04 или марка/артикул'},
@@ -378,7 +390,7 @@ function makeVehicle(name,plate,odo,photo){
 
 let S={
   tab:'dash',
-  cardCatFilter:'Бензиностанции',
+  activeCardCat:null,
   activeVehId:'',
   vehicles:[makeVehicle('BMW 330i XDrive - BMW 3 series','',0,'')],
   fuels:DEFAULT_CHAINS.map((name,i)=>({id:'f_'+i+'_'+Date.now(),category:'Бензиностанции',name,number:'',note:'',image:''})),
@@ -1174,32 +1186,53 @@ function renderCardTile(f){
 }
 
 function vFuel(){
-  const activeCat=normalizeCardCat(S.cardCatFilter);
-  const catButtons=CARD_CATS.map(cat=>{
-    const count=S.fuels.filter(f=>normalizeCardCat(f.category)===cat).length;
-    const on=activeCat===cat;
-    return`<button type="button" class="sm ${on?'on':''}" data-cat-filter="${E(cat)}">${E(cat)} (${count})</button>`;
-  }).join('');
+  const selectedCat=S.activeCardCat?normalizeCardCat(S.activeCardCat):null;
 
-  const filtered=S.fuels.filter(f=>normalizeCardCat(f.category)===activeCat);
+  if(!selectedCat){
+    const catButtons=CARD_CATS.map(cat=>{
+      const items=S.fuels.filter(f=>normalizeCardCat(f.category)===cat);
+      const activeCount=items.filter(f=>(f.number&&f.number.trim())||f.image).length;
+      const meta=CAT_META[cat]||{ico:'💳',sub:''};
+      return`<button type="button" class="cat-btn" data-enter-cat="${E(cat)}">
+        <b>${meta.ico} ${E(cat)} (${items.length})</b>
+        <span>${activeCount} активни · ${E(meta.sub)}</span>
+      </button>`;
+    }).join('');
+
+    return`
+    <div class="card">
+      <div class="row sp" style="margin-bottom:8px">
+        <div>
+          <h3 style="margin:0">Карти за отстъпка</h3>
+          <div class="m">Избери подкатегория, за да отвориш картите вътре в нея.</div>
+        </div>
+        <div class="row">
+          <button type="button" class="pri sm" id="addFuel">+ Нова карта</button>
+          <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
+        </div>
+      </div>
+      <div class="cat-menu">${catButtons}</div>
+    </div>`;
+  }
+
+  const filtered=S.fuels.filter(f=>normalizeCardCat(f.category)===selectedCat);
   const tiles=filtered.length
     ?`<div class="grid g2">${filtered.map(renderCardTile).join('')}</div>`
-    :`<div class="item"><div class="m">Няма добавени карти в „${E(activeCat)}“. Натисни „+ Нова карта“, за да добавиш.</div></div>`;
+    :`<div class="item"><div class="m">Няма добавени карти в „${E(selectedCat)}“. Натисни „+ Нова карта“, за да добавиш.</div></div>`;
 
   return`
   <div class="card">
     <div class="row sp" style="margin-bottom:8px">
       <div>
-        <h3 style="margin:0">Карти за отстъпка</h3>
-        <div class="m">Картите се отварят уголемени с ярък фон за по-лесно сканиране на касата.</div>
+        <h3 style="margin:0">${E(selectedCat)}</h3>
+        <div class="m">Натисни върху карта, за да я отвориш уголемена на касата.</div>
       </div>
       <div class="row">
+        <button type="button" class="sm" id="backCardCats">← Подкатегории</button>
         <button type="button" class="pri sm" id="addFuel">+ Нова карта</button>
-        <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
       </div>
     </div>
-    <div class="row" style="margin-bottom:10px">${catButtons}</div>
-    <div class="cat-head"><span>${E(activeCat)}</span><span>${filtered.length}</span></div>
+    <div class="cat-head"><span>Карти в категорията</span><span>${filtered.length}</span></div>
     ${tiles}
   </div>`;
 }
@@ -1270,7 +1303,7 @@ function openCardEditor(id){
   S.editFuelId=id||null;
   const item=S.fuels.find(x=>x.id===id);
   $('#cTitle').textContent=item?'Редакция на карта':'Нова карта за отстъпка';
-  $('#cCat').value=normalizeCardCat(item?item.category:S.cardCatFilter);
+  $('#cCat').value=normalizeCardCat(item?item.category:(S.activeCardCat||'Бензиностанции'));
   $('#cName').value=item?item.name:'';
   $('#cNum').value=item?item.number:'';
   $('#cNote').value=item?item.note:'';
@@ -1350,9 +1383,10 @@ document.addEventListener('click',e=>{
   if(t.id==='tabDash'){syncFormFromDom();save();S.tab='dash';render()}
   else if(t.id==='tabSvc'){syncFormFromDom();save();S.tab='svc';render()}
   else if(t.id==='tabChecks'||t.id==='openChecksTab'){syncFormFromDom();save();S.tab='checks';render()}
-  else if(t.id==='tabFuel'){syncFormFromDom();save();S.tab='fuel';render()}
-  else if(t.dataset.catFilter){S.cardCatFilter=normalizeCardCat(t.dataset.catFilter);render()}
-  else if(t.dataset.goTab){syncFormFromDom();save();S.tab=t.dataset.goTab;render();window.scrollTo({top:0,behavior:'smooth'})}
+  else if(t.id==='tabFuel'){syncFormFromDom();save();S.tab='fuel';S.activeCardCat=null;render()}
+  else if(t.dataset.enterCat){S.activeCardCat=normalizeCardCat(t.dataset.enterCat);render()}
+  else if(t.id==='backCardCats'){S.activeCardCat=null;render()}
+  else if(t.dataset.goTab){syncFormFromDom();save();S.tab=t.dataset.goTab;if(S.tab==='fuel')S.activeCardCat=null;render();window.scrollTo({top:0,behavior:'smooth'})}
   else if(t.id==='syncDashBtn')openQuickUpdate(veh);
   else if(t.id==='qCancel')closeDlg($('#quickDlg'));
   else if(t.id==='qSave'){
@@ -1520,7 +1554,7 @@ document.addEventListener('click',e=>{
     const note=$('#cNote').value.trim();
     const image=S.editFuelImage||'';
     if(!name)return toast('Въведи име на обекта / веригата.');
-    S.cardCatFilter=category;
+    S.activeCardCat=category;
     if(S.editFuelId){
       const f=S.fuels.find(x=>x.id===S.editFuelId);
       if(f){f.category=category;f.name=name;f.number=number;f.note=note;f.image=image}
