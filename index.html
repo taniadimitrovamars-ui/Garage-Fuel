@@ -29,7 +29,7 @@ if(!window.QRCode){
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--t);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow-x:hidden}
 body{padding:var(--sat) 0 calc(2.4rem + env(safe-area-inset-bottom,0))}
-header{position:sticky;top:0;z-index:10;background:#0b1220f5;backdrop-filter:blur(8px);border-bottom:1px solid var(--b);padding:calc(var(--sat) + 8px) 10px 8px;display:flex;flex-direction:column;gap:8px;align-items:stretch}
+header{position:sticky;top:0;z-index:10;background:#0b1220f8;backdrop-filter:blur(10px);border-bottom:1px solid #26354d;padding:calc(var(--sat) + 8px) 10px 9px;display:flex;flex-direction:column;gap:9px;align-items:stretch}
 header:after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#009ada,#10b981,#f59e0b)}
 .brand{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;width:100%}
 .brand img{width:24px;height:24px;border-radius:7px;display:block;flex:0 0 auto}
@@ -40,16 +40,40 @@ h1 small{display:none}
   h1{font-size:25px}
   h1 small{display:inline;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--m);font-weight:400;font-size:11px;letter-spacing:0;margin-left:8px}
 }
-.nav-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%}
-.nav-tabs button{min-height:36px;padding:0 5px;font-size:11.5px;border-radius:10px;white-space:nowrap;width:100%;gap:4px}
+
+.nav-tabs{display:flex;gap:6px;width:100%;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:1px 0}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tabs button{
+  flex:1 0 auto;
+  min-height:36px;
+  padding:0 9px;
+  font-size:12px;
+  font-weight:600;
+  border-radius:999px;
+  white-space:nowrap;
+  gap:5px;
+  background:#111b2e;
+  border:1px solid #293852;
+  color:#cbd5e1;
+  letter-spacing:.01em
+}
+.nav-tabs button svg{width:14px;height:14px;flex:0 0 auto;opacity:.85}
+.nav-tabs button:hover{border-color:#009ada77;color:#f8fafc}
+.nav-tabs button.on{
+  background:linear-gradient(180deg,#009ada3d,#009ada22);
+  border-color:#38bdf8;
+  color:#ffffff;
+  box-shadow:0 2px 10px #009ada2b
+}
+.nav-tabs button.on svg{opacity:1;color:#38bdf8}
 @media(min-width:620px){
-  .nav-tabs{gap:8px}
+  .nav-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;overflow-x:visible}
   .nav-tabs button{min-height:40px;padding:0 12px;font-size:13px;gap:6px}
 }
+
 .wrap{max-width:980px;margin:0 auto;padding:12px 14px}
 button,select,input{font:inherit;color:var(--t);min-width:0}
 button,.btn{min-height:42px;padding:0 13px;border-radius:12px;border:1px solid #334155;background:#1e293b;cursor:pointer;touch-action:manipulation;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
-button.on{background:#009ada33;border-color:var(--a);color:#7dd3fc}
 button.pri,.btn.pri{background:var(--a);border-color:var(--a);color:#fff;font-weight:600}
 button.ok{background:#10b98128;border-color:#10b98188;color:#6ee7b7}
 button.sm{min-height:34px;padding:0 9px;font-size:12px}
@@ -66,7 +90,31 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .item{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:11px;margin-bottom:8px}
 
 .veh-bar{display:flex;gap:8px;align-items:center;margin-bottom:10px}
-.veh-bar select{flex:1;min-height:38px;padding:6px 10px;border-radius:12px;background:var(--p);border-color:#26354d}
+.veh-select-wrap{position:relative;flex:1;min-width:0;display:flex;align-items:center}
+.veh-select-ico{position:absolute;left:11px;pointer-events:none;font-size:14px;line-height:1;z-index:1}
+.veh-select-wrap select{
+  width:100%;
+  min-height:40px;
+  padding:7px 34px 7px 32px;
+  border-radius:12px;
+  background:#0d1524;
+  border:1px solid #334663;
+  color:#f8fafc;
+  font-weight:600;
+  appearance:none;
+  -webkit-appearance:none;
+  cursor:pointer
+}
+.veh-select-wrap select:focus{outline:none;border-color:#38bdf8}
+.veh-select-caret{
+  position:absolute;
+  right:11px;
+  pointer-events:none;
+  color:#38bdf8;
+  font-size:13px;
+  font-weight:800;
+  line-height:1
+}
 .extra-box{border:1px solid #26354d;background:var(--p2);border-radius:14px;padding:12px;margin-top:10px}
 
 .svc-pick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -138,12 +186,24 @@ dialog::backdrop{background:#000c}
     <img src="./icons/icon-192.png" alt="Гараж & Карти">
     <h1>Гараж & Карти<small>табло · консумативи · проверки · карти</small></h1>
   </div>
-  <div class="nav-tabs">
-    <button type="button" id="tabDash" class="on">📊 Табло</button>
-    <button type="button" id="tabSvc">🛠 Консумативи</button>
-    <button type="button" id="tabChecks">✅ Проверки</button>
-    <button type="button" id="tabFuel">💳 Карти</button>
-  </div>
+  <nav class="nav-tabs" aria-label="Основно меню">
+    <button type="button" id="tabDash" class="on">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      <span>Табло</span>
+    </button>
+    <button type="button" id="tabSvc">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      <span>Консумативи</span>
+    </button>
+    <button type="button" id="tabChecks">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>Проверки</span>
+    </button>
+    <button type="button" id="tabFuel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      <span>Карти</span>
+    </button>
+  </nav>
 </header>
 
 <div class="wrap" id="app"><div class="card"><div class="m">Зареждане на приложението...</div></div></div>
@@ -402,7 +462,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v24';
+const KEY='garage_fuel_pwa_v25';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -578,7 +638,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -1533,7 +1593,11 @@ function vVehicleSwitcherBar(veh){
   }).join('');
 
   return`<div class="veh-bar">
-    <select id="vehSelect" aria-label="Избери превозно средство">${options}</select>
+    <div class="veh-select-wrap">
+      <span class="veh-select-ico" aria-hidden="true">🚗</span>
+      <select id="vehSelect" aria-label="Падащо меню за избор на превозно средство">${options}</select>
+      <span class="veh-select-caret" aria-hidden="true">▾</span>
+    </div>
     <button type="button" class="sm ok" id="addVehInlineBtn">+ Добави</button>
   </div>`;
 }
