@@ -115,7 +115,7 @@ header:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;backgr
 }
 
 .wrap{max-width:980px;margin:0 auto;padding:12px 14px}
-button,select,input{font:inherit;color:var(--t);min-width:0}
+button,select,input,textarea{font:inherit;color:var(--t);min-width:0}
 button,.btn{min-height:42px;padding:0 13px;border-radius:12px;border:1px solid #334155;background:#1e293b;cursor:pointer;touch-action:manipulation;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
 button.on{background:#009ada33;border-color:var(--a);color:#7dd3fc}
 button.pri,.btn.pri{background:var(--a);border-color:var(--a);color:#fff;font-weight:600}
@@ -123,7 +123,8 @@ button.ok{background:#10b98128;border-color:#10b98188;color:#6ee7b7}
 button.sm{min-height:34px;padding:0 9px;font-size:12px}
 button.ghost{background:transparent;border-color:transparent;color:var(--m);min-height:34px;padding:0 8px;font-size:13px}
 button.ghost:hover{color:var(--t);background:#ffffff0d}
-input,select{width:100%;max-width:100%;min-height:42px;background:#050810;border:1px solid #334155;border-radius:12px;padding:8px 11px}
+input,select,textarea{width:100%;max-width:100%;background:#050810;border:1px solid #334155;border-radius:12px;padding:8px 11px}
+input,select{min-height:42px}
 label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;overflow-wrap:break-word}
 .card{background:var(--p);border:1px solid var(--b);border-radius:16px;padding:13px;margin-bottom:12px}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-width:0}.sp{justify-content:space-between}
@@ -209,10 +210,26 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .cat-head{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--m);margin:12px 0 6px;display:flex;align-items:center;justify-content:space-between}
 .cat-head:first-of-type{margin-top:4px}
 
+.dash-bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .sheet-btn{width:100%;min-height:54px;padding:10px 14px;border-radius:16px;background:var(--p);border:1px solid #26354d;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;text-align:left}
 .sheet-btn:hover{border-color:#009ada88;background:#131e33}
 .sheet-btn b{font-size:14px;color:var(--t)}
 .sheet-btn span{font-size:11px;color:var(--m)}
+
+.ans-box{
+  margin-top:12px;
+  border:1px solid #2b3b56;
+  background:#060b14;
+  border-radius:14px;
+  padding:12px;
+  white-space:pre-wrap;
+  word-break:break-word;
+  font-size:13.5px;
+  line-height:1.5;
+  color:#e2e8f0;
+  max-height:46vh;
+  overflow-y:auto
+}
 
 .dash-card{background:var(--p);border:1px solid #26354d;border-radius:20px;overflow:hidden;margin-bottom:12px}
 .dash-body{padding:15px 16px 12px}
@@ -586,6 +603,61 @@ dialog::backdrop{background:#000c}
   </div>
 </dialog>
 
+<dialog id="testSolverDlg">
+  <div class="row sp" style="margin-bottom:8px">
+    <div>
+      <h3 style="margin:0">📝 Контролно / тест — отговори от Claude</h3>
+      <div class="m">Снимай листа и избери клас — отговорите се показват тук в приложението.</div>
+    </div>
+    <button type="button" class="sm" id="tsClose">Затвори</button>
+  </div>
+
+  <div class="grid g2">
+    <div>
+      <label class="k">Кой клас си в училище</label>
+      <select id="tsGrade">
+        <option value="1 клас">1 клас</option>
+        <option value="2 клас">2 клас</option>
+        <option value="3 клас">3 клас</option>
+        <option value="4 клас">4 клас</option>
+        <option value="5 клас">5 клас</option>
+        <option value="6 клас">6 клас</option>
+        <option value="7 клас">7 клас</option>
+        <option value="8 клас">8 клас</option>
+        <option value="9 клас" selected>9 клас</option>
+        <option value="10 клас">10 клас</option>
+        <option value="11 клас">11 клас</option>
+        <option value="12 клас">12 клас</option>
+      </select>
+    </div>
+    <div>
+      <label class="k">Снимка на контролна или тест</label>
+      <div class="row">
+        <label class="btn ok" style="flex:1">
+          📷 Снимай / избери снимка
+          <input type="file" id="tsPhotoFile" accept="image/*" capture="environment" hidden>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div id="tsImgWrap" style="display:none;margin-top:10px">
+    <img id="tsImgPreview" class="doc-thumb" alt="Снимка на контролна или тест">
+  </div>
+
+  <div style="margin-top:10px">
+    <label class="k">Claude API ключ (пази се само в този браузър)</label>
+    <input id="tsApiKey" type="password" class="mono" placeholder="sk-ant-...">
+  </div>
+
+  <div class="row sp" style="margin-top:12px">
+    <span class="m" id="tsStatus">Избери клас и зареди снимка.</span>
+    <button type="button" class="pri" id="tsSolveBtn">Изпрати към Claude</button>
+  </div>
+
+  <div id="tsAnswerBox" class="ans-box" style="display:none"></div>
+</dialog>
+
 <script>
 window.addEventListener('error',function(ev){
   var app=document.getElementById('app');
@@ -595,7 +667,9 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v34';
+const KEY='garage_fuel_pwa_v35';
+const CLAUDE_KEY_STORAGE='pitstop_claude_api_key_v1';
+const CLAUDE_GRADE_STORAGE='pitstop_school_grade_v1';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -709,7 +783,8 @@ let S={
   showFuelId:null,
   codeMode:'barcode',
   brightCard:false,
-  zoomCard:false
+  zoomCard:false,
+  testPhoto:''
 };
 S.activeVehId=S.vehicles[0].id;
 
@@ -788,7 +863,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -2008,10 +2083,111 @@ function vVehicleCard(veh){
 function vHomeDash(veh){
   return`
   ${vVehicleCard(veh)}
-  <button type="button" class="sheet-btn" id="shareAppBtn">
-    <b>📲 QR за споделяне</b>
-    <span>Отвори на друг телефон с QR</span>
-  </button>`;
+  <div class="dash-bottom-row">
+    <button type="button" class="sheet-btn" id="shareAppBtn">
+      <b>📲 QR за споделяне</b>
+      <span>Отвори на друг телефон с QR</span>
+    </button>
+    <button type="button" class="sheet-btn" id="openTestSolverBtn">
+      <b>📝 Контролно / тест</b>
+      <span>Снимка, клас и отговори</span>
+    </button>
+  </div>`;
+}
+
+function openTestSolverModal(){
+  const savedKey=localStorage.getItem(CLAUDE_KEY_STORAGE)||'';
+  const savedGrade=localStorage.getItem(CLAUDE_GRADE_STORAGE)||'9 клас';
+  $('#tsApiKey').value=savedKey;
+  $('#tsGrade').value=savedGrade;
+  if(isSafeDataUrl(S.testPhoto)){
+    $('#tsImgPreview').src=S.testPhoto;
+    $('#tsImgWrap').style.display='block';
+  }else{
+    $('#tsImgPreview').removeAttribute('src');
+    $('#tsImgWrap').style.display='none';
+  }
+  openDlg($('#testSolverDlg'));
+}
+
+async function solveTestWithClaude(){
+  const grade=$('#tsGrade').value||'9 клас';
+  const apiKey=$('#tsApiKey').value.trim();
+  localStorage.setItem(CLAUDE_GRADE_STORAGE,grade);
+  if(apiKey)localStorage.setItem(CLAUDE_KEY_STORAGE,apiKey);
+
+  if(!isSafeDataUrl(S.testPhoto)){
+    toast('Първо избери или снимай контролната / теста.');
+    return;
+  }
+  if(!apiKey){
+    toast('Въведи Claude API ключ (sk-ant-...), за да върне Claude отговорите тук.');
+    return;
+  }
+
+  const match=S.testPhoto.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
+  if(!match){
+    toast('Невалиден формат на снимката.');
+    return;
+  }
+  const mediaType=match[1];
+  const base64Data=match[2];
+
+  const statusEl=$('#tsStatus');
+  const ansBox=$('#tsAnswerBox');
+  const btn=$('#tsSolveBtn');
+  statusEl.textContent=`Изпращам снимката за ${grade} към Claude...`;
+  ansBox.style.display='block';
+  ansBox.textContent='Изчакай, Claude обработва снимката и подготвя отговорите...';
+  btn.disabled=true;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1800,
+        system:`Ти си учител и помощник за ученик в ${grade} в България. Отговаряй ясно, структурирано и на български език с точните отговори към въпросите/задачите от снимката на контролното или теста, съобразени с материала за ${grade}.`,
+        messages:[
+          {
+            role:'user',
+            content:[
+              {type:'image',source:{type:'base64',media_type:mediaType,data:base64Data}},
+              {type:'text',text:`Ученикът е в ${grade}. Дай директно и подредено отговорите на контролното или теста от снимката.`}
+            ]
+          }
+        ]
+      })
+    });
+
+    const data=await resp.json().catch(()=>({}));
+    if(!resp.ok){
+      const errMsg=data?.error?.message||`HTTP ${resp.status}`;
+      statusEl.textContent='Грешка при заявката към Claude.';
+      ansBox.textContent='Неуспешна заявка: '+errMsg;
+      return;
+    }
+
+    const outText=(data.content||[])
+      .filter(block=>block&&block.type==='text')
+      .map(block=>block.text)
+      .join('\n\n')
+      .trim();
+
+    statusEl.textContent=`Готово (${grade}).`;
+    ansBox.textContent=outText||'Няма върнат текст от Claude.';
+  }catch(err){
+    statusEl.textContent='Връзката беше блокирана или неуспешна.';
+    ansBox.textContent='Не успях да получа отговор директно от браузъра (възможно е браузърът/средата да блокира пряка заявка към api.anthropic.com без сървърно прокси).';
+  }finally{
+    btn.disabled=false;
+  }
 }
 
 function renderServiceHistoryModal(){
@@ -2709,6 +2885,9 @@ document.addEventListener('click',e=>{
     $('#shUrlText').textContent=shareUrl;
     openDlg($('#shareDlg'));
   }
+  else if(t.id==='openTestSolverBtn')openTestSolverModal();
+  else if(t.id==='tsClose')closeDlg($('#testSolverDlg'));
+  else if(t.id==='tsSolveBtn')solveTestWithClaude();
   else if(t.id==='shCopy'){
     const url=$('#shUrlText').textContent||window.location.href;
     if(url&&navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('Адресът е копиран.')).catch(()=>toast(url));
@@ -2977,6 +3156,22 @@ document.addEventListener('change',async e=>{
     S.form.km=nextVeh.odo?String(nextVeh.odo):'';
     render();
     toast('Активен профил: '+nextVeh.name);
+  }else if(t.id==='tsPhotoFile'){
+    const f=t.files&&t.files[0];
+    t.value='';
+    if(!f)return;
+    try{
+      const compressed=await compressImage(f,1500,0.86);
+      S.testPhoto=compressed;
+      $('#tsImgPreview').src=compressed;
+      $('#tsImgWrap').style.display='block';
+      $('#tsStatus').textContent='Снимката е готова за изпращане към Claude.';
+      toast('Снимката на контролното / теста е заредена.');
+    }catch(err){
+      toast('Неуспешно зареждане на снимката.');
+    }
+  }else if(t.id==='tsGrade'){
+    localStorage.setItem(CLAUDE_GRADE_STORAGE,t.value);
   }else if(t.id==='svcShotParseFile'){
     syncFormFromDom();
     const f=t.files&&t.files[0];
