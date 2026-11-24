@@ -109,6 +109,7 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .card-screen.zoomed .card-shot{flex:1 1 auto;max-height:78vh;min-height:300px}
 .card-screen.zoomed #sNum{font-size:32px}
 .code-canvas{display:block;margin:10px auto 8px;max-width:100%;height:auto;border-radius:8px;background:#fff;padding:6px}
+.qr-status{font-size:12px;color:#475569;margin-top:6px;display:none}
 dialog{background:var(--p);color:var(--t);border:1px solid #334155;border-radius:18px;width:min(620px,96vw);max-width:96vw;padding:15px}
 dialog::backdrop{background:#000c}
 #toast{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0));z-index:40;background:#0f172af5;border:1px solid #334155;border-radius:14px;padding:11px 14px;font-size:13px;display:none}
@@ -327,6 +328,7 @@ dialog::backdrop{background:#000c}
     <img id="sImg" class="card-shot" style="display:none" alt="Снимка на картата">
     <div id="sCodeWrap" style="display:none;text-align:center">
       <canvas id="sCodeCanvas" class="code-canvas"></canvas>
+      <div id="sQrStatus" class="qr-status"></div>
     </div>
     <div class="mono" id="sNum" style="font-size:26px;font-weight:800;letter-spacing:2px;word-break:break-all;text-align:center"></div>
   </div>
@@ -344,6 +346,7 @@ dialog::backdrop{background:#000c}
   <div class="m" style="margin-top:6px">Сканирай кода с камерата на друг телефон, за да отвори приложението със собствени локални данни.</div>
   <div class="card-screen bright" style="text-align:center">
     <canvas id="shQrCanvas" class="code-canvas"></canvas>
+    <div id="shQrStatus" class="qr-status"></div>
     <div class="mono" id="shUrlText" style="font-size:12px;word-break:break-all;margin-top:6px"></div>
   </div>
   <div class="row sp">
@@ -361,7 +364,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v15';
+const KEY='garage_fuel_pwa_v16';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -519,7 +522,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -647,7 +650,6 @@ function setVehPhotoPreview(dataUrl){
   }
 }
 
-// Code 128B generator for alphanumeric/ASCII card numbers
 const C128_PATTERNS=[
   '212222','222122','222221','121223','121322','131222','122213','122312','132212','221213',
   '221312','231212','112232','122132','122231','113222','123122','123221','223211','221132',
@@ -699,64 +701,41 @@ function drawCode128(canvas,text){
   return true;
 }
 
-function drawFallbackQrMatrix(canvas,val){
-  const ctx=canvas.getContext('2d');
-  const n=21;
-  const grid=Array.from({length:n},()=>Array(n).fill(false));
-  const setFinder=(r0,c0)=>{
-    for(let r=-1;r<=7;r++){
-      for(let c=-1;c<=7;c++){
-        const rr=r0+r,cc=c0+c;
-        if(rr<0||rr>=n||cc<0||cc>=n)continue;
-        const border=(r===-1||r===7||c===-1||c===7);
-        const outer=(r===0||r===6||c===0||c===6);
-        const inner=(r>=2&&r<=4&&c>=2&&c<=4);
-        grid[rr][cc]=!border&&(outer||inner);
-      }
-    }
-  };
-  setFinder(0,0);
-  setFinder(0,n-7);
-  setFinder(n-7,0);
-  let h=2166136261;
-  for(let i=0;i<val.length;i++){
-    h^=val.charCodeAt(i);
-    h=Math.imul(h,16777619);
-  }
-  for(let r=0;r<n;r++){
-    for(let c=0;c<n;c++){
-      const inFinder=(r<8&&c<8)||(r<8&&c>=n-8)||(r>=n-8&&c<8);
-      if(inFinder)continue;
-      const bit=((h>>>((r*n+c)%24))^(r*7+c*13))&1;
-      grid[r][c]=bit===1;
-    }
-  }
-  const cell=10;
-  const pad=16;
-  canvas.width=n*cell+pad*2;
-  canvas.height=n*cell+pad*2;
-  ctx.fillStyle='#ffffff';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle='#090d16';
-  for(let r=0;r<n;r++){
-    for(let c=0;c<n;c++){
-      if(grid[r][c]){
-        ctx.fillRect(pad+c*cell,pad+r*cell,cell,cell);
-      }
-    }
-  }
-}
-
-function drawQrCode(canvas,text){
+function drawQrCode(canvas,text,statusEl){
   if(!canvas)return;
   const val=String(text||'').trim();
-  if(!val)return;
+  const ctx=canvas.getContext('2d');
+  if(!val){
+    canvas.style.display='none';
+    if(statusEl){
+      statusEl.textContent='Няма текст за кодиране в QR код.';
+      statusEl.style.display='block';
+    }
+    return;
+  }
   if(window.QRCode && typeof window.QRCode.toCanvas==='function'){
+    canvas.style.display='block';
+    if(statusEl){
+      statusEl.textContent='';
+      statusEl.style.display='none';
+    }
     window.QRCode.toCanvas(canvas,val,{width:240,margin:2,color:{dark:'#090d16',light:'#ffffff'}},err=>{
-      if(err)drawFallbackQrMatrix(canvas,val);
+      if(err){
+        ctx.clearRect(0,0,canvas.width||240,canvas.height||80);
+        canvas.style.display='none';
+        if(statusEl){
+          statusEl.textContent='Неуспешно генериране на QR код: '+(err.message||err);
+          statusEl.style.display='block';
+        }
+      }
     });
   }else{
-    drawFallbackQrMatrix(canvas,val);
+    ctx.clearRect(0,0,canvas.width||240,canvas.height||80);
+    canvas.style.display='none';
+    if(statusEl){
+      statusEl.textContent='QR библиотеката не е заредена (провери интернет връзката или презареди страницата).';
+      statusEl.style.display='block';
+    }
   }
 }
 
@@ -1544,6 +1523,7 @@ function openCardEditor(id){
 function renderCodeForNumber(numStr){
   const wrap=$('#sCodeWrap');
   const cv=$('#sCodeCanvas');
+  const st=$('#sQrStatus');
   const modeBtn=$('#sCodeMode');
   const clean=String(numStr||'').trim();
   if(!clean){
@@ -1554,15 +1534,17 @@ function renderCodeForNumber(numStr){
   wrap.style.display='block';
   modeBtn.style.display='';
   if(S.codeMode==='qr'){
-    drawQrCode(cv,clean);
+    drawQrCode(cv,clean,st);
     modeBtn.textContent='||| Code 128';
   }else{
     const ok=drawCode128(cv,clean);
     if(!ok){
       S.codeMode='qr';
-      drawQrCode(cv,clean);
+      drawQrCode(cv,clean,st);
       modeBtn.textContent='||| Code 128';
     }else{
+      cv.style.display='block';
+      if(st){st.textContent='';st.style.display='none';}
       modeBtn.textContent='▣ QR код';
     }
   }
@@ -1684,7 +1666,7 @@ document.addEventListener('click',e=>{
   else if(t.id==='addVehBtn')openVehEditor(null);
   else if(t.id==='shareAppBtn'){
     const shareUrl=window.location.href;
-    drawQrCode($('#shQrCanvas'),shareUrl);
+    drawQrCode($('#shQrCanvas'),shareUrl,$('#shQrStatus'));
     $('#shUrlText').textContent=shareUrl;
     openDlg($('#shareDlg'));
   }
