@@ -238,25 +238,52 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 }
 
 .appt-cat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.appt-cat-btn{
-  width:100%;
-  min-height:64px;
-  padding:10px 8px;
-  border-radius:14px;
+.appt-cat-card{
   background:var(--p2);
   border:1px solid #2b3b56;
+  border-radius:14px;
+  padding:9px 8px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:7px;
+  min-width:0
+}
+.appt-cat-card.active{background:#009ada22;border-color:#38bdf8;box-shadow:0 0 0 1px #009ada55}
+.appt-cat-btn{
+  width:100%;
+  min-height:0;
+  padding:2px 2px 0;
+  background:transparent;
+  border:none;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:3px;
+  gap:2px;
   text-align:center
 }
-.appt-cat-btn:hover{border-color:#38bdf8;background:#132036}
-.appt-cat-btn.active{background:#009ada2b;border-color:#38bdf8;color:#fff;box-shadow:0 0 0 1px #009ada55}
 .appt-cat-btn b{font-size:13px;line-height:1.2}
 .appt-cat-btn span{font-size:11px;color:var(--m)}
-.appt-cat-btn.active span{color:#bae6fd}
+.appt-cat-card.active .appt-cat-btn span{color:#bae6fd}
+.appt-cat-foot{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-top:1px solid #1b2638;
+  padding-top:6px
+}
+.appt-hist-btn{
+  width:100%;
+  min-height:28px;
+  padding:0 6px;
+  font-size:11px;
+  border-radius:8px;
+  background:#132036;
+  border-color:#2c4060;
+  color:#bae6fd
+}
+.appt-hist-btn:hover{border-color:#38bdf8;color:#fff}
 
 .ans-box{
   margin-top:12px;
@@ -669,24 +696,39 @@ dialog::backdrop{background:#000c}
   <div class="row sp" style="margin-bottom:8px">
     <div>
       <h3 style="margin:0">📅 Часове и срещи</h3>
-      <div class="m">Избери тип, запиши час и добави напомняне в календара.</div>
+      <div class="m">Избери тип, запиши час и натисни „📜 История“ за записаните часове.</div>
     </div>
     <button type="button" class="sm" id="apClose">Затвори</button>
   </div>
 
   <div class="appt-cat-grid" style="margin-bottom:10px">
-    <button type="button" class="appt-cat-btn" data-appt-cat="Фризьор">
-      <b>✂️ Фризьор</b>
-      <span id="apCntHair">0 записани</span>
-    </button>
-    <button type="button" class="appt-cat-btn" data-appt-cat="Зъболекар">
-      <b>🦷 Зъболекар</b>
-      <span id="apCntDent">0 записани</span>
-    </button>
-    <button type="button" class="appt-cat-btn" data-appt-cat="Други">
-      <b>📌 Други</b>
-      <span id="apCntOth">0 записани</span>
-    </button>
+    <div class="appt-cat-card" data-appt-card="Фризьор">
+      <button type="button" class="appt-cat-btn" data-appt-cat="Фризьор">
+        <b>✂️ Фризьор</b>
+        <span id="apCntHair">0 записани</span>
+      </button>
+      <div class="appt-cat-foot">
+        <button type="button" class="appt-hist-btn" data-ap-hist="Фризьор">📜 История</button>
+      </div>
+    </div>
+    <div class="appt-cat-card" data-appt-card="Зъболекар">
+      <button type="button" class="appt-cat-btn" data-appt-cat="Зъболекар">
+        <b>🦷 Зъболекар</b>
+        <span id="apCntDent">0 записани</span>
+      </button>
+      <div class="appt-cat-foot">
+        <button type="button" class="appt-hist-btn" data-ap-hist="Зъболекар">📜 История</button>
+      </div>
+    </div>
+    <div class="appt-cat-card" data-appt-card="Други">
+      <button type="button" class="appt-cat-btn" data-appt-cat="Други">
+        <b>📌 Други</b>
+        <span id="apCntOth">0 записани</span>
+      </button>
+      <div class="appt-cat-foot">
+        <button type="button" class="appt-hist-btn" data-ap-hist="Други">📜 История</button>
+      </div>
+    </div>
   </div>
 
   <div class="extra-box" style="margin-top:0">
@@ -717,9 +759,17 @@ dialog::backdrop{background:#000c}
       <button type="button" class="ok" id="apAddCalForm">📅 В календара</button>
     </div>
   </div>
+</dialog>
 
-  <div class="cat-head"><span id="apListHead">Записани часове</span><span id="apListCount">0</span></div>
-  <div id="apList"></div>
+<dialog id="apptHistDlg">
+  <div class="row sp" style="margin-bottom:8px">
+    <div>
+      <h3 id="apHistTitle" style="margin:0">История на часовете</h3>
+      <div class="m" id="apHistSub"></div>
+    </div>
+    <button type="button" class="sm" id="apHistClose">Затвори</button>
+  </div>
+  <div id="apHistList"></div>
 </dialog>
 
 <dialog id="testSolverDlg">
@@ -940,6 +990,7 @@ let S={
   fuels:DEFAULT_CHAINS.map((name,i)=>({id:'f_'+i+'_'+Date.now(),category:'Бензиностанции',name,number:'',note:'',image:''})),
   appointments:[],
   apptCat:'Фризьор',
+  apptHistCat:'Фризьор',
   apptEditId:'',
   form:{id:'',type:'Масло двигател',detail:'',price:'',km:'',interval:10000,months:12,date:new Date().toISOString().slice(0,10),note:'',docImage:''},
   historyFilterType:null,
@@ -2340,25 +2391,30 @@ function renderApptModal(){
   $('#apCntDent').textContent=`${cntDent} записани`;
   $('#apCntOth').textContent=`${cntOth} записани`;
 
-  document.querySelectorAll('.appt-cat-btn').forEach(btn=>{
-    btn.classList.toggle('active',btn.dataset.apptCat===cat);
+  document.querySelectorAll('.appt-cat-card').forEach(card=>{
+    card.classList.toggle('active',card.dataset.apptCard===cat);
   });
 
   if(!S.apptEditId){
     $('#apFormTitle').textContent=`Нов час — ${cat}`;
     $('#apSave').textContent='Запази часа';
   }
+}
 
-  const list=all.filter(a=>a.category===cat);
-  $('#apListHead').textContent=`Записани часове — ${cat}`;
-  $('#apListCount').textContent=String(list.length);
+function renderApptHistoryModal(){
+  const cat=normalizeApptCat(S.apptHistCat||S.apptCat);
+  S.apptHistCat=cat;
+  const list=sortAppointmentsSoonest((S.appointments||[]).filter(a=>a.category===cat));
+
+  $('#apHistTitle').textContent=`История: ${cat}`;
+  $('#apHistSub').textContent=`Записани часове — ${list.length} бр.`;
 
   if(!list.length){
-    $('#apList').innerHTML=`<div class="item"><div class="m">Няма записани часове в „${E(cat)}“. Попълни дата и час по-горе.</div></div>`;
+    $('#apHistList').innerHTML=`<div class="item"><div class="m">Няма записани часове в „${E(cat)}“.</div></div>`;
     return;
   }
 
-  $('#apList').innerHTML=list.map(a=>{
+  $('#apHistList').innerHTML=list.map(a=>{
     const whenStr=`${fmtDotDate(a.date)}${a.time?' в '+a.time:''}`;
     return`
     <div class="item">
@@ -2376,6 +2432,12 @@ function renderApptModal(){
       </div>
     </div>`;
   }).join('');
+}
+
+function openApptHistoryModal(cat){
+  S.apptHistCat=normalizeApptCat(cat||S.apptCat);
+  renderApptHistoryModal();
+  openDlg($('#apptHistDlg'));
 }
 
 function openApptModal(initialCat){
@@ -3376,9 +3438,13 @@ document.addEventListener('click',e=>{
   else if(t.id==='alCloseBtn')closeDlg($('#ansLargeDlg'));
   else if(t.id==='openApptBtn')openApptModal();
   else if(t.id==='apClose')closeDlg($('#apptDlg'));
+  else if(t.id==='apHistClose')closeDlg($('#apptHistDlg'));
   else if(t.dataset.apptCat){
     resetApptForm(t.dataset.apptCat);
     renderApptModal();
+  }
+  else if(t.dataset.apHist){
+    openApptHistoryModal(t.dataset.apHist);
   }
   else if(t.id==='apResetForm'){
     resetApptForm(S.apptCat);
@@ -3402,6 +3468,9 @@ document.addEventListener('click',e=>{
     save();
     resetApptForm(S.apptCat);
     renderApptModal();
+    if($('#apptHistDlg')?.hasAttribute('open')||$('#apptHistDlg')?.open){
+      renderApptHistoryModal();
+    }
     render();
     toast('Часът е запазен.');
   }
@@ -3417,6 +3486,7 @@ document.addEventListener('click',e=>{
   else if(t.dataset.apEdit){
     const item=(S.appointments||[]).find(x=>x.id===t.dataset.apEdit);
     if(!item)return;
+    closeDlg($('#apptHistDlg'));
     S.apptCat=normalizeApptCat(item.category);
     S.apptEditId=item.id;
     $('#apFormTitle').textContent=`Редакция на час — ${S.apptCat}`;
@@ -3426,6 +3496,7 @@ document.addEventListener('click',e=>{
     $('#apNote').value=item.note||'';
     $('#apSave').textContent='Запази промените';
     renderApptModal();
+    openDlg($('#apptDlg'));
   }
   else if(t.dataset.apCal){
     const item=(S.appointments||[]).find(x=>x.id===t.dataset.apCal);
@@ -3436,6 +3507,9 @@ document.addEventListener('click',e=>{
     if(S.apptEditId===t.dataset.apDel)resetApptForm(S.apptCat);
     save();
     renderApptModal();
+    if($('#apptHistDlg')?.hasAttribute('open')||$('#apptHistDlg')?.open){
+      renderApptHistoryModal();
+    }
     render();
     toast('Часът е изтрит.');
   }
