@@ -673,7 +673,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v40';
+const KEY='garage_fuel_pwa_v41';
 const SOLVER_KEY_STORAGE='pitstop_gemini_key_v1';
 const SOLVER_GRADE_STORAGE='pitstop_school_grade_v1';
 const SOLVER_NOTES_STORAGE='pitstop_solver_notes_v1';
@@ -870,7 +870,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v39')||localStorage.getItem('garage_fuel_pwa_v38')||localStorage.getItem('garage_fuel_pwa_v37')||localStorage.getItem('garage_fuel_pwa_v36')||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v40')||localStorage.getItem('garage_fuel_pwa_v39')||localStorage.getItem('garage_fuel_pwa_v38')||localStorage.getItem('garage_fuel_pwa_v37')||localStorage.getItem('garage_fuel_pwa_v36')||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -2145,8 +2145,9 @@ async function callGeminiStream({model,apiKey,payload,statusEl,ansBox,grade,time
     if(!resp.ok){
       const errData=await resp.json().catch(()=>({}));
       const errMsg=errData?.error?.message||`HTTP ${resp.status}`;
+      const quotaExceeded=/quota|limit:\s*0|per day limit|resource_exhausted/i.test(errMsg)||resp.status===429;
       const busy=/high demand|overloaded|unavailable|rate limit|quota|resource_exhausted/i.test(errMsg)||resp.status===429||resp.status===503;
-      return {ok:false,busy,error:errMsg};
+      return {ok:false,quotaExceeded,busy,error:errMsg};
     }
 
     let fullText='';
@@ -2189,8 +2190,9 @@ async function callGeminiStream({model,apiKey,payload,statusEl,ansBox,grade,time
       const fbData=await fbResp.json().catch(()=>({}));
       if(!fbResp.ok){
         const errMsg=fbData?.error?.message||`HTTP ${fbResp.status}`;
+        const quotaExceeded=/quota|limit:\s*0|per day limit|resource_exhausted/i.test(errMsg)||fbResp.status===429;
         const busy=/high demand|overloaded|unavailable|rate limit|quota|resource_exhausted/i.test(errMsg)||fbResp.status===429||fbResp.status===503;
-        return {ok:false,busy,error:errMsg};
+        return {ok:false,quotaExceeded,busy,error:errMsg};
       }
       fullText=extractGeminiText(fbData)||(fbData?.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('\n').trim();
       if(fullText)ansBox.textContent=fullText;
@@ -2199,7 +2201,7 @@ async function callGeminiStream({model,apiKey,payload,statusEl,ansBox,grade,time
     return {ok:true,text:fullText};
   }catch(err){
     const isAbort=err&&err.name==='AbortError';
-    return {ok:false,busy:true,error:isAbort?'Изтече времето за връзка':(err?.message||'Мрежова грешка')};
+    return {ok:false,quotaExceeded:false,busy:true,error:isAbort?'Изтече времето за връзка':(err?.message||'Мрежова грешка')};
   }finally{
     if(timer)clearTimeout(timer);
   }
@@ -2264,20 +2266,34 @@ async function solveTestWithGemini(){
       }
     };
 
-    let res=await callGeminiStream({model:'gemini-3.8-flash',apiKey,payload,statusEl,ansBox,grade,timeoutMs:14000});
+    const models=['gemini-3.8-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite'];
+    let lastRes={ok:false,error:'Временно натоварване'};
+    let usedModel=models[0];
 
-    if(!res.ok&&res.busy){
-      statusEl.textContent='gemini-3.8-flash е натоварен — пробвам веднага отново...';
-      await sleep(500);
-      res=await callGeminiStream({model:'gemini-3.8-flash',apiKey,payload,statusEl,ansBox,grade,timeoutMs:14000});
+    for(let i=0;i<models.length;i++){
+      const mName=models[i];
+      usedModel=mName;
+      if(i>0){
+        statusEl.textContent=`Лимитът на предния модел е достигнат — пробвам ${mName}...`;
+      }
+      const res=await callGeminiStream({model:mName,apiKey,payload,statusEl,ansBox,grade,timeoutMs:14000});
+      lastRes=res;
+      if(res.ok)break;
+      if(!res.quotaExceeded&&!res.busy)break;
+      if(i===0&&!res.quotaExceeded){
+        await sleep(400);
+        const retrySame=await callGeminiStream({model:mName,apiKey,payload,statusEl,ansBox,grade,timeoutMs:14000});
+        lastRes=retrySame;
+        if(retrySame.ok)break;
+      }
     }
 
-    if(res.ok){
-      if(!res.text)ansBox.textContent='Няма върнат текст.';
-      statusEl.textContent='Готово (gemini-3.8-flash).';
+    if(lastRes.ok){
+      if(!lastRes.text)ansBox.textContent='Няма върнат текст.';
+      statusEl.textContent=`Готово (${usedModel}).`;
     }else{
-      statusEl.textContent='Грешка при заявката.';
-      ansBox.textContent='Неуспешна заявка: '+(res.error||'Временно натоварване');
+      statusEl.textContent='Дневният лимит или заявката е неуспешна.';
+      ansBox.textContent='Неуспешна заявка: '+(lastRes.error||'Временно натоварване');
     }
   }catch(err){
     statusEl.textContent='Връзката беше блокирана или неуспешна.';
