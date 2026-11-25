@@ -121,6 +121,26 @@ button.on{background:#009ada33;border-color:var(--a);color:#7dd3fc}
 button.pri,.btn.pri{background:var(--a);border-color:var(--a);color:#fff;font-weight:600}
 button.ok{background:#10b98128;border-color:#10b98188;color:#6ee7b7}
 button.sm{min-height:34px;padding:0 9px;font-size:12px}
+button.close-br{
+  min-height:30px;
+  padding:0 10px;
+  font-size:11.5px;
+  font-weight:600;
+  border-radius:9px;
+  background:#111929;
+  border:1px solid #334663;
+  color:#cbd5e1
+}
+button.close-br:hover{border-color:#64748b;color:#f8fafc;background:#182338}
+.dlg-foot-br{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:8px;
+  margin-top:14px;
+  padding-top:10px;
+  border-top:1px solid #1b2638
+}
 button.ghost{background:transparent;border-color:transparent;color:var(--m);min-height:34px;padding:0 8px;font-size:13px}
 button.ghost:hover{color:var(--t);background:#ffffff0d}
 input,select,textarea{width:100%;max-width:100%;background:#050810;border:1px solid #334155;border-radius:12px;padding:8px 11px}
@@ -424,7 +444,6 @@ dialog::backdrop{background:#000c}
       <h3 id="svcHistTitle" style="margin:0">История на смените</h3>
       <div class="m" id="svcHistSub"></div>
     </div>
-    <button type="button" class="sm" id="svcHistClose">Затвори</button>
   </div>
   <div class="row sp" style="margin-bottom:10px">
     <div id="svcHistTotal" class="m mono"></div>
@@ -434,17 +453,19 @@ dialog::backdrop{background:#000c}
     </div>
   </div>
   <div id="svcHistList"></div>
+  <div class="dlg-foot-br">
+    <button type="button" class="close-br" id="svcHistClose">Затвори</button>
+  </div>
 </dialog>
 
 <dialog id="imgZoomDlg">
   <div class="row sp">
     <h3 id="imgZoomTitle" style="margin:0">Преглед на снимка</h3>
-    <button type="button" class="sm" id="imgZoomClose">Затвори</button>
   </div>
   <img id="imgZoomTarget" class="zoom-modal-img" alt="Уголемена снимка">
-  <div class="row sp">
-    <span class="m">Натисни „Затвори“ за връщане назад.</span>
+  <div class="dlg-foot-br">
     <button type="button" class="pri sm" id="imgZoomDone">Готово</button>
+    <button type="button" class="close-br" id="imgZoomClose">Затвори</button>
   </div>
 </dialog>
 
@@ -479,16 +500,15 @@ dialog::backdrop{background:#000c}
       <input id="qVig" type="date">
     </div>
   </div>
-  <div class="row sp" style="margin-top:14px">
-    <button type="button" id="qCancel">Затвори</button>
-    <button type="button" id="qSave" class="pri">Запази</button>
+  <div class="dlg-foot-br">
+    <button type="button" id="qSave" class="pri sm">Запази</button>
+    <button type="button" class="close-br" id="qCancel">Затвори</button>
   </div>
 </dialog>
 
 <dialog id="vehDlg">
   <div class="row sp" style="margin-bottom:8px">
     <h3 id="vDlgTitle" style="margin:0">Профил на превозно средство</h3>
-    <button type="button" class="sm" id="vCancelTop">Затвори</button>
   </div>
   <div class="m" id="vDlgHint" style="margin-bottom:10px">Добави кола, АТВ, мотор или друго МПС — всеки профил си пази отделни данни, консумативи и фактури.</div>
   <div class="row" style="margin-bottom:12px">
@@ -592,11 +612,11 @@ dialog::backdrop{background:#000c}
   <div id="vPhotoWrap" style="display:none;margin-top:8px">
     <img id="vPhotoPreview" class="veh-photo" alt="Снимка на МПС">
   </div>
-  <div class="row sp" style="margin-top:14px">
+  <div class="row sp" style="margin-top:14px;padding-top:10px;border-top:1px solid #1b2638">
     <button type="button" id="vDel" class="sm" style="border-color:#f43f5e66;color:#fda4af">Изтрий профила</button>
     <div class="row">
-      <button type="button" id="vCancel">Затвори</button>
-      <button type="button" id="vSave" class="pri">Запази профила</button>
+      <button type="button" id="vSave" class="pri sm">Запази профила</button>
+      <button type="button" class="close-br" id="vCancel">Затвори</button>
     </div>
   </div>
 </dialog>
@@ -640,11 +660,11 @@ dialog::backdrop{background:#000c}
   </div>
   <label class="k" style="margin-top:8px">Бележка (по желание)</label>
   <input id="cNote" placeholder="Напр. отстъпка, приложение или забележка">
-  <div class="row sp" style="margin-top:14px">
+  <div class="row sp" style="margin-top:14px;padding-top:10px;border-top:1px solid #1b2638">
     <button type="button" id="cDel" class="sm" style="border-color:#f43f5e66;color:#fda4af">Изтрий</button>
     <div class="row">
-      <button type="button" id="cCancel">Затвори</button>
-      <button type="button" id="cSave" class="pri">Запази</button>
+      <button type="button" id="cSave" class="pri sm">Запази</button>
+      <button type="button" class="close-br" id="cCancel">Затвори</button>
     </div>
   </div>
 </dialog>
@@ -669,16 +689,15 @@ dialog::backdrop{background:#000c}
     </div>
     <div class="mono" id="sNum" style="font-size:26px;font-weight:800;letter-spacing:2px;word-break:break-all;text-align:center"></div>
   </div>
-  <div class="row sp">
+  <div class="row sp" style="margin-top:10px;padding-top:10px;border-top:1px solid #1b2638">
     <button type="button" class="sm" id="sCopy">Копирай номера</button>
-    <button type="button" class="pri" id="sClose">Готово</button>
+    <button type="button" class="close-br" id="sClose">Затвори</button>
   </div>
 </dialog>
 
 <dialog id="shareDlg">
   <div class="row sp">
     <h3 style="margin:0">Сподели приложението</h3>
-    <button type="button" class="sm" id="shClose">Затвори</button>
   </div>
   <div class="m" style="margin-top:6px">Сканирай кода с камерата на друг телефон, за да отвори приложението със собствени локални данни.</div>
   <div class="card-screen bright" style="text-align:center">
@@ -686,9 +705,9 @@ dialog::backdrop{background:#000c}
     <div id="shQrStatus" class="qr-status"></div>
     <div class="mono" id="shUrlText" style="font-size:12px;word-break:break-all;margin-top:6px"></div>
   </div>
-  <div class="row sp">
+  <div class="row sp" style="margin-top:10px;padding-top:10px;border-top:1px solid #1b2638">
     <button type="button" class="sm" id="shCopy">Копирай адреса</button>
-    <button type="button" class="pri" id="shDone">Готово</button>
+    <button type="button" class="close-br" id="shClose">Затвори</button>
   </div>
 </dialog>
 
@@ -698,7 +717,6 @@ dialog::backdrop{background:#000c}
       <h3 style="margin:0">📅 Часове и срещи</h3>
       <div class="m">Избери тип, запиши час и натисни „📜 История“ за записаните часове.</div>
     </div>
-    <button type="button" class="sm" id="apClose">Затвори</button>
   </div>
 
   <div class="appt-cat-grid" style="margin-bottom:10px">
@@ -759,6 +777,9 @@ dialog::backdrop{background:#000c}
       <button type="button" class="ok" id="apAddCalForm">📅 В календара</button>
     </div>
   </div>
+  <div class="dlg-foot-br">
+    <button type="button" class="close-br" id="apClose">Затвори</button>
+  </div>
 </dialog>
 
 <dialog id="apptHistDlg">
@@ -767,9 +788,11 @@ dialog::backdrop{background:#000c}
       <h3 id="apHistTitle" style="margin:0">История на часовете</h3>
       <div class="m" id="apHistSub"></div>
     </div>
-    <button type="button" class="sm" id="apHistClose">Затвори</button>
   </div>
   <div id="apHistList"></div>
+  <div class="dlg-foot-br">
+    <button type="button" class="close-br" id="apHistClose">Затвори</button>
+  </div>
 </dialog>
 
 <dialog id="testSolverDlg">
@@ -778,10 +801,7 @@ dialog::backdrop{background:#000c}
       <h3 style="margin:0">📝 Контролно / тест</h3>
       <div class="m">Избери клас, зареди снимка или напиши въпроси / бележки — отговорите излизат тук.</div>
     </div>
-    <div class="row">
-      <button type="button" class="sm" id="tsOpenKeyDlgBtn" title="Настройка на API ключ">🔑 Ключ</button>
-      <button type="button" class="sm" id="tsClose">Затвори</button>
-    </div>
+    <button type="button" class="sm" id="tsOpenKeyDlgBtn" title="Настройка на API ключ">🔑 Ключ</button>
   </div>
 
   <div class="grid g2">
@@ -838,21 +858,24 @@ dialog::backdrop{background:#000c}
     </div>
   </div>
   <div id="tsAnswerBox" class="ans-box" style="display:none"></div>
+  <div class="dlg-foot-br">
+    <button type="button" class="close-br" id="tsClose">Затвори</button>
+  </div>
 </dialog>
 
 <dialog id="apiKeyDlg">
   <div class="row sp" style="margin-bottom:8px">
     <h3 style="margin:0">🔑 API ключ (Google AI Studio)</h3>
-    <button type="button" class="sm" id="akClose">Затвори</button>
   </div>
   <div class="m" style="margin-bottom:10px">Ключът се пази само локално в този браузър. Ако нямаш ключ, отвори Google AI Studio и генерирай нов.</div>
   <label class="k">API ключ</label>
   <input id="akInput" type="password" class="mono" placeholder="AQ.Ab8RN6...">
-  <div class="row sp" style="margin-top:14px">
+  <div class="row sp" style="margin-top:14px;padding-top:10px;border-top:1px solid #1b2638">
     <a class="btn sm ok" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">✨ Генерирай ключ</a>
     <div class="row">
       <button type="button" class="sm" id="akClear">Изчисти</button>
       <button type="button" class="pri sm" id="akSave">Запази</button>
+      <button type="button" class="close-br" id="akClose">Затвори</button>
     </div>
   </div>
 </dialog>
@@ -860,12 +883,12 @@ dialog::backdrop{background:#000c}
 <dialog id="ansLargeDlg" class="large-dlg">
   <div class="row sp" style="margin-bottom:6px">
     <h3 style="margin:0">📝 Отговор — голям прозорец</h3>
-    <div class="row">
-      <button type="button" class="sm ok" id="alCopyBtn">📋 Копирай текста</button>
-      <button type="button" class="pri sm" id="alCloseBtn">Затвори</button>
-    </div>
+    <button type="button" class="sm ok" id="alCopyBtn">📋 Копирай текста</button>
   </div>
   <div id="alTextBox" class="ans-box-large"></div>
+  <div class="dlg-foot-br">
+    <button type="button" class="close-br" id="alCloseBtn">Затвори</button>
+  </div>
 </dialog>
 
 <script>
@@ -2783,7 +2806,6 @@ function renderServiceEntryModal(){
         <h3 style="margin:0">${isEditing?'✎ Редакция на смяна':E(preset.ico)+' Нова смяна'} — ${E(S.form.type)}</h3>
         <div class="m">Профил: <b>${E(veh.name)}</b>${veh.plate?` · <span class="mono">${E(veh.plate)}</span>`:''}</div>
       </div>
-      <button type="button" class="sm" id="svcEntryClose">Затвори</button>
     </div>
 
     <div class="row" style="margin-bottom:10px">
@@ -2865,12 +2887,13 @@ function renderServiceEntryModal(){
       <input id="fNote" value="${E(S.form.note)}" placeholder="Напр. № на фактура, количество литри, сервиз">
     </div>
 
-    <div class="row sp" style="margin-top:14px">
+    <div class="row sp" style="margin-top:14px;padding-top:10px;border-top:1px solid #1b2638">
       <div class="row">
-        <button type="button" class="pri" id="saveSvc">${isEditing?'Запази промените':'Запази смяната'}</button>
-        <button type="button" class="ok" id="addCalForm">📅 Напомни на ${fmtReadableDate(dueDate)}</button>
+        <button type="button" class="pri sm" id="saveSvc">${isEditing?'Запази промените':'Запази смяната'}</button>
+        <button type="button" class="ok sm" id="addCalForm">📅 Напомни на ${fmtReadableDate(dueDate)}</button>
+        <button type="button" class="sm" id="clearForm">${isEditing?'Нов запис':'Изчисти'}</button>
       </div>
-      <button type="button" class="sm" id="clearForm">${isEditing?'Нов запис':'Изчисти'}</button>
+      <button type="button" class="close-br" id="svcEntryClose">Затвори</button>
     </div>
   `;
 }
@@ -3519,10 +3542,10 @@ document.addEventListener('click',e=>{
     const url=$('#shUrlText').textContent||window.location.href;
     if(url&&navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('Адресът е копиран.')).catch(()=>toast(url));
   }
-  else if(t.id==='shClose'||t.id==='shDone')closeDlg($('#shareDlg'));
+  else if(t.id==='shClose')closeDlg($('#shareDlg'));
   else if(t.id==='editVehBtn')openVehEditor(veh.id);
   else if(t.id==='vClearPhoto')setVehPhotoPreview('');
-  else if(t.id==='vCancel'||t.id==='vCancelTop')closeDlg($('#vehDlg'));
+  else if(t.id==='vCancel')closeDlg($('#vehDlg'));
   else if(t.id==='vSave'){
     const isNew=!S.editVehId;
     const name=$('#vName').value.trim()||(isNew?`МПС ${S.vehicles.length+1}`:'Ново превозно средство');
