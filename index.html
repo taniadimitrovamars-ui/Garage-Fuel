@@ -771,7 +771,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v42';
+const KEY='garage_fuel_pwa_v43';
 const SOLVER_KEY_STORAGE='pitstop_gemini_key_v1';
 const SOLVER_GRADE_STORAGE='pitstop_school_grade_v1';
 const SOLVER_NOTES_STORAGE='pitstop_solver_notes_v1';
@@ -994,7 +994,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v41')||localStorage.getItem('garage_fuel_pwa_v40')||localStorage.getItem('garage_fuel_pwa_v39')||localStorage.getItem('garage_fuel_pwa_v38')||localStorage.getItem('garage_fuel_pwa_v37')||localStorage.getItem('garage_fuel_pwa_v36')||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v42')||localStorage.getItem('garage_fuel_pwa_v41')||localStorage.getItem('garage_fuel_pwa_v40')||localStorage.getItem('garage_fuel_pwa_v39')||localStorage.getItem('garage_fuel_pwa_v38')||localStorage.getItem('garage_fuel_pwa_v37')||localStorage.getItem('garage_fuel_pwa_v36')||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -1661,7 +1661,7 @@ const OfflineQR=(()=>{
       dir=-dir;
     }
 
-    const fmtBits=0x23d2;
+    const fmtBits=0x77c4; // ниво L, маска 0
     const getFmtBit=idx=>(fmtBits>>>(14-idx))&1;
     const posA=[[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
     for(let i=0;i<15;i++){
@@ -1894,12 +1894,36 @@ function fmtCalDate(d){
 function fmtReadableDate(d){
   return d.toISOString().slice(0,10);
 }
-function buildIcsReminder({title,desc,targetDate,fileName}){
+function buildIcsReminder({title,desc,targetDate,time,fileName}){
   const start=fmtCalDate(targetDate);
-  const nextDay=new Date(targetDate.getTime()+86400000);
-  const end=fmtCalDate(nextDay);
   const uid=`garage-${Date.now()}-${Math.random().toString(36).slice(2,7)}@garage-pwa`;
+  const dtstamp=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
   const esc=s=>String(s||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
+  const timeMatch=String(time||'').trim().match(/^(\d{2}):(\d{2})$/);
+  let dtStartLine,dtEndLine,triggerLine;
+  if(timeMatch){
+    const hh=Number(timeMatch[1]);
+    const mm=Number(timeMatch[2]);
+    const startHH=String(hh).padStart(2,'0');
+    const startMM=String(mm).padStart(2,'0');
+    let endHH,endMM;
+    if(hh>=23){
+      endHH='23';
+      endMM='59';
+    }else{
+      endHH=String(hh+1).padStart(2,'0');
+      endMM=startMM;
+    }
+    dtStartLine=`DTSTART:${start}T${startHH}${startMM}00`;
+    dtEndLine=`DTEND:${start}T${endHH}${endMM}00`;
+    triggerLine='TRIGGER:-PT1H';
+  }else{
+    const nextDay=new Date(targetDate.getTime()+86400000);
+    const end=fmtCalDate(nextDay);
+    dtStartLine=`DTSTART;VALUE=DATE:${start}`;
+    dtEndLine=`DTEND;VALUE=DATE:${end}`;
+    triggerLine='TRIGGER:-PT15H';
+  }
   return{
     ics:[
       'BEGIN:VCALENDAR',
@@ -1907,14 +1931,15 @@ function buildIcsReminder({title,desc,targetDate,fileName}){
       'PRODID:-//Garage Fuel PWA//BG',
       'BEGIN:VEVENT',
       `UID:${uid}`,
-      `DTSTART;VALUE=DATE:${start}`,
-      `DTEND;VALUE=DATE:${end}`,
+      `DTSTAMP:${dtstamp}`,
+      dtStartLine,
+      dtEndLine,
       `SUMMARY:${esc(title)}`,
       `DESCRIPTION:${esc(desc)}`,
       'BEGIN:VALARM',
       'ACTION:DISPLAY',
       `DESCRIPTION:${esc(title)}`,
-      'TRIGGER:-P1D',
+      triggerLine,
       'END:VALARM',
       'END:VEVENT',
       'END:VCALENDAR'
@@ -2278,7 +2303,6 @@ function renderApptModal(){
   }
 
   $('#apList').innerHTML=list.map(a=>{
-    const dt=parseIsoDate(a.date)||new Date();
     const whenStr=`${fmtDotDate(a.date)}${a.time?' в '+a.time:''}`;
     return`
     <div class="item">
@@ -2318,6 +2342,7 @@ function remindAppointmentItem({category,date,time,title,note}){
     title:fullTitle,
     desc:`Записан час (${category})${title?' — '+title:''} на ${fmtReadableDate(targetDate)}${timeTxt}.${note?' Бележка: '+note:''}`,
     targetDate,
+    time,
     fileName:'chas-napomnyane.ics'
   });
 }
@@ -2481,8 +2506,7 @@ async function solveTestWithGemini(){
       },
       contents:[{role:'user',parts}],
       generationConfig:{
-        temperature:0.2,
-        thinkingConfig:{thinkingBudget:0}
+        temperature:0.2
       }
     };
 
@@ -3161,14 +3185,12 @@ function remindCheckKind(veh,kind){
 }
 
 function buildSafeExportPayload(){
-  const safeVehicles=S.vehicles.map(v=>{
-    const {egn:_ignoredEgn,...rest}=v;
-    return {
-      ...rest,
-      photo:isSafeDataUrl(v.photo)?v.photo:'',
-      services:sortServicesLatestFirst(v.services||[]).map(s=>({...s,docImage:isSafeDataUrl(s.docImage)?s.docImage:''}))
-    };
-  });
+  const safeVehicles=S.vehicles.map(v=>({
+    ...v,
+    egn:'',
+    photo:isSafeDataUrl(v.photo)?v.photo:'',
+    services:sortServicesLatestFirst(v.services||[]).map(s=>({...s,docImage:isSafeDataUrl(s.docImage)?s.docImage:''}))
+  }));
   const safeFuels=S.fuels.map(f=>({
     ...f,
     image:isSafeDataUrl(f.image)?f.image:''
@@ -3667,7 +3689,7 @@ document.addEventListener('change',async e=>{
         }
         if(!confirm('Импортът ще замени текущите профили, смени и карти. Да продължа ли?'))return;
         if(Array.isArray(d.vehicles)&&d.vehicles.length){
-          S.vehicles=d.vehicles.map(normalizeVeh);
+          S.vehicles=d.vehicles.map(v=>({...normalizeVeh(v),egn:''}));
           S.activeVehId=d.activeVehId&&S.vehicles.some(v=>v.id===d.activeVehId)?d.activeVehId:S.vehicles[0].id;
         }
         if(Array.isArray(d.fuels)&&d.fuels.length){
