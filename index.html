@@ -504,7 +504,7 @@ dialog::backdrop{background:#000c}
   </div>
   <div class="dlg-foot-br">
     <button type="button" id="qSave" class="pri sm">Запази</button>
-    <button type="button" class="close-br" id="qCancel">Затвори</button>
+    <button type="button" id="qCancel" class="close-br">Затвори</button>
   </div>
 </dialog>
 
@@ -688,7 +688,7 @@ dialog::backdrop{background:#000c}
     <button type="button" id="vDel" class="sm" style="border-color:#f43f5e66;color:#fda4af">Изтрий профила</button>
     <div class="row">
       <button type="button" id="vSave" class="pri sm">Запази профила</button>
-      <button type="button" class="close-br" id="vCancel">Затвори</button>
+      <button type="button" id="vCancel" class="close-br">Затвори</button>
     </div>
   </div>
 </dialog>
@@ -736,7 +736,7 @@ dialog::backdrop{background:#000c}
     <button type="button" id="cDel" class="sm" style="border-color:#f43f5e66;color:#fda4af">Изтрий</button>
     <div class="row">
       <button type="button" id="cSave" class="pri sm">Запази</button>
-      <button type="button" class="close-br" id="cCancel">Затвори</button>
+      <button type="button" id="cCancel" class="close-br">Затвори</button>
     </div>
   </div>
 </dialog>
@@ -763,7 +763,7 @@ dialog::backdrop{background:#000c}
   </div>
   <div class="row sp" style="margin-top:10px;padding-top:10px;border-top:1px solid #1b2638">
     <button type="button" class="sm" id="sCopy">Копирай номера</button>
-    <button type="button" class="close-br" id="sClose">Затвори</button>
+    <button type="button" id="sClose" class="close-br">Затвори</button>
   </div>
 </dialog>
 
@@ -779,7 +779,7 @@ dialog::backdrop{background:#000c}
   </div>
   <div class="row sp" style="margin-top:10px;padding-top:10px;border-top:1px solid #1b2638">
     <button type="button" class="sm" id="shCopy">Копирай адреса</button>
-    <button type="button" class="close-br" id="shClose">Затвори</button>
+    <button type="button" id="shClose" class="close-br">Затвори</button>
   </div>
 </dialog>
 
@@ -850,7 +850,7 @@ dialog::backdrop{background:#000c}
     </div>
   </div>
   <div class="dlg-foot-br">
-    <button type="button" class="close-br" id="apClose">Затвори</button>
+    <button type="button" id="apClose" class="close-br">Затвори</button>
   </div>
 </dialog>
 
@@ -863,7 +863,7 @@ dialog::backdrop{background:#000c}
   </div>
   <div id="apHistList"></div>
   <div class="dlg-foot-br">
-    <button type="button" class="close-br" id="apHistClose">Затвори</button>
+    <button type="button" id="apHistClose" class="close-br">Затвори</button>
   </div>
 </dialog>
 
@@ -931,7 +931,7 @@ dialog::backdrop{background:#000c}
   </div>
   <div id="tsAnswerBox" class="ans-box" style="display:none"></div>
   <div class="dlg-foot-br">
-    <button type="button" class="close-br" id="tsClose">Затвори</button>
+    <button type="button" id="tsClose" class="close-br">Затвори</button>
   </div>
 </dialog>
 
@@ -960,7 +960,7 @@ dialog::backdrop{background:#000c}
     <div class="row">
       <button type="button" class="sm" id="akClear">Изчисти</button>
       <button type="button" class="pri sm" id="akSave">Запази</button>
-      <button type="button" class="close-br" id="akClose">Затвори</button>
+      <button type="button" id="akClose" class="close-br">Затвори</button>
     </div>
   </div>
 </dialog>
@@ -972,7 +972,7 @@ dialog::backdrop{background:#000c}
   </div>
   <div id="alTextBox" class="ans-box-large"></div>
   <div class="dlg-foot-br">
-    <button type="button" class="close-br" id="alCloseBtn">Затвори</button>
+    <button type="button" id="alCloseBtn" class="close-br">Затвори</button>
   </div>
 </dialog>
 
@@ -2381,7 +2381,7 @@ function getCheckMeta(kind){
     field:'mtplDate',
     label:'Застраховка (ГО)',
     dateLabel:'Застраховка (ГО) валидна до',
-    portalUrl:'https://www.guaranteefund.org/bg/%d0%b8%d0%bd%d1%84%d0%be%d1%80%d0%bc%d0%b0%d1%86%d0%b8%d0%be%d0%bd%d0%b5%d0%bd-%d1%86%d0%b5%d0%bd%d1%82%d1%8a%d1%80-%d0%b8-%d1%81%d0%bf%d1%80%d0%b0%d0%b2%d0%ba%d0%b8/%d1%83%d1%81%d0%bb%d1%83%d0%b3%d0%b8/%d0%bf%d1%80%d0%be%d0%b2%d0%b5%d1%80%d0%ba%d0%b0-%d0%b7%d0%b0-%d0%b2%d0%b0%d0%bb%d0%b8%d0%b4%d0%bd%d0%b0-%d0%b7%d0%b0%d1%81%d1%82%d1%80%d0%b0%d1%85%d0%be%d0%b2%d0%ba%d0%b0-%d0%b3%d1%80%d0%b0%d0%b6%d0%b4%d0%b0%d0%bd%d1%81%d0%ba%d0%b0-%d0%be%d1%82%d0%b3%d0%be%d0%b2%d0%be%d1%80%d0%bd%d0%be%d1%81%d1%82-%d0%bd%d0%b0-%d0%b0%d0%b2%d1%82%d0%be%d0%bc%d0%be%d0%b1%d0%b8%d0%bb%d0%b8%d1%81%d1%82%d0%b8%d1%82%d0%b5',
+    portalUrl:'https://www.guaranteefund.org/bg/информационен-център-и-справки/услуги/проверка-за-валидна-застраховка-грaждaнскa-отговорност-на-автомобилистите',
     portalText:'Гаранционен фонд',
     calKind:'mtpl'
   };
@@ -3185,7 +3185,7 @@ function renderServiceEntryModal(){
         <button type="button" class="ok sm" id="addCalForm">📅 Напомни на ${fmtReadableDate(dueDate)}</button>
         <button type="button" class="sm" id="clearForm">${isEditing?'Нов запис':'Изчисти'}</button>
       </div>
-      <button type="button" class="close-br" id="svcEntryClose">Затвори</button>
+      <button type="button" id="svcEntryClose" class="close-br">Затвори</button>
     </div>
   `;
 }
@@ -3376,7 +3376,7 @@ function vChecks(){
         <div class="row sp"><b>Гражданска отговорност (ГО)</b></div>
         <div style="margin-top:4px">${checkStatusHtml(veh.mtplDate)}</div>
         <div style="margin-top:10px">
-          <a class="btn sm pri" target="_blank" rel="noopener" href="https://www.guaranteefund.org/bg/%d0%b8%d0%bd%d1%84%d0%be%d1%80%d0%bc%d0%b0%d1%86%d0%b8%d0%be%d0%bd%d0%b5%d0%bd-%d1%86%d0%b5%d0%bd%d1%82%d1%8a%d1%80-%d0%b8-%d1%81%d0%bf%d1%80%d0%b0%d0%b2%d0%ba%d0%b8/%d1%83%d1%81%d0%bb%d1%83%d0%b3%d0%b8/%d0%bf%d1%80%d0%be%d0%b2%d0%b5%d1%80%d0%ba%d0%b0-%d0%b7%d0%b0-%d0%b2%d0%b0%d0%bb%d0%b8%d0%b4%d0%bd%d0%b0-%d0%b7%d0%b0%d1%81%d1%82%d1%80%d0%b0%d1%85%d0%be%d0%b2%d0%ba%d0%b0-%d0%b3%d1%80%d0%b0%d0%b6%d0%b4%d0%b0%d0%bd%d1%81%d0%ba%d0%b0-%d0%be%d1%82%d0%b3%d0%be%d0%b2%d0%be%d1%80%d0%bd%d0%be%d1%81%d1%82-%d0%bd%d0%b0-%d0%b0%d0%b2%d1%82%d0%be%d0%bc%d0%be%d0%b1%d0%b8%d0%bb%d0%b8%d1%81%d1%82%d0%b8%d1%82%d0%b5">Гаранционен фонд</a>
+          <a class="btn sm pri" target="_blank" rel="noopener" href="https://www.guaranteefund.org/bg/информационен-център-и-справки/услуги/проверка-за-валидна-застраховка-грaждaнскa-отговорност-на-автомобилистите">Гаранционен фонд</a>
         </div>
         <div class="row" style="margin-top:8px">
           <label class="btn sm">
