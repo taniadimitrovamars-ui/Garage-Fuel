@@ -211,11 +211,52 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .cat-head{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--m);margin:12px 0 6px;display:flex;align-items:center;justify-content:space-between}
 .cat-head:first-of-type{margin-top:4px}
 
-.dash-bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.sheet-btn{width:100%;min-height:54px;padding:10px 14px;border-radius:16px;background:var(--p);border:1px solid #26354d;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;text-align:left}
+.dash-bottom-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sheet-btn{
+  width:100%;
+  min-height:60px;
+  padding:9px 10px;
+  border-radius:16px;
+  background:var(--p);
+  border:1px solid #26354d;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:2px;
+  text-align:left;
+  min-width:0
+}
 .sheet-btn:hover{border-color:#009ada88;background:#131e33}
-.sheet-btn b{font-size:14px;color:var(--t)}
-.sheet-btn span{font-size:11px;color:var(--m)}
+.sheet-btn b{font-size:12.5px;color:var(--t);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.sheet-btn span{font-size:10.5px;color:var(--m);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+@media(min-width:640px){
+  .dash-bottom-row{gap:10px}
+  .sheet-btn{padding:11px 14px;min-height:64px}
+  .sheet-btn b{font-size:14px}
+  .sheet-btn span{font-size:11px}
+}
+
+.appt-cat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.appt-cat-btn{
+  width:100%;
+  min-height:64px;
+  padding:10px 8px;
+  border-radius:14px;
+  background:var(--p2);
+  border:1px solid #2b3b56;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  text-align:center
+}
+.appt-cat-btn:hover{border-color:#38bdf8;background:#132036}
+.appt-cat-btn.active{background:#009ada2b;border-color:#38bdf8;color:#fff;box-shadow:0 0 0 1px #009ada55}
+.appt-cat-btn b{font-size:13px;line-height:1.2}
+.appt-cat-btn span{font-size:11px;color:var(--m)}
+.appt-cat-btn.active span{color:#bae6fd}
 
 .ans-box{
   margin-top:12px;
@@ -604,6 +645,63 @@ dialog::backdrop{background:#000c}
   </div>
 </dialog>
 
+<dialog id="apptDlg">
+  <div class="row sp" style="margin-bottom:8px">
+    <div>
+      <h3 style="margin:0">📅 Часове и срещи</h3>
+      <div class="m">Избери тип, запиши час и добави напомняне в календара.</div>
+    </div>
+    <button type="button" class="sm" id="apClose">Затвори</button>
+  </div>
+
+  <div class="appt-cat-grid" style="margin-bottom:10px">
+    <button type="button" class="appt-cat-btn" data-appt-cat="Фризьор">
+      <b>✂️ Фризьор</b>
+      <span id="apCntHair">0 записани</span>
+    </button>
+    <button type="button" class="appt-cat-btn" data-appt-cat="Зъболекар">
+      <b>🦷 Зъболекар</b>
+      <span id="apCntDent">0 записани</span>
+    </button>
+    <button type="button" class="appt-cat-btn" data-appt-cat="Други">
+      <b>📌 Други</b>
+      <span id="apCntOth">0 записани</span>
+    </button>
+  </div>
+
+  <div class="extra-box" style="margin-top:0">
+    <div class="row sp" style="margin-bottom:8px">
+      <b id="apFormTitle">Нов час — Фризьор</b>
+      <button type="button" class="sm ghost" id="apResetForm">Изчисти</button>
+    </div>
+    <div class="grid g3">
+      <div>
+        <label class="k">Дата</label>
+        <input id="apDate" type="date">
+      </div>
+      <div>
+        <label class="k">Час</label>
+        <input id="apTime" type="time">
+      </div>
+      <div>
+        <label class="k">За кого / заглавие</label>
+        <input id="apTitle" placeholder="Напр. Салон / преглед">
+      </div>
+    </div>
+    <div style="margin-top:8px">
+      <label class="k">Бележка / адрес / уточнение</label>
+      <input id="apNote" placeholder="Напр. ул., кабинет или бележка">
+    </div>
+    <div class="row sp" style="margin-top:12px">
+      <button type="button" class="pri" id="apSave">Запази часа</button>
+      <button type="button" class="ok" id="apAddCalForm">📅 В календара</button>
+    </div>
+  </div>
+
+  <div class="cat-head"><span id="apListHead">Записани часове</span><span id="apListCount">0</span></div>
+  <div id="apList"></div>
+</dialog>
+
 <dialog id="testSolverDlg">
   <div class="row sp" style="margin-bottom:8px">
     <div>
@@ -673,7 +771,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v41';
+const KEY='garage_fuel_pwa_v42';
 const SOLVER_KEY_STORAGE='pitstop_gemini_key_v1';
 const SOLVER_GRADE_STORAGE='pitstop_school_grade_v1';
 const SOLVER_NOTES_STORAGE='pitstop_solver_notes_v1';
@@ -682,6 +780,7 @@ const IDB_STORE='media';
 const $=s=>document.querySelector(s);
 const E=v=>String(v??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const CARD_CATS=['Бензиностанции','Магазини','Сервизи и части','Други'];
+const APPT_CATS=['Фризьор','Зъболекар','Други'];
 const CAT_META={
   'Бензиностанции':{ico:'⛽',sub:'Горива и вериги'},
   'Магазини':{ico:'🛒',sub:'Хипермаркети и обекти'},
@@ -751,6 +850,9 @@ function isSafeDataUrl(v){
 function normalizeCardCat(cat){
   return CARD_CATS.includes(cat)?cat:'Други';
 }
+function normalizeApptCat(cat){
+  return APPT_CATS.includes(cat)?cat:'Фризьор';
+}
 
 function makeVehicle(name,plate,odo,photo){
   return{
@@ -780,6 +882,9 @@ let S={
   activeVehId:'',
   vehicles:[makeVehicle('Основно МПС','',0,'')],
   fuels:DEFAULT_CHAINS.map((name,i)=>({id:'f_'+i+'_'+Date.now(),category:'Бензиностанции',name,number:'',note:'',image:''})),
+  appointments:[],
+  apptCat:'Фризьор',
+  apptEditId:'',
   form:{id:'',type:'Масло двигател',detail:'',price:'',km:'',interval:10000,months:12,date:new Date().toISOString().slice(0,10),note:'',docImage:''},
   historyFilterType:null,
   ocrBusy:'',
@@ -831,6 +936,25 @@ function sortServicesLatestFirst(list){
   });
 }
 
+function sortAppointmentsSoonest(list){
+  return [...(list||[])].sort((a,b)=>{
+    const ka=`${a.date||'9999-12-31'}T${a.time||'99:99'}`;
+    const kb=`${b.date||'9999-12-31'}T${b.time||'99:99'}`;
+    return ka.localeCompare(kb);
+  });
+}
+
+function normalizeApptItem(a){
+  return{
+    id:a.id||('a_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)),
+    category:normalizeApptCat(a.category),
+    date:a.date||'',
+    time:a.time||'',
+    title:a.title||'',
+    note:a.note||''
+  };
+}
+
 function normalizeServiceItem(s){
   return{
     id:s.id||('s_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)),
@@ -870,7 +994,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v40')||localStorage.getItem('garage_fuel_pwa_v39')||localStorage.getItem('garage_fuel_pwa_v38')||localStorage.getItem('garage_fuel_pwa_v37')||localStorage.getItem('garage_fuel_pwa_v36')||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v41')||localStorage.getItem('garage_fuel_pwa_v40')||localStorage.getItem('garage_fuel_pwa_v39')||localStorage.getItem('garage_fuel_pwa_v38')||localStorage.getItem('garage_fuel_pwa_v37')||localStorage.getItem('garage_fuel_pwa_v36')||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -893,6 +1017,9 @@ function load(){
         note:f.note||'',
         image:isSafeDataUrl(f.image)?f.image:''
       }));
+    }
+    if(Array.isArray(d.appointments)){
+      S.appointments=sortAppointmentsSoonest(d.appointments.map(normalizeApptItem));
     }
     const cur=getVeh();
     S.form.km=cur.odo?String(cur.odo):'';
@@ -939,7 +1066,8 @@ function save(){
     localStorage.setItem(KEY,JSON.stringify({
       activeVehId:S.activeVehId,
       vehicles:compactVehicles,
-      fuels:compactFuels
+      fuels:compactFuels,
+      appointments:sortAppointmentsSoonest(S.appointments||[])
     }));
   }catch(e){
     toast('Внимание: проблем със запазването на данните. Направи „Експорт JSON“, за да имаш резервно копие.');
@@ -2088,18 +2216,110 @@ function vVehicleCard(veh){
 }
 
 function vHomeDash(veh){
+  const apptTotal=(S.appointments||[]).length;
   return`
   ${vVehicleCard(veh)}
   <div class="dash-bottom-row">
     <button type="button" class="sheet-btn" id="shareAppBtn">
       <b>📲 QR за споделяне</b>
-      <span>Отвори на друг телефон с QR</span>
+      <span>Друг телефон с QR</span>
     </button>
     <button type="button" class="sheet-btn" id="openTestSolverBtn">
       <b>📝 Контролно / тест</b>
       <span>Снимка, клас и текст</span>
     </button>
+    <button type="button" class="sheet-btn" id="openApptBtn">
+      <b>📅 Часове (${apptTotal})</b>
+      <span>Фризьор · Зъболекар</span>
+    </button>
   </div>`;
+}
+
+function resetApptForm(cat){
+  const activeCat=normalizeApptCat(cat||S.apptCat);
+  S.apptCat=activeCat;
+  S.apptEditId='';
+  $('#apFormTitle').textContent=`Нов час — ${activeCat}`;
+  $('#apDate').value=new Date().toISOString().slice(0,10);
+  $('#apTime').value='';
+  $('#apTitle').value='';
+  $('#apNote').value='';
+  $('#apSave').textContent='Запази часа';
+}
+
+function renderApptModal(){
+  const cat=normalizeApptCat(S.apptCat);
+  S.apptCat=cat;
+  const all=sortAppointmentsSoonest(S.appointments||[]);
+
+  const cntHair=all.filter(a=>a.category==='Фризьор').length;
+  const cntDent=all.filter(a=>a.category==='Зъболекар').length;
+  const cntOth=all.filter(a=>a.category==='Други').length;
+  $('#apCntHair').textContent=`${cntHair} записани`;
+  $('#apCntDent').textContent=`${cntDent} записани`;
+  $('#apCntOth').textContent=`${cntOth} записани`;
+
+  document.querySelectorAll('.appt-cat-btn').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.apptCat===cat);
+  });
+
+  if(!S.apptEditId){
+    $('#apFormTitle').textContent=`Нов час — ${cat}`;
+    $('#apSave').textContent='Запази часа';
+  }
+
+  const list=all.filter(a=>a.category===cat);
+  $('#apListHead').textContent=`Записани часове — ${cat}`;
+  $('#apListCount').textContent=String(list.length);
+
+  if(!list.length){
+    $('#apList').innerHTML=`<div class="item"><div class="m">Няма записани часове в „${E(cat)}“. Попълни дата и час по-горе.</div></div>`;
+    return;
+  }
+
+  $('#apList').innerHTML=list.map(a=>{
+    const dt=parseIsoDate(a.date)||new Date();
+    const whenStr=`${fmtDotDate(a.date)}${a.time?' в '+a.time:''}`;
+    return`
+    <div class="item">
+      <div class="row sp">
+        <div>
+          <b>${E(a.title||a.category)}</b>
+        </div>
+        <span class="mono good"><b>${E(whenStr)}</b></span>
+      </div>
+      ${a.note?`<div class="m" style="margin-top:4px">${E(a.note)}</div>`:''}
+      <div class="row" style="margin-top:8px">
+        <button type="button" class="sm ok" data-ap-cal="${E(a.id)}">📅 В календара</button>
+        <button type="button" class="sm" data-ap-edit="${E(a.id)}">✎ Редакция</button>
+        <button type="button" class="sm" data-ap-del="${E(a.id)}">Изтрий</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openApptModal(initialCat){
+  if(initialCat)S.apptCat=normalizeApptCat(initialCat);
+  if(!$('#apDate').value)resetApptForm(S.apptCat);
+  renderApptModal();
+  openDlg($('#apptDlg'));
+}
+
+function remindAppointmentItem({category,date,time,title,note}){
+  const targetDate=parseIsoDate(date);
+  if(!targetDate){
+    toast('Избери дата за часа, за да добавиш напомняне в календара.');
+    return;
+  }
+  const labelTitle=title?`${category}: ${title}`:`Час за ${category}`;
+  const timeTxt=time?` в ${time}`:'';
+  const fullTitle=`${labelTitle}${timeTxt}`;
+  triggerCalendarReminder({
+    title:fullTitle,
+    desc:`Записан час (${category})${title?' — '+title:''} на ${fmtReadableDate(targetDate)}${timeTxt}.${note?' Бележка: '+note:''}`,
+    targetDate,
+    fileName:'chas-napomnyane.ics'
+  });
 }
 
 function openTestSolverModal(){
@@ -2953,7 +3173,7 @@ function buildSafeExportPayload(){
     ...f,
     image:isSafeDataUrl(f.image)?f.image:''
   }));
-  return {activeVehId:S.activeVehId,vehicles:safeVehicles,fuels:safeFuels};
+  return {activeVehId:S.activeVehId,vehicles:safeVehicles,fuels:safeFuels,appointments:sortAppointmentsSoonest(S.appointments||[])};
 }
 
 document.addEventListener('click',e=>{
@@ -2999,6 +3219,71 @@ document.addEventListener('click',e=>{
     openDlg($('#shareDlg'));
   }
   else if(t.id==='openTestSolverBtn')openTestSolverModal();
+  else if(t.id==='openApptBtn')openApptModal();
+  else if(t.id==='apClose')closeDlg($('#apptDlg'));
+  else if(t.dataset.apptCat){
+    resetApptForm(t.dataset.apptCat);
+    renderApptModal();
+  }
+  else if(t.id==='apResetForm'){
+    resetApptForm(S.apptCat);
+  }
+  else if(t.id==='apSave'){
+    const date=$('#apDate').value;
+    const time=$('#apTime').value.trim();
+    const title=$('#apTitle').value.trim();
+    const note=$('#apNote').value.trim();
+    if(!date)return toast('Избери дата за часа.');
+    const payload={category:normalizeApptCat(S.apptCat),date,time,title,note};
+    if(S.apptEditId){
+      const idx=(S.appointments||[]).findIndex(x=>x.id===S.apptEditId);
+      if(idx!==-1){
+        S.appointments[idx]={...S.appointments[idx],...payload};
+      }
+    }else{
+      S.appointments.push({id:'a_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),...payload});
+    }
+    S.appointments=sortAppointmentsSoonest(S.appointments);
+    save();
+    resetApptForm(S.apptCat);
+    renderApptModal();
+    render();
+    toast('Часът е запазен.');
+  }
+  else if(t.id==='apAddCalForm'){
+    remindAppointmentItem({
+      category:normalizeApptCat(S.apptCat),
+      date:$('#apDate').value,
+      time:$('#apTime').value.trim(),
+      title:$('#apTitle').value.trim(),
+      note:$('#apNote').value.trim()
+    });
+  }
+  else if(t.dataset.apEdit){
+    const item=(S.appointments||[]).find(x=>x.id===t.dataset.apEdit);
+    if(!item)return;
+    S.apptCat=normalizeApptCat(item.category);
+    S.apptEditId=item.id;
+    $('#apFormTitle').textContent=`Редакция на час — ${S.apptCat}`;
+    $('#apDate').value=item.date||'';
+    $('#apTime').value=item.time||'';
+    $('#apTitle').value=item.title||'';
+    $('#apNote').value=item.note||'';
+    $('#apSave').textContent='Запази промените';
+    renderApptModal();
+  }
+  else if(t.dataset.apCal){
+    const item=(S.appointments||[]).find(x=>x.id===t.dataset.apCal);
+    if(item)remindAppointmentItem(item);
+  }
+  else if(t.dataset.apDel){
+    S.appointments=(S.appointments||[]).filter(x=>x.id!==t.dataset.apDel);
+    if(S.apptEditId===t.dataset.apDel)resetApptForm(S.apptCat);
+    save();
+    renderApptModal();
+    render();
+    toast('Часът е изтрит.');
+  }
   else if(t.id==='tsClose')closeDlg($('#testSolverDlg'));
   else if(t.id==='tsSolveBtn')solveTestWithGemini();
   else if(t.id==='shCopy'){
@@ -3394,6 +3679,9 @@ document.addEventListener('change',async e=>{
             note:x.note||'',
             image:isSafeDataUrl(x.image)?x.image:''
           }));
+        }
+        if(Array.isArray(d.appointments)){
+          S.appointments=sortAppointmentsSoonest(d.appointments.map(normalizeApptItem));
         }
         const cur=getVeh();
         S.form.km=cur.odo?String(cur.odo):'';
