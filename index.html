@@ -774,7 +774,10 @@ dialog::backdrop{background:#000c}
 
   <div class="row sp" style="margin-top:12px">
     <span class="m" id="tsStatus">Избери клас и зареди снимка или напиши въпрос.</span>
-    <button type="button" class="pri" id="tsSolveBtn">Изпрати</button>
+    <div class="row">
+      <button type="button" class="sm" id="tsClearNotesBtn" title="Изчисти текстовото поле">✕ Изчисти</button>
+      <button type="button" class="pri" id="tsSolveBtn">Изпрати</button>
+    </div>
   </div>
 
   <div class="row sp" style="margin-top:10px">
@@ -3353,6 +3356,15 @@ document.addEventListener('click',e=>{
     localStorage.removeItem(SOLVER_KEY_STORAGE);
     updateKeyButtonLabel();
     toast('Ключът е изчистен.');
+  }
+  else if(t.id==='tsClearNotesBtn'){
+    const notesEl=$('#tsNotes');
+    if(notesEl){
+      notesEl.value='';
+      notesEl.focus();
+    }
+    localStorage.removeItem(SOLVER_NOTES_STORAGE);
+    toast('Текстът е изчистен.');
   }
   else if(t.id==='tsCopyAnsBtn'){
     copyTextWithToast($('#tsAnswerBox')?.textContent||'','Отговорът е копиран.');
