@@ -801,7 +801,7 @@ dialog::backdrop{background:#000c}
       <h3 style="margin:0">📝 Контролно / тест</h3>
       <div class="m">Избери клас, зареди снимка или напиши въпроси / бележки — отговорите излизат тук.</div>
     </div>
-    <button type="button" class="sm" id="tsOpenKeyDlgBtn" title="Настройка на API ключ">🔑 Ключ</button>
+    <button type="button" class="sm" id="tsOpenKeyDlgBtn" title="Настройка на API ключ">🔒 Ключ</button>
   </div>
 
   <div class="grid g2">
@@ -863,6 +863,19 @@ dialog::backdrop{background:#000c}
   </div>
 </dialog>
 
+<dialog id="keyAuthDlg">
+  <div class="row sp" style="margin-bottom:8px">
+    <h3 style="margin:0">🔒 Достъп до API ключа</h3>
+  </div>
+  <div class="m" style="margin-bottom:10px">Въведи паролата за достъп до настройката и генерирането на ключ.</div>
+  <label class="k">Парола</label>
+  <input id="kaInput" type="password" autocomplete="current-password" placeholder="Въведи парола">
+  <div class="dlg-foot-br">
+    <button type="button" id="kaSubmit" class="pri sm">Потвърди</button>
+    <button type="button" id="kaCancel" class="close-br">Затвори</button>
+  </div>
+</dialog>
+
 <dialog id="apiKeyDlg">
   <div class="row sp" style="margin-bottom:8px">
     <h3 style="margin:0">🔑 API ключ (Google AI Studio)</h3>
@@ -904,6 +917,7 @@ const KEY='garage_fuel_pwa_v43';
 const SOLVER_KEY_STORAGE='pitstop_gemini_key_v1';
 const SOLVER_GRADE_STORAGE='pitstop_school_grade_v1';
 const SOLVER_NOTES_STORAGE='pitstop_solver_notes_v1';
+const KEY_ACCESS_PASS='Alex11';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -2492,8 +2506,14 @@ function updateKeyButtonLabel(){
   const btn=$('#tsOpenKeyDlgBtn');
   if(!btn)return;
   const hasKey=!!(localStorage.getItem(SOLVER_KEY_STORAGE)||'').trim();
-  btn.textContent=hasKey?'🔑 Ключ ✓':'🔑 Ключ';
+  btn.textContent=hasKey?'🔒 Ключ ✓':'🔒 Ключ';
   btn.classList.toggle('ok',hasKey);
+}
+
+function openKeyAuthModal(){
+  $('#kaInput').value='';
+  openDlg($('#keyAuthDlg'));
+  setTimeout(()=>$('#kaInput')?.focus(),40);
 }
 
 function openApiKeyModal(){
@@ -2667,8 +2687,8 @@ async function solveTestWithGemini(){
     return;
   }
   if(!apiKey){
-    toast('Натисни бутона „🔑 Ключ“, за да въведеш или генерираш ключ.');
-    openApiKeyModal();
+    toast('Нужна е парола и ключ — натисни бутона „🔒 Ключ“.');
+    openKeyAuthModal();
     return;
   }
 
@@ -3446,7 +3466,19 @@ document.addEventListener('click',e=>{
     openDlg($('#shareDlg'));
   }
   else if(t.id==='openTestSolverBtn')openTestSolverModal();
-  else if(t.id==='tsOpenKeyDlgBtn')openApiKeyModal();
+  else if(t.id==='tsOpenKeyDlgBtn')openKeyAuthModal();
+  else if(t.id==='kaCancel')closeDlg($('#keyAuthDlg'));
+  else if(t.id==='kaSubmit'){
+    const entered=($('#kaInput').value||'').trim();
+    if(entered===KEY_ACCESS_PASS){
+      closeDlg($('#keyAuthDlg'));
+      openApiKeyModal();
+    }else{
+      toast('Грешна парола.');
+      $('#kaInput').value='';
+      $('#kaInput').focus();
+    }
+  }
   else if(t.id==='akClose')closeDlg($('#apiKeyDlg'));
   else if(t.id==='akSave'){
     const val=$('#akInput').value.trim();
@@ -3812,6 +3844,13 @@ document.addEventListener('click',e=>{
     a.download='garage-fuel-backup.json';
     a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  }
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target&&e.target.id==='kaInput'){
+    e.preventDefault();
+    $('#kaSubmit')?.click();
   }
 });
 
