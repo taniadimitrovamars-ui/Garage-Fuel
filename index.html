@@ -935,19 +935,6 @@ dialog::backdrop{background:#000c}
   </div>
 </dialog>
 
-<dialog id="keyAuthDlg">
-  <div class="row sp" style="margin-bottom:8px">
-    <h3 style="margin:0">🔒 Достъп до API ключа</h3>
-  </div>
-  <div class="m" style="margin-bottom:10px">Въведи паролата за достъп до настройката и генерирането на ключ.</div>
-  <label class="k">Парола</label>
-  <input id="kaInput" type="password" autocomplete="current-password" placeholder="Въведи парола">
-  <div class="dlg-foot-br">
-    <button type="button" id="kaSubmit" class="pri sm">Потвърди</button>
-    <button type="button" id="kaCancel" class="close-br">Затвори</button>
-  </div>
-</dialog>
-
 <dialog id="apiKeyDlg">
   <div class="row sp" style="margin-bottom:8px">
     <h3 style="margin:0">🔑 API ключ (Google AI Studio)</h3>
@@ -989,7 +976,6 @@ const KEY='garage_fuel_pwa_v44';
 const SOLVER_KEY_STORAGE='pitstop_gemini_key_v1';
 const SOLVER_GRADE_STORAGE='pitstop_school_grade_v1';
 const SOLVER_NOTES_STORAGE='pitstop_solver_notes_v1';
-const KEY_ACCESS_PASS='Alex11';
 const IDB_NAME='GarageFuelDB_v1';
 const IDB_STORE='media';
 const $=s=>document.querySelector(s);
@@ -2709,12 +2695,6 @@ function updateKeyButtonLabel(){
   btn.classList.toggle('ok',hasKey);
 }
 
-function openKeyAuthModal(){
-  $('#kaInput').value='';
-  openDlg($('#keyAuthDlg'));
-  setTimeout(()=>$('#kaInput')?.focus(),40);
-}
-
 function openApiKeyModal(){
   $('#akInput').value=localStorage.getItem(SOLVER_KEY_STORAGE)||'';
   openDlg($('#apiKeyDlg'));
@@ -2861,7 +2841,10 @@ async function callGeminiStream({model,apiKey,payload,statusEl,ansBox,grade,time
         if(delta){
           if(delta.startsWith(fullText))fullText=delta;
           else if(fullText.endsWith(delta)){}
-          else fullText+=(fullText&&!/\s$/.test(fullText)&&!/^[.,!?;:)\]]/.test(delta)?'':'')+delta;
+          else{
+            const needsSpace=fullText&&!/\s$/.test(fullText)&&!/^[.,!?;:)\]]/.test(delta);
+            fullText+=(needsSpace?' ':'')+delta;
+          }
           ansBox.textContent=fullText;
           if($('#ansLargeDlg')?.hasAttribute('open')||$('#ansLargeDlg')?.open){
             $('#alTextBox').textContent=fullText;
@@ -2935,8 +2918,8 @@ async function solveTestWithGemini(){
     return;
   }
   if(!apiKey){
-    toast('Нужна е парола и ключ — натисни бутона „🔒 Ключ“.');
-    openKeyAuthModal();
+    toast('Нужен е API ключ — натисни бутона „🔒 Ключ“.');
+    openApiKeyModal();
     return;
   }
 
@@ -2952,7 +2935,7 @@ async function solveTestWithGemini(){
   const statusEl=$('#tsStatus');
   const ansBox=$('#tsAnswerBox');
   const btn=$('#tsSolveBtn');
-  statusEl.textContent='Изпращам към gemini-3.8-flash...';
+  statusEl.textContent='Изпращам заявката...';
   ansBox.style.display='block';
   ansBox.textContent='';
   if($('#ansLargeDlg')?.hasAttribute('open')||$('#ansLargeDlg')?.open){
@@ -2984,7 +2967,7 @@ async function solveTestWithGemini(){
       }
     };
 
-    const models=['gemini-3.8-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite'];
+    const models=['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.0-flash'];
     let lastRes={ok:false,error:'Временно натоварване'};
     let usedModel=models[0];
 
@@ -3748,19 +3731,7 @@ document.addEventListener('click',e=>{
     openDlg($('#shareDlg'));
   }
   else if(t.id==='openTestSolverBtn')openTestSolverModal();
-  else if(t.id==='tsOpenKeyDlgBtn')openKeyAuthModal();
-  else if(t.id==='kaCancel')closeDlg($('#keyAuthDlg'));
-  else if(t.id==='kaSubmit'){
-    const entered=($('#kaInput').value||'').trim();
-    if(entered===KEY_ACCESS_PASS){
-      closeDlg($('#keyAuthDlg'));
-      openApiKeyModal();
-    }else{
-      toast('Грешна парола.');
-      $('#kaInput').value='';
-      $('#kaInput').focus();
-    }
-  }
+  else if(t.id==='tsOpenKeyDlgBtn')openApiKeyModal();
   else if(t.id==='akClose')closeDlg($('#apiKeyDlg'));
   else if(t.id==='akSave'){
     const val=$('#akInput').value.trim();
@@ -4126,13 +4097,6 @@ document.addEventListener('click',e=>{
     a.download='garage-fuel-backup.json';
     a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),1500);
-  }
-});
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&e.target&&e.target.id==='kaInput'){
-    e.preventDefault();
-    $('#kaSubmit')?.click();
   }
 });
 
