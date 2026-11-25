@@ -263,14 +263,34 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
   border:1px solid #2b3b56;
   background:#060b14;
   border-radius:14px;
-  padding:12px;
+  padding:14px;
   white-space:pre-wrap;
   word-break:break-word;
-  font-size:13.5px;
-  line-height:1.5;
+  font-size:14px;
+  line-height:1.55;
   color:#e2e8f0;
-  max-height:46vh;
+  min-height:180px;
+  max-height:56vh;
   overflow-y:auto
+}
+.ans-box-large{
+  margin:10px 0 12px;
+  border:1px solid #334663;
+  background:#050912;
+  border-radius:16px;
+  padding:16px;
+  white-space:pre-wrap;
+  word-break:break-word;
+  font-size:16px;
+  line-height:1.65;
+  color:#f8fafc;
+  min-height:52vh;
+  max-height:70vh;
+  overflow-y:auto
+}
+dialog.large-dlg{
+  width:min(860px,96vw);
+  max-width:96vw;
 }
 
 .dash-card{background:var(--p);border:1px solid #26354d;border-radius:20px;overflow:hidden;margin-bottom:12px}
@@ -708,7 +728,10 @@ dialog::backdrop{background:#000c}
       <h3 style="margin:0">📝 Контролно / тест</h3>
       <div class="m">Избери клас, зареди снимка или напиши въпроси / бележки — отговорите излизат тук.</div>
     </div>
-    <button type="button" class="sm" id="tsClose">Затвори</button>
+    <div class="row">
+      <button type="button" class="sm" id="tsOpenKeyDlgBtn" title="Настройка на API ключ">🔑 Ключ</button>
+      <button type="button" class="sm" id="tsClose">Затвори</button>
+    </div>
   </div>
 
   <div class="grid g2">
@@ -749,17 +772,47 @@ dialog::backdrop{background:#000c}
     <textarea id="tsNotes" placeholder="Напиши тук въпрос, пояснение към снимката или условие..."></textarea>
   </div>
 
-  <div style="margin-top:10px">
-    <label class="k">Безплатен ключ от Google AI Studio (пази се само в този браузър)</label>
-    <input id="tsApiKey" type="password" class="mono" placeholder="AQ.Ab8RN6...">
-  </div>
-
   <div class="row sp" style="margin-top:12px">
     <span class="m" id="tsStatus">Избери клас и зареди снимка или напиши въпрос.</span>
     <button type="button" class="pri" id="tsSolveBtn">Изпрати</button>
   </div>
 
+  <div class="row sp" style="margin-top:10px">
+    <label class="k" style="margin:0">Отговор</label>
+    <div class="row">
+      <button type="button" class="sm" id="tsCopyAnsBtn">📋 Копирай</button>
+      <button type="button" class="sm" id="tsExpandAnsBtn">🔍 Голям прозорец</button>
+    </div>
+  </div>
   <div id="tsAnswerBox" class="ans-box" style="display:none"></div>
+</dialog>
+
+<dialog id="apiKeyDlg">
+  <div class="row sp" style="margin-bottom:8px">
+    <h3 style="margin:0">🔑 API ключ (Google AI Studio)</h3>
+    <button type="button" class="sm" id="akClose">Затвори</button>
+  </div>
+  <div class="m" style="margin-bottom:10px">Ключът се пази само локално в този браузър. Ако нямаш ключ, отвори Google AI Studio и генерирай нов.</div>
+  <label class="k">API ключ</label>
+  <input id="akInput" type="password" class="mono" placeholder="AQ.Ab8RN6...">
+  <div class="row sp" style="margin-top:14px">
+    <a class="btn sm ok" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">✨ Генерирай ключ</a>
+    <div class="row">
+      <button type="button" class="sm" id="akClear">Изчисти</button>
+      <button type="button" class="pri sm" id="akSave">Запази</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="ansLargeDlg" class="large-dlg">
+  <div class="row sp" style="margin-bottom:6px">
+    <h3 style="margin:0">📝 Отговор — голям прозорец</h3>
+    <div class="row">
+      <button type="button" class="sm ok" id="alCopyBtn">📋 Копирай текста</button>
+      <button type="button" class="pri sm" id="alCloseBtn">Затвори</button>
+    </div>
+  </div>
+  <div id="alTextBox" class="ans-box-large"></div>
 </dialog>
 
 <script>
@@ -2347,13 +2400,54 @@ function remindAppointmentItem({category,date,time,title,note}){
   });
 }
 
+function updateKeyButtonLabel(){
+  const btn=$('#tsOpenKeyDlgBtn');
+  if(!btn)return;
+  const hasKey=!!(localStorage.getItem(SOLVER_KEY_STORAGE)||'').trim();
+  btn.textContent=hasKey?'🔑 Ключ ✓':'🔑 Ключ';
+  btn.classList.toggle('ok',hasKey);
+}
+
+function openApiKeyModal(){
+  $('#akInput').value=localStorage.getItem(SOLVER_KEY_STORAGE)||'';
+  openDlg($('#apiKeyDlg'));
+}
+
+function copyTextWithToast(text,msg){
+  const clean=String(text||'').trim();
+  if(!clean){
+    toast('Няма текст за копиране.');
+    return;
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(clean).then(()=>toast(msg||'Отговорът е копиран.')).catch(()=>toast(msg||'Отговорът е копиран.'));
+  }else{
+    const ta=document.createElement('textarea');
+    ta.value=clean;
+    document.body.appendChild(ta);
+    ta.select();
+    try{document.execCommand('copy');}catch(_){}
+    ta.remove();
+    toast(msg||'Отговорът е копиран.');
+  }
+}
+
+function openLargeAnswerModal(){
+  const text=$('#tsAnswerBox')?.textContent||'';
+  if(!text.trim()){
+    toast('Все още няма отговор за показване.');
+    return;
+  }
+  $('#alTextBox').textContent=text;
+  openDlg($('#ansLargeDlg'));
+}
+
 function openTestSolverModal(){
-  const savedKey=localStorage.getItem(SOLVER_KEY_STORAGE)||'';
   const savedGrade=localStorage.getItem(SOLVER_GRADE_STORAGE)||'9 клас';
   const savedNotes=localStorage.getItem(SOLVER_NOTES_STORAGE)||'';
-  $('#tsApiKey').value=savedKey;
   $('#tsGrade').value=savedGrade;
   $('#tsNotes').value=savedNotes;
+  updateKeyButtonLabel();
   if(isSafeDataUrl(S.testPhoto)){
     $('#tsImgPreview').src=S.testPhoto;
     $('#tsImgWrap').style.display='block';
@@ -2455,10 +2549,9 @@ async function callGeminiStream({model,apiKey,payload,statusEl,ansBox,grade,time
 async function solveTestWithGemini(){
   const grade=$('#tsGrade').value||'9 клас';
   const notes=$('#tsNotes').value.trim();
-  const apiKey=$('#tsApiKey').value.trim();
+  const apiKey=(localStorage.getItem(SOLVER_KEY_STORAGE)||'').trim();
   localStorage.setItem(SOLVER_GRADE_STORAGE,grade);
   localStorage.setItem(SOLVER_NOTES_STORAGE,notes);
-  if(apiKey)localStorage.setItem(SOLVER_KEY_STORAGE,apiKey);
 
   const hasPhoto=isSafeDataUrl(S.testPhoto);
   if(!hasPhoto&&!notes){
@@ -2466,7 +2559,8 @@ async function solveTestWithGemini(){
     return;
   }
   if(!apiKey){
-    toast('Въведи безплатен ключ от Google AI Studio, за да върне отговорите тук.');
+    toast('Натисни бутона „🔑 Ключ“, за да въведеш или генерираш ключ.');
+    openApiKeyModal();
     return;
   }
 
@@ -2535,6 +2629,9 @@ async function solveTestWithGemini(){
     if(lastRes.ok){
       if(!lastRes.text)ansBox.textContent='Няма върнат текст.';
       statusEl.textContent=`Готово (${usedModel}).`;
+      if($('#ansLargeDlg')?.hasAttribute('open')||$('#ansLargeDlg')?.open){
+        $('#alTextBox').textContent=ansBox.textContent;
+      }
     }else{
       statusEl.textContent='Дневният лимит или заявката е неуспешна.';
       ansBox.textContent='Неуспешна заявка: '+(lastRes.error||'Временно натоварване');
@@ -3241,6 +3338,30 @@ document.addEventListener('click',e=>{
     openDlg($('#shareDlg'));
   }
   else if(t.id==='openTestSolverBtn')openTestSolverModal();
+  else if(t.id==='tsOpenKeyDlgBtn')openApiKeyModal();
+  else if(t.id==='akClose')closeDlg($('#apiKeyDlg'));
+  else if(t.id==='akSave'){
+    const val=$('#akInput').value.trim();
+    if(val)localStorage.setItem(SOLVER_KEY_STORAGE,val);
+    else localStorage.removeItem(SOLVER_KEY_STORAGE);
+    updateKeyButtonLabel();
+    closeDlg($('#apiKeyDlg'));
+    toast(val?'Ключът е запазен локално.':'Ключът е премахнат.');
+  }
+  else if(t.id==='akClear'){
+    $('#akInput').value='';
+    localStorage.removeItem(SOLVER_KEY_STORAGE);
+    updateKeyButtonLabel();
+    toast('Ключът е изчистен.');
+  }
+  else if(t.id==='tsCopyAnsBtn'){
+    copyTextWithToast($('#tsAnswerBox')?.textContent||'','Отговорът е копиран.');
+  }
+  else if(t.id==='tsExpandAnsBtn')openLargeAnswerModal();
+  else if(t.id==='alCopyBtn'){
+    copyTextWithToast($('#alTextBox')?.textContent||'','Отговорът е копиран.');
+  }
+  else if(t.id==='alCloseBtn')closeDlg($('#ansLargeDlg'));
   else if(t.id==='openApptBtn')openApptModal();
   else if(t.id==='apClose')closeDlg($('#apptDlg'));
   else if(t.dataset.apptCat){
