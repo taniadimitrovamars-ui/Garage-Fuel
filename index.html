@@ -506,6 +506,76 @@ dialog::backdrop{background:#000c}
   </div>
 </dialog>
 
+<dialog id="checkUpdateDlg">
+  <div class="row sp" style="margin-bottom:8px">
+    <div>
+      <h3 id="cuTitle" style="margin:0">Обновяване на проверка</h3>
+      <div class="m" id="cuSub"></div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div>
+      <label class="k">Рег. номер</label>
+      <input id="cuPlate" class="mono" placeholder="Напр. PB1234AB">
+    </div>
+    <div>
+      <label class="k">VIN номер</label>
+      <input id="cuVin" class="mono" placeholder="17-символен VIN">
+    </div>
+  </div>
+
+  <div id="cuDateBox" style="margin-top:10px">
+    <div class="row sp" style="margin-bottom:4px">
+      <label class="k" style="margin:0" id="cuDateLabel">Валидно до</label>
+      <label class="btn sm" style="min-height:28px;padding:0 8px;font-size:11px">
+        🖼 Дата от снимка
+        <input type="file" id="cuDateFile" accept="image/*" hidden>
+      </label>
+    </div>
+    <input id="cuDate" type="date">
+  </div>
+
+  <div id="cuFinesBox" style="display:none;margin-top:10px">
+    <div class="grid g3">
+      <div>
+        <label class="k">Статус на глоби</label>
+        <select id="cuApiStatus">
+          <option value="Няма">Няма</option>
+          <option value="Има за проверка">Има за проверка</option>
+          <option value="Непроверено">Непроверено</option>
+        </select>
+      </div>
+      <div>
+        <label class="k">№ СРМПС / талон</label>
+        <input id="cuRegCert" class="mono" placeholder="№ на талон">
+      </div>
+      <div>
+        <label class="k">ЕГН / Булстат</label>
+        <input id="cuEgn" class="mono" placeholder="За справка КАТ">
+      </div>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:12px">
+    <button type="button" class="pri" id="cuUpdateBtn">🔄 Ъпдейт</button>
+    <button type="button" class="sm ok" id="cuCalBtn" style="display:none">📅 Напомни</button>
+    <a class="btn sm" id="cuPortalLink" target="_blank" rel="noopener" style="display:none">Отвори портал</a>
+  </div>
+
+  <div id="cuResultBox" class="extra-box" style="display:none;margin-top:12px">
+    <div class="row sp" style="margin-bottom:4px">
+      <b id="cuResultTitle">Резултат</b>
+      <button type="button" class="sm ghost" id="cuCopySummary">📋 Копирай справка</button>
+    </div>
+    <div id="cuResultBody" class="m" style="color:var(--t);font-size:13px"></div>
+  </div>
+
+  <div class="dlg-foot-br">
+    <button type="button" class="close-br" id="cuClose">Затвори</button>
+  </div>
+</dialog>
+
 <dialog id="vehDlg">
   <div class="row sp" style="margin-bottom:8px">
     <h3 id="vDlgTitle" style="margin:0">Профил на превозно средство</h3>
@@ -1043,6 +1113,7 @@ let S={
   testPhoto:''
 };
 S.activeVehId=S.vehicles[0].id;
+let cuKind='mtpl';
 
 let tt;
 const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',4800)};
@@ -2171,7 +2242,7 @@ async function readRegistrationCard(file){
   }
 }
 
-async function readDateFromImage(file,fieldKey){
+async function readDateFromImage(file,fieldKey,targetInputId){
   if(!file)return;
   if(!window.Tesseract){
     toast('OCR библиотеката не е заредена — задай датата ръчно.');
@@ -2189,6 +2260,7 @@ async function readDateFromImage(file,fieldKey){
     if(iso){
       veh[fieldKey]=iso;
       save();
+      if(targetInputId&&$(targetInputId))$(targetInputId).value=iso;
       toast('Разпозната дата: '+fmtDotDate(iso)+'. Снимката не се пази.');
     }else{
       toast('Не открих ясна дата — избери я ръчно от полето.');
@@ -2272,6 +2344,121 @@ function openImageZoom(src,title){
   openDlg($('#imgZoomDlg'));
 }
 
+function getCheckMeta(kind){
+  if(kind==='vignette'){
+    return{
+      field:'vignetteDate',
+      label:'Електронна винетка',
+      dateLabel:'Винетка валидна до',
+      portalUrl:'https://bgtoll.bg/bg/elektronni-vinetki',
+      portalText:'Проверка BGTOLL',
+      calKind:'vignette'
+    };
+  }
+  if(kind==='fines'){
+    return{
+      field:'apiFines',
+      label:'Глоби към АПИ / КАТ',
+      dateLabel:'',
+      portalUrl:'https://e-uslugi.mvr.bg/services/obligations',
+      portalText:'МВР електронни услуги',
+      calKind:null
+    };
+  }
+  return{
+    field:'mtplDate',
+    label:'Застраховка (ГО)',
+    dateLabel:'Застраховка (ГО) валидна до',
+    portalUrl:'https://www.guaranteefund.org/',
+    portalText:'Гаранционен фонд',
+    calKind:'mtpl'
+  };
+}
+
+function renderCheckResultSummary(veh,kind){
+  const meta=getCheckMeta(kind);
+  const box=$('#cuResultBox');
+  const titleEl=$('#cuResultTitle');
+  const bodyEl=$('#cuResultBody');
+  if(!box||!titleEl||!bodyEl)return;
+
+  const plateTxt=(veh.plate||'без рег. №').toUpperCase();
+  const vinTxt=(veh.vin||'').toUpperCase();
+
+  if(kind==='fines'){
+    const st=veh.apiFines||'Няма';
+    titleEl.textContent=`Резултат: ${meta.label} — ${st}`;
+    const lines=[
+      `МПС: ${veh.name} (${plateTxt})`,
+      vinTxt?`VIN: ${vinTxt}`:'',
+      veh.regCert?`№ СРМПС: ${veh.regCert}`:'',
+      veh.egn?`ЕГН / Булстат: ${veh.egn}`:'',
+      `Статус: ${st}`
+    ].filter(Boolean);
+    bodyEl.innerHTML=lines.map(l=>`<div>${E(l)}</div>`).join('');
+    box.dataset.copyText=lines.join(' | ');
+  }else{
+    const iso=veh[meta.field]||'';
+    const dt=parseIsoDate(iso);
+    let statusLine='Няма въведена дата на валидност.';
+    if(dt){
+      const today=new Date();
+      today.setHours(0,0,0,0);
+      const diff=Math.round((dt.getTime()-today.getTime())/86400000);
+      if(diff<0)statusLine=`Изтекла преди ${Math.abs(diff)} д. (${fmtDotDate(iso)})`;
+      else if(diff<=30)statusLine=`Изтича след ${diff} д. (${fmtDotDate(iso)})`;
+      else statusLine=`Валидна до ${fmtDotDate(iso)} (остават ${diff} д.)`;
+    }
+    titleEl.textContent=`Резултат: ${meta.label}`;
+    const lines=[
+      `МПС: ${veh.name} (${plateTxt})`,
+      vinTxt?`VIN: ${vinTxt}`:'',
+      statusLine
+    ].filter(Boolean);
+    bodyEl.innerHTML=lines.map(l=>`<div>${E(l)}</div>`).join('');
+    box.dataset.copyText=lines.join(' | ');
+  }
+  box.style.display='block';
+}
+
+function openCheckUpdateModal(kind){
+  syncFormFromDom();
+  const veh=getVeh();
+  cuKind=kind||'mtpl';
+  const meta=getCheckMeta(cuKind);
+
+  $('#cuTitle').textContent=`${meta.label} — попълване и ъпдейт`;
+  $('#cuSub').textContent=`Профил: ${veh.name}`;
+  $('#cuPlate').value=veh.plate||'';
+  $('#cuVin').value=veh.vin||'';
+
+  const isFines=cuKind==='fines';
+  $('#cuDateBox').style.display=isFines?'none':'block';
+  $('#cuFinesBox').style.display=isFines?'block':'none';
+  $('#cuCalBtn').style.display=!isFines&&veh[meta.field]?'':'none';
+
+  const linkEl=$('#cuPortalLink');
+  if(meta.portalUrl){
+    linkEl.href=meta.portalUrl;
+    linkEl.textContent=meta.portalText;
+    linkEl.style.display='';
+  }else{
+    linkEl.style.display='none';
+  }
+
+  if(!isFines){
+    $('#cuDateLabel').textContent=meta.dateLabel;
+    $('#cuDate').value=veh[meta.field]||'';
+  }else{
+    $('#cuApiStatus').value=veh.apiFines||'Няма';
+    $('#cuRegCert').value=veh.regCert||'';
+    $('#cuEgn').value=veh.egn||'';
+  }
+
+  renderCheckResultSummary(veh,cuKind);
+  openDlg($('#checkUpdateDlg'));
+}
+
 function vVehicleSwitcherBar(veh){
   const options=S.vehicles.map(v=>{
     const sel=v.id===veh.id?' selected':'';
@@ -2351,7 +2538,7 @@ function vVehicleCard(veh){
             <span class="dash-ico">🛡️</span>
             <span class="dash-text">Застраховка – ${E(fmtDotDate(veh.mtplDate))}</span>
           </div>
-          <button type="button" class="sm ok" data-quick-cal="mtpl">📅 Напомни</button>
+          <button type="button" class="sm ok" data-open-check="mtpl">📅 Напомни</button>
         </div>
 
         <div class="dash-row">
@@ -2360,7 +2547,7 @@ function vVehicleCard(veh){
             <span class="dash-ico">🛣️</span>
             <span class="dash-text">Винетка – ${E(fmtDotDate(veh.vignetteDate))}</span>
           </div>
-          <button type="button" class="sm ok" data-quick-cal="vignette">📅 Напомни</button>
+          <button type="button" class="sm ok" data-open-check="vignette">📅 Напомни</button>
         </div>
 
         <div class="dash-row">
@@ -2369,7 +2556,7 @@ function vVehicleCard(veh){
             <span class="dash-ico">👮</span>
             <span class="dash-text">Глоби към АПИ – ${E(veh.apiFines||'Няма')}</span>
           </div>
-          <button type="button" class="sm" id="openChecksTab">Проверки</button>
+          <button type="button" class="sm" data-open-check="fines">Проверки</button>
         </div>
       </div>
     </div>
@@ -3504,6 +3691,34 @@ document.addEventListener('click',e=>{
     if(veh.odo)S.form.km=String(veh.odo);
     save();closeDlg($('#quickDlg'));render();toast('Данните са обновени.');
   }
+  else if(t.dataset.openCheck)openCheckUpdateModal(t.dataset.openCheck);
+  else if(t.id==='cuUpdateBtn'){
+    const cur=getVeh();
+    cur.plate=($('#cuPlate').value||'').trim().toUpperCase();
+    cur.vin=($('#cuVin').value||'').trim().toUpperCase();
+    if(cuKind==='fines'){
+      cur.apiFines=$('#cuApiStatus').value||'Няма';
+      cur.regCert=($('#cuRegCert').value||'').trim();
+      cur.egn=($('#cuEgn').value||'').trim();
+    }else{
+      const meta=getCheckMeta(cuKind);
+      cur[meta.field]=$('#cuDate').value||'';
+      $('#cuCalBtn').style.display=cur[meta.field]?'':'none';
+    }
+    save();
+    render();
+    renderCheckResultSummary(cur,cuKind);
+    toast('Профилът и статусът са обновени.');
+  }
+  else if(t.id==='cuCalBtn'){
+    const cur=getVeh();
+    const meta=getCheckMeta(cuKind);
+    if(meta.calKind)remindCheckKind(cur,meta.calKind);
+  }
+  else if(t.id==='cuCopySummary'){
+    copyTextWithToast($('#cuResultBox')?.dataset?.copyText||'','Справката е копирана.');
+  }
+  else if(t.id==='cuClose')closeDlg($('#checkUpdateDlg'));
   else if(t.dataset.quickCal){
     remindCheckKind(veh,t.dataset.quickCal);
   }
@@ -3924,6 +4139,15 @@ document.addEventListener('change',async e=>{
     S.form.km=nextVeh.odo?String(nextVeh.odo):'';
     render();
     toast('Активен профил: '+nextVeh.name);
+  }else if(t.id==='cuDateFile'){
+    const f=t.files&&t.files[0];
+    t.value='';
+    if(!f)return;
+    const meta=getCheckMeta(cuKind);
+    if(meta.field&&meta.field!=='apiFines'){
+      await readDateFromImage(f,meta.field,'#cuDate');
+      renderCheckResultSummary(getVeh(),cuKind);
+    }
   }else if(t.id==='tsPhotoFile'){
     const f=t.files&&t.files[0];
     t.value='';
