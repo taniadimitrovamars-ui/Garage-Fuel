@@ -2546,6 +2546,26 @@ function openTestSolverModal(){
   openDlg($('#testSolverDlg'));
 }
 
+function getGradeGuidance(grade){
+  const num=parseInt(String(grade||''),10)||9;
+  if(num<=4){
+    return{
+      system:'Помагаш на ученик в начален етап ('+grade+') в България. Обяснявай с много прости, ясни и топли думи, без сложни термини, с кратък пример или стъпка, ако помага.',
+      instruction:'Дай отговорите ясно и достъпно за ученик в '+grade+' на български, с кратко и лесно обяснение.'
+    };
+  }
+  if(num<=7){
+    return{
+      system:'Помагаш на ученик в прогимназиален етап ('+grade+') в България. Отговаряй ясно, точно и на български с кратко обяснение на правилото или стъпката.',
+      instruction:'Дай точни отговори за ученик в '+grade+' на български, с кратко пояснение на основната стъпка или правило.'
+    };
+  }
+  return{
+    system:'Помагаш на ученик в гимназиален етап ('+grade+') в България. Отговаряй стегнато, точно и на български, съобразено с материала за '+grade+', като при задачи включваш ключовата формула или стъпка.',
+    instruction:'Дай стегнати и точни отговори за ученик в '+grade+' на български, с ключовите формули или стъпки при задачи.'
+  };
+}
+
 function extractGeminiText(data){
   return (data?.candidates?.[0]?.content?.parts||[])
     .filter(p=>p&&!p.thought&&typeof p.text==='string')
@@ -2670,20 +2690,20 @@ async function solveTestWithGemini(){
   btn.disabled=true;
 
   try{
+    const guidance=getGradeGuidance(grade);
     const parts=[];
     if(match){
       parts.push({inline_data:{mime_type:match[1],data:match[2]}});
     }
     const promptLines=[`Ученикът е в ${grade}.`];
     if(notes)promptLines.push(`Въпрос:\n${notes}`);
-    if(hasPhoto)promptLines.push('Дай директно и кратко отговорите на задачите / въпросите от снимката на български.');
-    else promptLines.push('Дай точен и кратък отговор направо, без излишно въведение.');
+    promptLines.push(guidance.instruction);
     parts.push({text:promptLines.join('\n\n')});
 
     const payload={
       system_instruction:{
         parts:[{
-          text:`Помагаш на ученик в ${grade} в България. Отговаряй бързо, ясно, директно и на български език.`
+          text:guidance.system
         }]
       },
       contents:[{role:'user',parts}],
@@ -2716,7 +2736,7 @@ async function solveTestWithGemini(){
 
     if(lastRes.ok){
       if(!lastRes.text)ansBox.textContent='Няма върнат текст.';
-      statusEl.textContent=`Готово (${usedModel}).`;
+      statusEl.textContent=`Готово (${usedModel} · ${grade}).`;
       if($('#ansLargeDlg')?.hasAttribute('open')||$('#ansLargeDlg')?.open){
         $('#alTextBox').textContent=ansBox.textContent;
       }
