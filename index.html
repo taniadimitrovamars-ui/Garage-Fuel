@@ -119,8 +119,10 @@ button,select,input,textarea{font:inherit;color:var(--t);min-width:0}
 button,.btn{min-height:42px;padding:0 13px;border-radius:12px;border:1px solid #334155;background:#1e293b;cursor:pointer;touch-action:manipulation;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
 button.on{background:#009ada33;border-color:var(--a);color:#7dd3fc}
 button.pri,.btn.pri{background:var(--a);border-color:var(--a);color:#fff;font-weight:600}
-button.ok{background:#10b98128;border-color:#10b98188;color:#6ee7b7}
-button.sm{min-height:34px;padding:0 9px;font-size:12px}
+button.ok,.btn.ok{background:#10b98128;border-color:#10b98188;color:#6ee7b7}
+button.sm,.btn.sm{min-height:34px;padding:0 9px;font-size:12px}
+button.ico-btn,.btn.ico-btn{width:38px;min-width:38px;height:38px;min-height:38px;padding:0;border-radius:10px}
+button.ico-btn svg,.btn.ico-btn svg{width:18px;height:18px;display:block}
 button.chk-btn{min-height:34px;min-width:86px;padding:0 10px;font-size:12px;font-weight:600}
 button.mini-rem{min-height:28px;padding:0 8px;font-size:11px;border-radius:9px}
 button.close-br{
@@ -221,6 +223,23 @@ label.k{display:block;font-size:11px;line-height:1.25;color:var(--m);text-transf
 .doc-thumb{width:100%;max-height:220px;object-fit:contain;border-radius:12px;border:1px solid #334155;background:#050810;display:block;margin-top:8px;cursor:zoom-in}
 .doc-thumb:hover{border-color:#38bdf8}
 .zoom-modal-img{width:100%;max-height:76vh;object-fit:contain;border-radius:12px;background:#050810;border:1px solid #334155;display:block;margin:8px 0}
+.ts-img-box{position:relative;margin-top:10px}
+.ts-img-clear{
+  position:absolute;
+  top:8px;
+  right:8px;
+  width:28px;
+  min-width:28px;
+  height:28px;
+  min-height:28px;
+  padding:0;
+  border-radius:999px;
+  background:#090d16dd;
+  border:1px solid #475569;
+  color:#f8fafc;
+  font-size:12px;
+  font-weight:700
+}
 
 .fuel-tile{border:1px solid var(--b);background:var(--p2);border-radius:14px;padding:12px;cursor:pointer;transition:.15s}
 .fuel-tile:hover,.fuel-tile.has{border-color:#009ada77}
@@ -873,40 +892,40 @@ dialog::backdrop{background:#000c}
       <h3 style="margin:0">📝 Контролно / тест</h3>
       <div class="m">Избери клас, зареди снимка или напиши въпроси / бележки — отговорите излизат тук.</div>
     </div>
-    <button type="button" class="sm" id="tsOpenKeyDlgBtn" title="Настройка на API ключ">🔒 Ключ</button>
-  </div>
-
-  <div class="grid g2">
-    <div>
-      <label class="k">Кой клас си в училище</label>
-      <select id="tsGrade">
-        <option value="1 клас">1 клас</option>
-        <option value="2 клас">2 клас</option>
-        <option value="3 клас">3 клас</option>
-        <option value="4 клас">4 клас</option>
-        <option value="5 клас">5 клас</option>
-        <option value="6 клас">6 клас</option>
-        <option value="7 клас">7 клас</option>
-        <option value="8 клас">8 клас</option>
-        <option value="9 клас" selected>9 клас</option>
-        <option value="10 клас">10 клас</option>
-        <option value="11 клас">11 клас</option>
-        <option value="12 клас">12 клас</option>
-      </select>
-    </div>
-    <div>
-      <label class="k">Снимка на контролна или тест</label>
-      <div class="row">
-        <label class="btn ok" style="flex:1">
-          📷 Снимай / избери снимка
-          <input type="file" id="tsPhotoFile" accept="image/*" capture="environment" hidden>
-        </label>
-      </div>
+    <div class="row" style="gap:6px">
+      <label class="btn ok ico-btn" title="Снимай с камера" aria-label="Снимай с камера">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <input type="file" id="tsCameraFile" accept="image/*" capture="environment" hidden>
+      </label>
+      <label class="btn ico-btn" title="Прикачи снимка" aria-label="Прикачи снимка">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        <input type="file" id="tsGalleryFile" accept="image/*" hidden>
+      </label>
+      <button type="button" class="sm" id="tsOpenKeyDlgBtn" title="Настройка на API ключ">🔒 Ключ</button>
     </div>
   </div>
 
-  <div id="tsImgWrap" style="display:none;margin-top:10px">
+  <div>
+    <label class="k">Кой клас си в училище</label>
+    <select id="tsGrade">
+      <option value="1 клас">1 клас</option>
+      <option value="2 клас">2 клас</option>
+      <option value="3 клас">3 клас</option>
+      <option value="4 клас">4 клас</option>
+      <option value="5 клас">5 клас</option>
+      <option value="6 клас">6 клас</option>
+      <option value="7 клас">7 клас</option>
+      <option value="8 клас">8 клас</option>
+      <option value="9 клас" selected>9 клас</option>
+      <option value="10 клас">10 клас</option>
+      <option value="11 клас">11 клас</option>
+      <option value="12 клас">12 клас</option>
+    </select>
+  </div>
+
+  <div id="tsImgWrap" class="ts-img-box" style="display:none">
     <img id="tsImgPreview" class="doc-thumb" alt="Снимка на контролна или тест">
+    <button type="button" class="ts-img-clear" id="tsClearPhotoBtn" title="Премахни снимката" aria-label="Премахни снимката">✕</button>
   </div>
 
   <div style="margin-top:10px">
@@ -3677,6 +3696,12 @@ document.addEventListener('click',e=>{
     updateKeyButtonLabel();
     toast('Ключът е изчистен.');
   }
+  else if(t.id==='tsClearPhotoBtn'){
+    S.testPhoto='';
+    $('#tsImgPreview').removeAttribute('src');
+    $('#tsImgWrap').style.display='none';
+    $('#tsStatus').textContent='Снимката е премахната.';
+  }
   else if(t.id==='tsClearNotesBtn'){
     const notesEl=$('#tsNotes');
     if(notesEl){
@@ -4063,7 +4088,7 @@ document.addEventListener('change',async e=>{
       await readDateFromImage(f,meta.field,'#cuDate');
       renderCheckResultSummary(getVeh(),cuKind);
     }
-  }else if(t.id==='tsPhotoFile'){
+  }else if(t.id==='tsCameraFile'||t.id==='tsGalleryFile'){
     const f=t.files&&t.files[0];
     t.value='';
     if(!f)return;
