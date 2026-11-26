@@ -22,11 +22,11 @@ if(!window.QRCode){
 }
 </script>
 <style>
-:root{--bg:#070b14;--p:#101726;--p2:#0b1220;--b:#1e293b;--t:#f1f5f9;--m:#94a3b8;--a:#009ada;--g:#10b981;--y:#f59e0b;--r:#f43f5e;--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--nav-h:64px}
+:root{--bg:#070b14;--p:#101726;--p2:#0b1220;--b:#1e293b;--t:#f1f5f9;--m:#94a3b8;--a:#009ada;--g:#10b981;--y:#f59e0b;--r:#f43f5e;--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--nav-h:66px}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--t);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow-x:hidden}
-body{padding:var(--sat) 0 calc(var(--nav-h) + var(--sab) + 18px)}
-header{position:sticky;top:0;z-index:10;background:#080c16fa;backdrop-filter:blur(10px);border-bottom:1px solid #26354d;padding:calc(var(--sat) + 6px) 8px 8px;display:flex;flex-direction:column;gap:7px;align-items:stretch}
+body{padding:0 0 calc(var(--nav-h) + var(--sab) + 18px)}
+header{position:relative;z-index:1;background:#080c16;border-bottom:1px solid #26354d;padding:calc(var(--sat) + 8px) 8px 10px;display:flex;flex-direction:column;gap:7px;align-items:stretch}
 header:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,#009ada,#38bdf8,#ef4444)}
 
 .brand-banner{
@@ -68,7 +68,7 @@ header:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;backgr
   border-radius:999px;padding:4px 9px;white-space:nowrap
 }
 @media(min-width:760px){
-  header{padding:calc(var(--sat) + 9px) 16px 10px}
+  header{padding:calc(var(--sat) + 10px) 16px 12px}
   .brand-banner{min-height:66px;padding:10px 18px}
   .brand-badge{width:46px;height:46px;border-radius:14px}
   .brand-badge svg{width:28px;height:28px}
@@ -80,57 +80,72 @@ header:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;backgr
   position:fixed;
   left:0;right:0;bottom:0;
   z-index:25;
-  background:#080d18f5;
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  border-top:1px solid #26354d;
+  background:#070c17f7;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-top:1px solid #283a54;
   padding:6px 8px calc(6px + var(--sab));
-  box-shadow:0 -8px 24px #00000099
+  box-shadow:0 -10px 28px #000000b8
 }
 .bottom-nav:before{
   content:"";
   position:absolute;
   left:0;right:0;top:0;
-  height:1px;
-  background:linear-gradient(90deg,transparent,#38bdf866,#009ada88,transparent)
+  height:1.5px;
+  background:linear-gradient(90deg,#ef444466,#38bdf8aa,#009adaaa,#38bdf8aa,#ef444466)
 }
 .nav-tabs{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:5px;
+  gap:6px;
   max-width:980px;
   margin:0 auto
 }
 .nav-tabs button{
+  position:relative;
   width:100%;
-  min-height:48px;
-  padding:4px 4px;
+  min-height:52px;
+  padding:5px 4px;
   font-size:10.5px;
   font-weight:700;
-  border-radius:14px;
+  border-radius:15px;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
   flex-direction:column;
-  gap:2px;
-  background:#0e1728;
-  border:1px solid #1e2d45;
+  gap:3px;
+  background:linear-gradient(180deg,#101a2e,#0a1120);
+  border:1px solid #1f2f49;
   color:#94a3b8;
-  letter-spacing:-.01em
+  letter-spacing:-.01em;
+  transition:transform .12s ease,border-color .15s ease,box-shadow .15s ease,color .15s ease
 }
 .nav-tabs button span{overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.nav-tabs button svg{width:17px;height:17px;flex:0 0 auto;opacity:.82}
-.nav-tabs button:hover{border-color:#009ada77;color:#f8fafc}
+.nav-tabs button svg{
+  width:21px;
+  height:21px;
+  flex:0 0 auto;
+  filter:drop-shadow(0 2px 4px #00000066);
+  transition:transform .15s ease,filter .15s ease
+}
+.nav-tabs button:hover{border-color:#38bdf888;color:#f8fafc;transform:translateY(-1px)}
+.nav-tabs button:hover svg{transform:scale(1.06)}
 .nav-tabs button.on{
-  background:linear-gradient(180deg,#009ada36,#009ada18);
+  background:
+    radial-gradient(circle at 50% 0%, #38bdf830, transparent 70%),
+    linear-gradient(180deg,#132744,#0b1629);
   border-color:#38bdf8;
   color:#ffffff;
-  box-shadow:0 2px 12px #009ada33
+  box-shadow:0 4px 16px #009ada3d,inset 0 1px 0 #ffffff24
 }
-.nav-tabs button.on svg{opacity:1;color:#38bdf8}
+.nav-tabs button.on svg{
+  transform:translateY(-1px) scale(1.08);
+  filter:drop-shadow(0 0 8px #38bdf888)
+}
 @media(min-width:620px){
   .nav-tabs{gap:8px}
-  .nav-tabs button{min-height:50px;font-size:11.5px}
+  .nav-tabs button{min-height:54px;font-size:11.5px}
+  .nav-tabs button svg{width:22px;height:22px}
 }
 
 .wrap{max-width:980px;margin:0 auto;padding:12px 14px}
@@ -467,21 +482,59 @@ dialog::backdrop{background:#000c}
 <div class="wrap" id="app"><div class="card"><div class="m">Зареждане на приложението...</div></div></div>
 
 <nav class="bottom-nav" aria-label="Основно меню">
+  <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
+    <defs>
+      <linearGradient id="navGradCyan" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#7dd3fc"/>
+        <stop offset="100%" stop-color="#0284c7"/>
+      </linearGradient>
+      <linearGradient id="navGradAmber" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#fde047"/>
+        <stop offset="60%" stop-color="#f59e0b"/>
+        <stop offset="100%" stop-color="#ef4444"/>
+      </linearGradient>
+      <linearGradient id="navGradEmerald" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#6ee7b7"/>
+        <stop offset="100%" stop-color="#059669"/>
+      </linearGradient>
+      <linearGradient id="navGradViolet" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#c4b5fd"/>
+        <stop offset="100%" stop-color="#4f46e5"/>
+      </linearGradient>
+    </defs>
+  </svg>
   <div class="nav-tabs">
     <button type="button" id="tabDash" class="on">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 16.5A8.5 8.5 0 0 1 20 16.5" stroke="url(#navGradCyan)" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M16.2 8.8A8.5 8.5 0 0 1 20 16.5" stroke="url(#navGradAmber)" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M12 16.5L16.5 11.2" stroke="#f43f5e" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="12" cy="16.5" r="2.3" fill="url(#navGradCyan)"/>
+        <path d="M7.5 19.8H16.5" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
       <span>Табло</span>
     </button>
     <button type="button" id="tabSvc">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.1-3.1a5.5 5.5 0 0 1-7.2 7.2l-6.8 6.8a2.1 2.1 0 0 1-3-3l6.8-6.8a5.5 5.5 0 0 1 7.2-7.2l-3.5 3.1z" fill="url(#navGradAmber)" fill-opacity=".2" stroke="url(#navGradAmber)" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="6.3" cy="17.7" r="1.1" fill="#fde047"/>
+      </svg>
       <span>Консумативи</span>
     </button>
     <button type="button" id="tabChecks">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2.8L4.5 6v5.8c0 4.8 3.2 9.2 7.5 10.4 4.3-1.2 7.5-5.6 7.5-10.4V6L12 2.8z" fill="url(#navGradEmerald)" fill-opacity=".22" stroke="url(#navGradEmerald)" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M8.8 12.1L11 14.3L15.4 9.7" stroke="#6ee7b7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
       <span>Проверки</span>
     </button>
     <button type="button" id="tabFuel">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2.5" y="5" width="19" height="14" rx="3" fill="url(#navGradViolet)" fill-opacity=".22" stroke="url(#navGradViolet)" stroke-width="2"/>
+        <path d="M2.5 10H21.5" stroke="url(#navGradCyan)" stroke-width="2"/>
+        <rect x="5.5" y="13" width="5" height="2.4" rx="1" fill="#c4b5fd"/>
+        <circle cx="17.5" cy="14.2" r="1.5" fill="#38bdf8"/>
+      </svg>
       <span>Карти</span>
     </button>
   </div>
