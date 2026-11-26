@@ -7,11 +7,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="PITSTOP · LOG">
+<meta name="apple-mobile-web-app-title" content="ALEX PERFORMANCE">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
-<title>PITSTOP · LOG — консумативи, проверки и карти за отстъпка</title>
+<title>ALEX PERFORMANCE — консумативи, проверки и карти за отстъпка</title>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 <script>
@@ -26,53 +26,58 @@ if(!window.QRCode){
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--t);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow-x:hidden}
 body{padding:0 0 calc(var(--nav-h) + var(--sab) + 18px)}
-header{position:static;background:#080c16;border-bottom:1px solid #26354d;padding:calc(var(--sat) + 8px) 8px 10px;display:flex;flex-direction:column;gap:7px;align-items:stretch}
 
-.brand-banner{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  width:100%;min-height:56px;
-  border-radius:16px;
-  background:
-    radial-gradient(circle at 12% 50%, #009ada2e, transparent 42%),
-    radial-gradient(circle at 88% 50%, #ef444424, transparent 42%),
-    linear-gradient(135deg, #0d1526 0%, #080d18 55%, #111b2e 100%);
-  border:1px solid #2b3b56;
+.top-header{
+  position:static;
+  width:100%;
+  background:#070b14;
+  border-bottom:1px solid #1e2c42;
+  padding:calc(var(--sat) + 8px) 10px 10px
+}
+.ap-banner{
+  position:static;
+  width:100%;
+  max-width:980px;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  min-height:54px;
   padding:8px 12px;
-  box-shadow:0 6px 22px #00000080,inset 0 1px 0 #ffffff14
+  border-radius:14px;
+  background:#0d1525;
+  border:1px solid #293b57
 }
-.brand-left{display:flex;align-items:center;gap:10px;min-width:0}
-.brand-badge{
-  width:40px;height:40px;border-radius:12px;flex:0 0 auto;
-  background:linear-gradient(145deg,#132238,#0a111e);
-  border:1px solid #38bdf855;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:inset 0 1px 0 #ffffff1a,0 2px 8px #00000066
+.ap-brand{display:flex;align-items:center;gap:10px;min-width:0}
+.ap-emblem{
+  width:38px;height:38px;border-radius:11px;flex:0 0 auto;
+  background:#111d32;border:1px solid #38bdf866;
+  display:flex;align-items:center;justify-content:center
 }
-.brand-badge svg{width:24px;height:24px;display:block}
-.brand-titles{display:flex;flex-direction:column;min-width:0}
-.brand-name{
-  font-size:17px;font-weight:800;letter-spacing:1.3px;line-height:1.1;
-  background:linear-gradient(90deg,#ffffff 0%,#e2e8f0 65%,#7dd3fc 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  white-space:nowrap
+.ap-emblem svg{width:22px;height:22px;display:block}
+.ap-text{display:flex;flex-direction:column;min-width:0}
+.ap-title{
+  font-size:16px;font-weight:800;letter-spacing:1.2px;line-height:1.15;
+  color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
 }
-.brand-sub{
-  font-size:10px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;
+.ap-sub{
+  font-size:10px;font-weight:600;letter-spacing:1.3px;text-transform:uppercase;
   color:#94a3b8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
 }
-.brand-pill{
+.ap-tag{
   flex:0 0 auto;
-  font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;
-  color:#7dd3fc;background:#009ada1c;border:1px solid #38bdf844;
+  font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:#7dd3fc;background:#009ada1f;border:1px solid #38bdf84c;
   border-radius:999px;padding:4px 9px;white-space:nowrap
 }
 @media(min-width:760px){
-  header{padding:calc(var(--sat) + 10px) 16px 12px}
-  .brand-banner{min-height:66px;padding:10px 18px}
-  .brand-badge{width:46px;height:46px;border-radius:14px}
-  .brand-badge svg{width:28px;height:28px}
-  .brand-name{font-size:20px;letter-spacing:1.8px}
-  .brand-sub{font-size:11px;letter-spacing:2px}
+  .top-header{padding:calc(var(--sat) + 10px) 16px 12px}
+  .ap-banner{min-height:62px;padding:10px 16px}
+  .ap-emblem{width:42px;height:42px}
+  .ap-emblem svg{width:25px;height:25px}
+  .ap-title{font-size:19px;letter-spacing:1.5px}
+  .ap-sub{font-size:11px;letter-spacing:1.6px}
 }
 
 .bottom-nav{
@@ -487,26 +492,24 @@ dialog::backdrop{background:#000c}
 </style>
 </head>
 <body>
-<header>
-  <div class="brand-banner" aria-label="PITSTOP · LOG">
-    <div class="brand-left">
-      <div class="brand-badge" aria-hidden="true">
-        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M5 17 A9.5 9.5 0 0 1 23 17" stroke="#64748b" stroke-width="2.2" stroke-linecap="round"/>
-          <path d="M18.5 7.8 A9.5 9.5 0 0 1 23 17" stroke="#38bdf8" stroke-width="2.4" stroke-linecap="round"/>
-          <path d="M14 17 L19.2 11.2" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round"/>
-          <circle cx="14" cy="17" r="2.3" fill="#f8fafc"/>
-          <path d="M7.5 22.5 H20.5" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round"/>
+<div class="top-header" id="topHeader">
+  <div class="ap-banner" id="alexPerformanceBanner" aria-label="ALEX PERFORMANCE">
+    <div class="ap-brand">
+      <div class="ap-emblem" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 16.5A8.5 8.5 0 0 1 20 16.5"/>
+          <path d="M12 16.5L16.2 11.5" stroke="#ef4444"/>
+          <circle cx="12" cy="16.5" r="2" fill="#f8fafc" stroke="none"/>
         </svg>
       </div>
-      <div class="brand-titles">
-        <div class="brand-name">PITSTOP · LOG</div>
-        <div class="brand-sub">M-GARAGE PRO · SERVICE &amp; LOG</div>
+      <div class="ap-text">
+        <div class="ap-title">ALEX PERFORMANCE</div>
+        <div class="ap-sub">M-GARAGE LOG · SERVICE &amp; TUNING</div>
       </div>
     </div>
-    <div class="brand-pill">PRO LOG</div>
+    <div class="ap-tag">PRO LOG</div>
   </div>
-</header>
+</div>
 
 <div class="wrap" id="app"><div class="card"><div class="m">Зареждане на приложението...</div></div></div>
 
@@ -1120,7 +1123,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v45';
+const KEY='garage_fuel_pwa_v46';
 const SOLVER_KEY_STORAGE='pitstop_gemini_key_v1';
 const SOLVER_GRADE_STORAGE='pitstop_school_grade_v1';
 const SOLVER_NOTES_STORAGE='pitstop_solver_notes_v1';
@@ -1347,7 +1350,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v44')||localStorage.getItem('garage_fuel_pwa_v43')||localStorage.getItem('garage_fuel_pwa_v42')||localStorage.getItem('garage_fuel_pwa_v41')||localStorage.getItem('garage_fuel_pwa_v40')||localStorage.getItem('garage_fuel_pwa_v39')||localStorage.getItem('garage_fuel_pwa_v38')||localStorage.getItem('garage_fuel_pwa_v37')||localStorage.getItem('garage_fuel_pwa_v36')||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v45')||localStorage.getItem('garage_fuel_pwa_v44')||localStorage.getItem('garage_fuel_pwa_v43')||localStorage.getItem('garage_fuel_pwa_v42')||localStorage.getItem('garage_fuel_pwa_v41')||localStorage.getItem('garage_fuel_pwa_v40')||localStorage.getItem('garage_fuel_pwa_v39')||localStorage.getItem('garage_fuel_pwa_v38')||localStorage.getItem('garage_fuel_pwa_v37')||localStorage.getItem('garage_fuel_pwa_v36')||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
