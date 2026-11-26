@@ -2,7 +2,7 @@
 <html lang="bg">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#070b14">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -22,17 +22,17 @@ if(!window.QRCode){
 }
 </script>
 <style>
-:root{--bg:#070b14;--p:#101726;--p2:#0b1220;--b:#1e293b;--t:#f1f5f9;--m:#94a3b8;--a:#009ada;--g:#10b981;--y:#f59e0b;--r:#f43f5e;--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--nav-h:66px}
+:root{--bg:#070b14;--p:#101726;--p2:#0b1220;--b:#1e293b;--t:#f1f5f9;--m:#94a3b8;--a:#009ada;--g:#10b981;--y:#f59e0b;--r:#f43f5e;--sat:0px;--sab:0px;--nav-h:66px}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--t);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow-x:hidden}
-body{padding:0 0 calc(var(--nav-h) + var(--sab) + 18px)}
+body{padding:0 0 calc(var(--nav-h) + 18px)}
 
 .top-header{
   position:static;
   width:100%;
   background:#070b14;
   border-bottom:1px solid #1e2c42;
-  padding:calc(var(--sat) + 8px) 10px 10px
+  padding:8px 10px 10px
 }
 .ap-banner{
   position:static;
@@ -51,11 +51,11 @@ body{padding:0 0 calc(var(--nav-h) + var(--sab) + 18px)}
 }
 .ap-brand{display:flex;align-items:center;gap:10px;min-width:0}
 .ap-emblem{
-  width:38px;height:38px;border-radius:11px;flex:0 0 auto;
+  width:42px;height:38px;border-radius:11px;flex:0 0 auto;
   background:#111d32;border:1px solid #38bdf866;
   display:flex;align-items:center;justify-content:center
 }
-.ap-emblem svg{width:22px;height:22px;display:block}
+.ap-emblem svg{width:30px;height:22px;display:block}
 .ap-text{display:flex;flex-direction:column;min-width:0}
 .ap-title{
   font-size:16px;font-weight:800;letter-spacing:1.2px;line-height:1.15;
@@ -72,10 +72,10 @@ body{padding:0 0 calc(var(--nav-h) + var(--sab) + 18px)}
   border-radius:999px;padding:4px 9px;white-space:nowrap
 }
 @media(min-width:760px){
-  .top-header{padding:calc(var(--sat) + 10px) 16px 12px}
+  .top-header{padding:10px 16px 12px}
   .ap-banner{min-height:62px;padding:10px 16px}
-  .ap-emblem{width:42px;height:42px}
-  .ap-emblem svg{width:25px;height:25px}
+  .ap-emblem{width:46px;height:42px}
+  .ap-emblem svg{width:34px;height:25px}
   .ap-title{font-size:19px;letter-spacing:1.5px}
   .ap-sub{font-size:11px;letter-spacing:1.6px}
 }
@@ -88,7 +88,7 @@ body{padding:0 0 calc(var(--nav-h) + var(--sab) + 18px)}
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
   border-top:1px solid #283a54;
-  padding:6px 8px calc(6px + var(--sab));
+  padding:6px 8px 6px;
   box-shadow:0 -10px 28px #000000b8
 }
 .bottom-nav:before{
@@ -483,12 +483,12 @@ dialog{
   width:min(640px,96vw);
   max-width:96vw;
   padding:15px;
-  max-height:calc(100dvh - max(var(--sat), 12px) - 24px);
-  margin:max(var(--sat), 12px) auto 12px;
+  max-height:calc(100dvh - 24px);
+  margin:12px auto 12px;
   overflow-y:auto
 }
 dialog::backdrop{background:#000c}
-#toast{position:fixed;left:14px;right:14px;bottom:calc(var(--nav-h) + var(--sab) + 12px);z-index:40;background:#0f172af5;border:1px solid #38bdf866;border-radius:14px;padding:11px 14px;font-size:13px;display:none;box-shadow:0 8px 24px #000000aa}
+#toast{position:fixed;left:14px;right:14px;bottom:calc(var(--nav-h) + 12px);z-index:40;background:#0f172af5;border:1px solid #38bdf866;border-radius:14px;padding:11px 14px;font-size:13px;display:none;box-shadow:0 8px 24px #000000aa}
 </style>
 </head>
 <body>
@@ -496,15 +496,18 @@ dialog::backdrop{background:#000c}
   <div class="ap-banner" id="alexPerformanceBanner" aria-label="ALEX PERFORMANCE">
     <div class="ap-brand">
       <div class="ap-emblem" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 16.5A8.5 8.5 0 0 1 20 16.5"/>
-          <path d="M12 16.5L16.2 11.5" stroke="#ef4444"/>
-          <circle cx="12" cy="16.5" r="2" fill="#f8fafc" stroke="none"/>
+        <svg viewBox="0 0 36 24" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12.5L11.5 11.5L15 7.5L17.5 4.5M15 7.5L19.5 7.5L24.5 11.5L31 12.2"/>
+          <path d="M11 11.5L14.5 14.5L23.5 14.5L26 11.5" stroke="#ef4444"/>
+          <circle cx="8.5" cy="17.5" r="3.4"/>
+          <circle cx="8.5" cy="17.5" r="1.2" fill="#38bdf8" stroke="none"/>
+          <circle cx="27.5" cy="17.5" r="3.4"/>
+          <circle cx="27.5" cy="17.5" r="1.2" fill="#38bdf8" stroke="none"/>
         </svg>
       </div>
       <div class="ap-text">
         <div class="ap-title">ALEX PERFORMANCE</div>
-        <div class="ap-sub">M-GARAGE LOG · SERVICE &amp; TUNING</div>
+        <div class="ap-sub">RAPTOR · M-GARAGE LOG</div>
       </div>
     </div>
     <div class="ap-tag">PRO LOG</div>
@@ -1123,7 +1126,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v46';
+const KEY='garage_fuel_pwa_v47';
 const SOLVER_KEY_STORAGE='pitstop_gemini_key_v1';
 const SOLVER_GRADE_STORAGE='pitstop_school_grade_v1';
 const SOLVER_NOTES_STORAGE='pitstop_solver_notes_v1';
@@ -1350,7 +1353,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v45')||localStorage.getItem('garage_fuel_pwa_v44')||localStorage.getItem('garage_fuel_pwa_v43')||localStorage.getItem('garage_fuel_pwa_v42')||localStorage.getItem('garage_fuel_pwa_v41')||localStorage.getItem('garage_fuel_pwa_v40')||localStorage.getItem('garage_fuel_pwa_v39')||localStorage.getItem('garage_fuel_pwa_v38')||localStorage.getItem('garage_fuel_pwa_v37')||localStorage.getItem('garage_fuel_pwa_v36')||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v46')||localStorage.getItem('garage_fuel_pwa_v45')||localStorage.getItem('garage_fuel_pwa_v44')||localStorage.getItem('garage_fuel_pwa_v43')||localStorage.getItem('garage_fuel_pwa_v42')||localStorage.getItem('garage_fuel_pwa_v41')||localStorage.getItem('garage_fuel_pwa_v40')||localStorage.getItem('garage_fuel_pwa_v39')||localStorage.getItem('garage_fuel_pwa_v38')||localStorage.getItem('garage_fuel_pwa_v37')||localStorage.getItem('garage_fuel_pwa_v36')||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
