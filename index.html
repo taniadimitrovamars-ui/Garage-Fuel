@@ -26,8 +26,7 @@ if(!window.QRCode){
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--t);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow-x:hidden}
 body{padding:0 0 calc(var(--nav-h) + var(--sab) + 18px)}
-header{position:relative;z-index:1;background:#080c16;border-bottom:1px solid #26354d;padding:calc(var(--sat) + 8px) 8px 10px;display:flex;flex-direction:column;gap:7px;align-items:stretch}
-header:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,#009ada,#38bdf8,#ef4444)}
+header{position:static;background:#080c16;border-bottom:1px solid #26354d;padding:calc(var(--sat) + 8px) 8px 10px;display:flex;flex-direction:column;gap:7px;align-items:stretch}
 
 .brand-banner{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
@@ -157,7 +156,7 @@ button.ok,.btn.ok{background:#10b98128;border-color:#10b98188;color:#6ee7b7}
 button.sm,.btn.sm{min-height:34px;padding:0 9px;font-size:12px}
 button.ico-btn,.btn.ico-btn{width:38px;min-width:38px;height:38px;min-height:38px;padding:0;border-radius:10px}
 button.ico-btn svg,.btn.ico-btn svg{width:18px;height:18px;display:block}
-button.chk-btn{min-height:34px;min-width:86px;padding:0 10px;font-size:12px;font-weight:600}
+button.chk-btn{min-height:32px;min-width:78px;padding:0 10px;font-size:12px;font-weight:600;flex:0 0 auto}
 button.mini-rem{min-height:28px;padding:0 8px;font-size:11px;border-radius:9px}
 button.close-br{
   min-height:30px;
@@ -396,39 +395,69 @@ dialog.large-dlg{
 }
 
 .dash-card{background:var(--p);border:1px solid #26354d;border-radius:20px;overflow:hidden;margin-bottom:12px}
-.dash-body{padding:15px 16px 12px}
+.dash-body{padding:14px 14px 10px}
 .dash-title{font-size:18px;font-weight:700;margin:0;letter-spacing:-.01em}
 .eu-plate{display:inline-flex;align-items:stretch;border:2px solid #cbd5e1;border-radius:7px;overflow:hidden;background:#ffffff;color:#0f172a;height:40px;box-shadow:0 1px 2px #0004}
 .eu-plate .eu-bg{background:#1d4ed8;color:#fff;width:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:800;line-height:1.05;letter-spacing:.02em}
 .eu-plate .eu-bg span{font-size:9px;color:#fde047;line-height:1}
 .eu-plate .eu-num{padding:0 12px;display:flex;align-items:center;font-family:ui-monospace,Menlo,monospace;font-size:18px;font-weight:800;letter-spacing:1.5px;color:#090d16}
-.dash-list{margin-top:12px;border-top:1px solid #1b2638}
-.dash-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 2px;border-bottom:1px solid #1b2638}
+.dash-list{margin-top:10px;border-top:1px solid #1b2638}
+.dash-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 2px;border-bottom:1px solid #1b2638}
 .dash-row:last-child{border-bottom:none}
-.dash-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-.chk-badge{width:20px;height:20px;border-radius:999px;background:#0d9488;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:0 0 auto}
+.dash-left{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+.chk-badge{width:19px;height:19px;border-radius:999px;background:#0d9488;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:0 0 auto}
 .chk-badge.warn{background:var(--y);color:#090d16}
 .chk-badge.exp{background:var(--r);color:#fff}
 .chk-badge.muted{background:#334155;color:#cbd5e1}
-.dash-ico{width:22px;text-align:center;font-size:15px;flex:0 0 auto}
-.dash-text{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dash-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 16px;background:#0b1220;border-top:1px solid #1e293b;cursor:pointer}
+.dash-ico{width:20px;text-align:center;font-size:14px;flex:0 0 auto}
+.dash-text{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dash-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 14px;background:#0b1220;border-top:1px solid #1e293b;cursor:pointer}
 .dash-footer:hover{background:#111c31}
 
-.dash-svc-box{
-  margin-top:12px;border-top:1px solid #1b2638;padding-top:11px;
-  display:flex;flex-direction:column;gap:8px
+.compact-svc-widget{
+  margin-top:10px;
+  background:#09101d;
+  border:1px solid #1f2e47;
+  border-radius:14px;
+  padding:9px 10px;
+  display:flex;
+  flex-direction:column;
+  gap:6px
 }
-.dash-svc-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.pro-kpi-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.pro-kpi{background:#09101d;border:1px solid #1f2e47;border-radius:11px;padding:7px 9px;min-width:0}
-.pro-kpi b{display:block;font-size:13px;font-family:ui-monospace,Menlo,monospace;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pro-kpi span{display:block;font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.svc-due-mini{display:grid;grid-template-columns:1fr;gap:6px}
-@media(min-width:640px){.svc-due-mini{grid-template-columns:1fr 1fr}}
-.svc-due-item{
-  background:#09101d;border:1px solid #1b283d;border-radius:11px;padding:7px 9px;
-  display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px
+.compact-svc-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px
+}
+.compact-svc-meta{
+  min-width:0;
+  flex:1
+}
+.compact-svc-title{
+  font-size:13.5px;
+  font-weight:700;
+  color:#f8fafc;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.compact-svc-sub{
+  font-size:11.5px;
+  color:var(--m);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  margin-top:1px
+}
+.compact-svc-alert{
+  font-size:11.5px;
+  padding-top:5px;
+  border-top:1px solid #172236;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px
 }
 
 .veh-photo{width:100%;max-height:210px;object-fit:cover;border-radius:14px;border:1px solid #334155;background:#050810;display:block;cursor:zoom-in}
@@ -1091,7 +1120,7 @@ window.addEventListener('error',function(ev){
 });
 (()=>{
 'use strict';
-const KEY='garage_fuel_pwa_v44';
+const KEY='garage_fuel_pwa_v45';
 const SOLVER_KEY_STORAGE='pitstop_gemini_key_v1';
 const SOLVER_GRADE_STORAGE='pitstop_school_grade_v1';
 const SOLVER_NOTES_STORAGE='pitstop_solver_notes_v1';
@@ -1318,7 +1347,7 @@ function normalizeVeh(v){
 
 function load(){
   try{
-    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v43')||localStorage.getItem('garage_fuel_pwa_v42')||localStorage.getItem('garage_fuel_pwa_v41')||localStorage.getItem('garage_fuel_pwa_v40')||localStorage.getItem('garage_fuel_pwa_v39')||localStorage.getItem('garage_fuel_pwa_v38')||localStorage.getItem('garage_fuel_pwa_v37')||localStorage.getItem('garage_fuel_pwa_v36')||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
+    const raw=localStorage.getItem(KEY)||localStorage.getItem('garage_fuel_pwa_v44')||localStorage.getItem('garage_fuel_pwa_v43')||localStorage.getItem('garage_fuel_pwa_v42')||localStorage.getItem('garage_fuel_pwa_v41')||localStorage.getItem('garage_fuel_pwa_v40')||localStorage.getItem('garage_fuel_pwa_v39')||localStorage.getItem('garage_fuel_pwa_v38')||localStorage.getItem('garage_fuel_pwa_v37')||localStorage.getItem('garage_fuel_pwa_v36')||localStorage.getItem('garage_fuel_pwa_v35')||localStorage.getItem('garage_fuel_pwa_v34')||localStorage.getItem('garage_fuel_pwa_v33')||localStorage.getItem('garage_fuel_pwa_v32')||localStorage.getItem('garage_fuel_pwa_v31')||localStorage.getItem('garage_fuel_pwa_v30')||localStorage.getItem('garage_fuel_pwa_v29')||localStorage.getItem('garage_fuel_pwa_v28')||localStorage.getItem('garage_fuel_pwa_v27')||localStorage.getItem('garage_fuel_pwa_v26')||localStorage.getItem('garage_fuel_pwa_v25')||localStorage.getItem('garage_fuel_pwa_v24')||localStorage.getItem('garage_fuel_pwa_v23')||localStorage.getItem('garage_fuel_pwa_v22')||localStorage.getItem('garage_fuel_pwa_v21')||localStorage.getItem('garage_fuel_pwa_v20')||localStorage.getItem('garage_fuel_pwa_v19')||localStorage.getItem('garage_fuel_pwa_v18')||localStorage.getItem('garage_fuel_pwa_v17')||localStorage.getItem('garage_fuel_pwa_v16')||localStorage.getItem('garage_fuel_pwa_v15')||localStorage.getItem('garage_fuel_pwa_v14')||localStorage.getItem('garage_fuel_pwa_v13')||localStorage.getItem('garage_fuel_pwa_v12')||localStorage.getItem('garage_fuel_pwa_v11')||localStorage.getItem('garage_fuel_pwa_v10')||localStorage.getItem('garage_fuel_pwa_v9')||localStorage.getItem('garage_fuel_pwa_v8')||localStorage.getItem('garage_fuel_pwa_v7')||localStorage.getItem('garage_fuel_pwa_v6')||localStorage.getItem('garage_fuel_pwa_v5')||localStorage.getItem('garage_fuel_pwa_v4')||localStorage.getItem('garage_fuel_pwa_v3')||localStorage.getItem('garage_fuel_pwa_v2')||localStorage.getItem('garage_fuel_pwa_v1');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(Array.isArray(d.vehicles)&&d.vehicles.length){
@@ -2604,7 +2633,7 @@ function getVehicleServiceStats(veh){
   let totalSpent=0;
   let overdueCount=0;
   let soonCount=0;
-  const dueItems=[];
+  let mostUrgent=null;
 
   for(const p of PRESET_PARTS){
     const last=list.find(s=>s.type===p.type);
@@ -2615,66 +2644,52 @@ function getVehicleServiceStats(veh){
     if(remKm!==null){
       if(remKm<0)overdueCount++;
       else if(remKm<=1500)soonCount++;
+      if(!mostUrgent||remKm<mostUrgent.remKm){
+        mostUrgent={ico:p.ico,type:p.type,remKm};
+      }
     }
-    dueItems.push({
-      ico:p.ico,
-      type:p.type,
-      remKm,
-      nextKm
-    });
   }
 
   for(const s of list){
     totalSpent+=parseNumericPrice(s.price);
   }
 
-  dueItems.sort((a,b)=>{
-    if(a.remKm===null&&b.remKm===null)return 0;
-    if(a.remKm===null)return 1;
-    if(b.remKm===null)return -1;
-    return a.remKm-b.remKm;
-  });
-
   return{
     count:list.length,
     totalSpent,
     overdueCount,
     soonCount,
-    dueItems:dueItems.slice(0,2)
+    mostUrgent
   };
 }
 
-function vRecentServicesBlock(veh){
+function vCompactServiceWidget(veh){
   const st=getVehicleServiceStats(veh);
-  const spentLabel=st.totalSpent>0?`${st.totalSpent.toFixed(2).replace(/\.00$/,'')} €`:'0 €';
-  const alertLabel=st.overdueCount>0
+  const spentLabel=st.totalSpent>0?`${st.totalSpent.toFixed(0)} €`:'0 €';
+  const statusTxt=st.overdueCount>0
     ?`<span class="bad">Просрочени: ${st.overdueCount}</span>`
-    :(st.soonCount>0?`<span class="mid">Скоро: ${st.soonCount}</span>`:`<span class="good">Всичко в норма</span>`);
+    :(st.soonCount>0?`<span class="mid">Скоро: ${st.soonCount}</span>`:`<span class="good">В норма</span>`);
 
-  const dueHtml=st.dueItems.length
-    ?`<div class="svc-due-mini">${st.dueItems.map(item=>{
-      const statusTxt=item.remKm===null
-        ?`до ~${item.nextKm.toLocaleString()} km`
-        :(item.remKm<0?`<b class="bad">-${Math.abs(item.remKm).toLocaleString()} km</b>`:`<b class="good">${item.remKm.toLocaleString()} km</b>`);
-      return`<div class="svc-due-item">
-        <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.ico} ${E(item.type)}</span>
-        <span class="mono">${statusTxt}</span>
-      </div>`;
-    }).join('')}</div>`:'';
+  const showUrgent=st.mostUrgent&&(st.mostUrgent.remKm<=2000);
+  const urgentHtml=showUrgent
+    ?`<div class="compact-svc-alert">
+        <span>${st.mostUrgent.ico} ${E(st.mostUrgent.type)}</span>
+        <span class="mono ${st.mostUrgent.remKm<0?'bad':'mid'}">${st.mostUrgent.remKm<0?`-${Math.abs(st.mostUrgent.remKm).toLocaleString()} km`:`остават ${st.mostUrgent.remKm.toLocaleString()} km`}</span>
+      </div>`:'';
 
   return`
-  <div class="dash-svc-box">
-    <div class="dash-svc-top">
-      <div style="min-width:0">
-        <b style="font-size:13.5px">🛠 Консумативи (${st.count})</b>
-        <div class="m">${alertLabel} · Разходи: <span class="mono">${E(spentLabel)}</span></div>
+  <div class="compact-svc-widget">
+    <div class="compact-svc-top">
+      <div class="compact-svc-meta">
+        <div class="compact-svc-title">🛠 Консумативи (${st.count}) · <span class="mono">${E(spentLabel)}</span></div>
+        <div class="compact-svc-sub">${statusTxt}</div>
       </div>
-      <div class="row" style="gap:6px">
+      <div class="row" style="gap:6px;flex:0 0 auto">
         <button type="button" class="sm ok" id="dashQuickNewSvc">+ Запис</button>
         <button type="button" class="sm pri" data-go-tab="svc">Всички →</button>
       </div>
     </div>
-    ${dueHtml}
+    ${urgentHtml}
   </div>`;
 }
 
@@ -2696,12 +2711,12 @@ function vVehicleCard(veh){
         <button type="button" class="ghost" id="editVehBtn" title="Редактирай профила">✎ редактирай</button>
       </div>
 
-      <div class="row sp" style="margin-top:10px">
+      <div class="row sp" style="margin-top:8px">
         ${plateDisplay?`<div class="eu-plate" aria-label="Регистрационен номер">
           <div class="eu-bg"><span>★</span>BG</div>
           <div class="eu-num">${E(plateDisplay)}</div>
         </div>`:`<span class="m">Без зададен рег. номер</span>`}
-        <div class="row" style="gap:10px">
+        <div class="row" style="gap:8px">
           ${powerLabel?`<span class="m mono">Мощност: <b style="color:var(--t)">${powerLabel}</b></span>`:''}
           ${veh.weightKg?`<span class="m mono">Тегло: <b style="color:var(--t)">${Number(veh.weightKg).toLocaleString()} kg</b></span>`:''}
           ${veh.firstRegDate?`<span class="m mono">1-ва рег.: <b style="color:var(--t)">${E(fmtDotDate(veh.firstRegDate))}</b></span>`:''}
@@ -2709,7 +2724,7 @@ function vVehicleCard(veh){
         </div>
       </div>
 
-      <div class="pro-kpi-row" style="margin-top:10px">
+      <div class="pro-kpi-row" style="margin-top:8px">
         <div class="pro-kpi">
           <b>${veh.odo?Number(veh.odo).toLocaleString()+' km':'—'}</b>
           <span>Пробег</span>
@@ -2724,9 +2739,9 @@ function vVehicleCard(veh){
         </div>
       </div>
 
-      ${isSafeDataUrl(veh.photo)?`<img src="${veh.photo}" class="veh-photo" style="margin-top:12px" data-zoom-src="${E(veh.photo)}" data-zoom-title="${E(veh.name)}" alt="${E(veh.name)}">`:''}
+      ${isSafeDataUrl(veh.photo)?`<img src="${veh.photo}" class="veh-photo" style="margin-top:10px" data-zoom-src="${E(veh.photo)}" data-zoom-title="${E(veh.name)}" alt="${E(veh.name)}">`:''}
 
-      ${vRecentServicesBlock(veh)}
+      ${vCompactServiceWidget(veh)}
 
       <div class="dash-list">
         <div class="dash-row">
