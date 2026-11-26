@@ -22,16 +22,16 @@ if(!window.QRCode){
 }
 </script>
 <style>
-:root{--bg:#070b14;--p:#101726;--p2:#0b1220;--b:#1e293b;--t:#f1f5f9;--m:#94a3b8;--a:#009ada;--g:#10b981;--y:#f59e0b;--r:#f43f5e;--sat:env(safe-area-inset-top,0px)}
+:root{--bg:#070b14;--p:#101726;--p2:#0b1220;--b:#1e293b;--t:#f1f5f9;--m:#94a3b8;--a:#009ada;--g:#10b981;--y:#f59e0b;--r:#f43f5e;--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--nav-h:64px}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--t);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow-x:hidden}
-body{padding:var(--sat) 0 calc(2.4rem + env(safe-area-inset-bottom,0))}
+body{padding:var(--sat) 0 calc(var(--nav-h) + var(--sab) + 18px)}
 header{position:sticky;top:0;z-index:10;background:#080c16fa;backdrop-filter:blur(10px);border-bottom:1px solid #26354d;padding:calc(var(--sat) + 6px) 8px 8px;display:flex;flex-direction:column;gap:7px;align-items:stretch}
 header:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,#009ada,#38bdf8,#ef4444)}
 
 .brand-banner{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
-  width:100%;min-height:58px;
+  width:100%;min-height:56px;
   border-radius:16px;
   background:
     radial-gradient(circle at 12% 50%, #009ada2e, transparent 42%),
@@ -69,49 +69,68 @@ header:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;backgr
 }
 @media(min-width:760px){
   header{padding:calc(var(--sat) + 9px) 16px 10px}
-  .brand-banner{min-height:70px;padding:10px 18px}
+  .brand-banner{min-height:66px;padding:10px 18px}
   .brand-badge{width:46px;height:46px;border-radius:14px}
   .brand-badge svg{width:28px;height:28px}
   .brand-name{font-size:20px;letter-spacing:1.8px}
   .brand-sub{font-size:11px;letter-spacing:2px}
 }
 
-.nav-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;width:100%}
+.bottom-nav{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  z-index:25;
+  background:#080d18f5;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-top:1px solid #26354d;
+  padding:6px 8px calc(6px + var(--sab));
+  box-shadow:0 -8px 24px #00000099
+}
+.bottom-nav:before{
+  content:"";
+  position:absolute;
+  left:0;right:0;top:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,#38bdf866,#009ada88,transparent)
+}
+.nav-tabs{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:5px;
+  max-width:980px;
+  margin:0 auto
+}
 .nav-tabs button{
   width:100%;
-  min-height:34px;
-  padding:0 4px;
+  min-height:48px;
+  padding:4px 4px;
   font-size:10.5px;
-  font-weight:600;
-  border-radius:999px;
+  font-weight:700;
+  border-radius:14px;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
-  gap:3px;
-  background:#111b2e;
-  border:1px solid #293852;
-  color:#cbd5e1;
+  flex-direction:column;
+  gap:2px;
+  background:#0e1728;
+  border:1px solid #1e2d45;
+  color:#94a3b8;
   letter-spacing:-.01em
 }
-.nav-tabs button span{overflow:hidden;text-overflow:ellipsis}
-.nav-tabs button svg{width:11px;height:11px;flex:0 0 auto;opacity:.85}
+.nav-tabs button span{overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.nav-tabs button svg{width:17px;height:17px;flex:0 0 auto;opacity:.82}
 .nav-tabs button:hover{border-color:#009ada77;color:#f8fafc}
 .nav-tabs button.on{
-  background:linear-gradient(180deg,#009ada3d,#009ada22);
+  background:linear-gradient(180deg,#009ada36,#009ada18);
   border-color:#38bdf8;
   color:#ffffff;
-  box-shadow:0 2px 10px #009ada2b
+  box-shadow:0 2px 12px #009ada33
 }
 .nav-tabs button.on svg{opacity:1;color:#38bdf8}
-@media(min-width:420px){
-  .nav-tabs{gap:5px}
-  .nav-tabs button{min-height:36px;padding:0 7px;font-size:11.5px;gap:4px}
-  .nav-tabs button svg{width:12px;height:12px}
-}
 @media(min-width:620px){
   .nav-tabs{gap:8px}
-  .nav-tabs button{min-height:40px;padding:0 12px;font-size:13px;gap:6px}
-  .nav-tabs button svg{width:14px;height:14px}
+  .nav-tabs button{min-height:50px;font-size:11.5px}
 }
 
 .wrap{max-width:980px;margin:0 auto;padding:12px 14px}
@@ -383,7 +402,18 @@ dialog.large-dlg{
 
 .dash-svc-box{
   margin-top:12px;border-top:1px solid #1b2638;padding-top:11px;
-  display:flex;align-items:center;justify-content:space-between;gap:10px
+  display:flex;flex-direction:column;gap:8px
+}
+.dash-svc-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pro-kpi-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.pro-kpi{background:#09101d;border:1px solid #1f2e47;border-radius:11px;padding:7px 9px;min-width:0}
+.pro-kpi b{display:block;font-size:13px;font-family:ui-monospace,Menlo,monospace;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pro-kpi span{display:block;font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.svc-due-mini{display:grid;grid-template-columns:1fr;gap:6px}
+@media(min-width:640px){.svc-due-mini{grid-template-columns:1fr 1fr}}
+.svc-due-item{
+  background:#09101d;border:1px solid #1b283d;border-radius:11px;padding:7px 9px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px
 }
 
 .veh-photo{width:100%;max-height:210px;object-fit:cover;border-radius:14px;border:1px solid #334155;background:#050810;display:block;cursor:zoom-in}
@@ -409,7 +439,7 @@ dialog{
   overflow-y:auto
 }
 dialog::backdrop{background:#000c}
-#toast{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0));z-index:40;background:#0f172af5;border:1px solid #334155;border-radius:14px;padding:11px 14px;font-size:13px;display:none}
+#toast{position:fixed;left:14px;right:14px;bottom:calc(var(--nav-h) + var(--sab) + 12px);z-index:40;background:#0f172af5;border:1px solid #38bdf866;border-radius:14px;padding:11px 14px;font-size:13px;display:none;box-shadow:0 8px 24px #000000aa}
 </style>
 </head>
 <body>
@@ -427,12 +457,17 @@ dialog::backdrop{background:#000c}
       </div>
       <div class="brand-titles">
         <div class="brand-name">PITSTOP · LOG</div>
-        <div class="brand-sub">SERVICE &amp; GARAGE BOOK</div>
+        <div class="brand-sub">M-GARAGE PRO · SERVICE &amp; LOG</div>
       </div>
     </div>
     <div class="brand-pill">PRO LOG</div>
   </div>
-  <nav class="nav-tabs" aria-label="Основно меню">
+</header>
+
+<div class="wrap" id="app"><div class="card"><div class="m">Зареждане на приложението...</div></div></div>
+
+<nav class="bottom-nav" aria-label="Основно меню">
+  <div class="nav-tabs">
     <button type="button" id="tabDash" class="on">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
       <span>Табло</span>
@@ -449,10 +484,9 @@ dialog::backdrop{background:#000c}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
       <span>Карти</span>
     </button>
-  </nav>
-</header>
+  </div>
+</nav>
 
-<div class="wrap" id="app"><div class="card"><div class="m">Зареждане на приложението...</div></div></div>
 <div id="toast"></div>
 
 <dialog id="svcEntryDlg">
@@ -1998,15 +2032,18 @@ function fmtDotDate(dateStr){
   const p=dateStr.split('-');
   return p.length===3?`${p[2]}.${p[1]}.${p[0]}`:dateStr;
 }
-function fmtPrice(val){
-  if(val===undefined||val===null)return '';
+function parseNumericPrice(val){
+  if(val===undefined||val===null)return 0;
   const clean=String(val).trim().replace(',','.');
-  if(!clean)return '';
+  if(!clean)return 0;
   const n=Number(clean);
-  if(Number.isFinite(n)&&n>0){
-    return `${n.toFixed(2).replace(/\.00$/,'')} €`;
-  }
-  return String(val).trim();
+  return Number.isFinite(n)&&n>0?n:0;
+}
+function fmtPrice(val){
+  const n=parseNumericPrice(val);
+  if(n>0)return `${n.toFixed(2).replace(/\.00$/,'')} €`;
+  const raw=String(val??'').trim();
+  return raw;
 }
 function extractAllIsoDatesFromText(txt){
   const out=[];
@@ -2508,15 +2545,83 @@ function vVehicleSwitcherBar(veh){
   </div>`;
 }
 
+function getVehicleServiceStats(veh){
+  const list=sortServicesLatestFirst(veh.services||[]);
+  const curKm=Number(veh.odo)||0;
+  let totalSpent=0;
+  let overdueCount=0;
+  let soonCount=0;
+  const dueItems=[];
+
+  for(const p of PRESET_PARTS){
+    const last=list.find(s=>s.type===p.type);
+    if(!last)continue;
+    const inter=Number(last.interval)||p.interval||10000;
+    const nextKm=(Number(last.km)||0)+inter;
+    const remKm=curKm>0?nextKm-curKm:null;
+    if(remKm!==null){
+      if(remKm<0)overdueCount++;
+      else if(remKm<=1500)soonCount++;
+    }
+    dueItems.push({
+      ico:p.ico,
+      type:p.type,
+      remKm,
+      nextKm
+    });
+  }
+
+  for(const s of list){
+    totalSpent+=parseNumericPrice(s.price);
+  }
+
+  dueItems.sort((a,b)=>{
+    if(a.remKm===null&&b.remKm===null)return 0;
+    if(a.remKm===null)return 1;
+    if(b.remKm===null)return -1;
+    return a.remKm-b.remKm;
+  });
+
+  return{
+    count:list.length,
+    totalSpent,
+    overdueCount,
+    soonCount,
+    dueItems:dueItems.slice(0,2)
+  };
+}
+
 function vRecentServicesBlock(veh){
-  const count=(veh.services||[]).length;
+  const st=getVehicleServiceStats(veh);
+  const spentLabel=st.totalSpent>0?`${st.totalSpent.toFixed(2).replace(/\.00$/,'')} €`:'0 €';
+  const alertLabel=st.overdueCount>0
+    ?`<span class="bad">Просрочени: ${st.overdueCount}</span>`
+    :(st.soonCount>0?`<span class="mid">Скоро: ${st.soonCount}</span>`:`<span class="good">Всичко в норма</span>`);
+
+  const dueHtml=st.dueItems.length
+    ?`<div class="svc-due-mini">${st.dueItems.map(item=>{
+      const statusTxt=item.remKm===null
+        ?`до ~${item.nextKm.toLocaleString()} km`
+        :(item.remKm<0?`<b class="bad">-${Math.abs(item.remKm).toLocaleString()} km</b>`:`<b class="good">${item.remKm.toLocaleString()} km</b>`);
+      return`<div class="svc-due-item">
+        <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.ico} ${E(item.type)}</span>
+        <span class="mono">${statusTxt}</span>
+      </div>`;
+    }).join('')}</div>`:'';
+
   return`
   <div class="dash-svc-box">
-    <div style="min-width:0">
-      <b style="font-size:13.5px">🛠 Консумативи (${count})</b>
-      <div class="m">История и записи за обслужване</div>
+    <div class="dash-svc-top">
+      <div style="min-width:0">
+        <b style="font-size:13.5px">🛠 Консумативи (${st.count})</b>
+        <div class="m">${alertLabel} · Разходи: <span class="mono">${E(spentLabel)}</span></div>
+      </div>
+      <div class="row" style="gap:6px">
+        <button type="button" class="sm ok" id="dashQuickNewSvc">+ Запис</button>
+        <button type="button" class="sm pri" data-go-tab="svc">Всички →</button>
+      </div>
     </div>
-    <button type="button" class="sm pri" data-go-tab="svc">Консумативи →</button>
+    ${dueHtml}
   </div>`;
 }
 
@@ -2526,6 +2631,8 @@ function vVehicleCard(veh){
     veh.powerKw?`${E(veh.powerKw)} kW`:'',
     veh.powerHp?`${E(veh.powerHp)} к.с.`:''
   ].filter(Boolean).join(' / ');
+  const st=getVehicleServiceStats(veh);
+  const spentKpi=st.totalSpent>0?`${st.totalSpent.toFixed(0)} €`:'0 €';
 
   return`
   ${vVehicleSwitcherBar(veh)}
@@ -2546,7 +2653,21 @@ function vVehicleCard(veh){
           ${veh.weightKg?`<span class="m mono">Тегло: <b style="color:var(--t)">${Number(veh.weightKg).toLocaleString()} kg</b></span>`:''}
           ${veh.firstRegDate?`<span class="m mono">1-ва рег.: <b style="color:var(--t)">${E(fmtDotDate(veh.firstRegDate))}</b></span>`:''}
           ${veh.vin?`<span class="m mono">VIN: <b style="color:var(--t)">${E(veh.vin)}</b></span>`:''}
-          ${veh.odo?`<span class="m mono">Пробег: <b style="color:var(--t)">${Number(veh.odo).toLocaleString()} km</b></span>`:''}
+        </div>
+      </div>
+
+      <div class="pro-kpi-row" style="margin-top:10px">
+        <div class="pro-kpi">
+          <b>${veh.odo?Number(veh.odo).toLocaleString()+' km':'—'}</b>
+          <span>Пробег</span>
+        </div>
+        <div class="pro-kpi">
+          <b>${st.count}</b>
+          <span>Обслужвания</span>
+        </div>
+        <div class="pro-kpi">
+          <b>${E(spentKpi)}</b>
+          <span>Сума консумативи</span>
         </div>
       </div>
 
@@ -2956,8 +3077,8 @@ function renderServiceHistoryModal(){
   let sumNum=0;
   let hasNumPrice=false;
   for(const s of list){
-    const n=Number(String(s.price||'').replace(',','.'));
-    if(Number.isFinite(n)&&n>0){sumNum+=n;hasNumPrice=true;}
+    const n=parseNumericPrice(s.price);
+    if(n>0){sumNum+=n;hasNumPrice=true;}
   }
   $('#svcHistTotal').textContent=list.length
     ?`Записи: ${list.length}${hasNumPrice?' · Общо: '+sumNum.toFixed(2).replace(/\.00$/,'')+' €':''}`
@@ -3144,6 +3265,8 @@ function vServices(){
   const veh=getVeh();
   const curKm=Number(veh.odo)||0;
   const totalAll=(veh.services||[]).length;
+  const st=getVehicleServiceStats(veh);
+  const spentTotal=st.totalSpent>0?`${st.totalSpent.toFixed(2).replace(/\.00$/,'')} €`:'0 €';
 
   const partCards=PRESET_PARTS.map(p=>{
     const itemsOfType=sortServicesLatestFirst((veh.services||[]).filter(x=>x.type===p.type));
@@ -3178,12 +3301,11 @@ function vServices(){
     <div class="row sp" style="margin-bottom:8px">
       <div>
         <h3 style="margin:0">Консумативи и смени</h3>
-        <div class="m">Активен профил: <b>${E(veh.name)}</b>${veh.plate?` · <span class="mono">${E(veh.plate)}</span>`:''}</div>
+        <div class="m">Профил: <b>${E(veh.name)}</b>${veh.plate?` · <span class="mono">${E(veh.plate)}</span>`:''} · Общо: <span class="mono good"><b>${E(spentTotal)}</b></span></div>
       </div>
       <div class="row">
         <button type="button" class="pri sm" id="openNewSvcDlg">+ Нова смяна</button>
         <button type="button" class="sm" data-open-hist="__ALL__">📜 Всички смени (${totalAll})</button>
-        <button type="button" class="sm" data-go-tab="dash">← Табло</button>
       </div>
     </div>
 
@@ -3216,7 +3338,6 @@ function vChecks(){
       </div>
       <div class="row">
         ${(veh.plate||veh.vin||veh.firstRegDate||veh.egn||veh.regCert)?`<button type="button" class="sm" id="copyCheckInfo">Копирай данните</button>`:''}
-        <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
       </div>
     </div>
     ${S.ocrBusy?`<div class="item" style="border-color:#009ada88"><b class="good">${E(S.ocrBusy)}</b></div>`:''}
@@ -3373,7 +3494,6 @@ function vFuel(){
         </div>
         <div class="row">
           <button type="button" class="pri sm" id="addFuel">+ Нова карта</button>
-          <button type="button" class="sm" data-go-tab="dash">← Към таблото</button>
         </div>
       </div>
       <div class="cat-menu">${catButtons}</div>
@@ -3611,6 +3731,11 @@ document.addEventListener('click',e=>{
   else if(t.dataset.enterCat){S.activeCardCat=normalizeCardCat(t.dataset.enterCat);render()}
   else if(t.id==='backCardCats'){S.activeCardCat=null;render()}
   else if(t.dataset.goTab){syncFormFromDom();save();S.tab=t.dataset.goTab;if(S.tab==='fuel')S.activeCardCat=null;render();window.scrollTo({top:0,behavior:'smooth'})}
+  else if(t.id==='dashQuickNewSvc'){
+    S.form.id='';S.form.detail='';S.form.price='';S.form.note='';S.form.docImage='';
+    S.form.km=veh.odo?String(veh.odo):'';
+    openServiceEntryModal();
+  }
   else if(t.id==='syncDashBtn')openQuickUpdate(veh);
   else if(t.id==='qCancel')closeDlg($('#quickDlg'));
   else if(t.id==='qSave'){
